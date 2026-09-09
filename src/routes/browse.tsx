@@ -8,10 +8,10 @@ type BrowseSearch = { genre: string; type: string; order: string; page: number }
 
 export const Route = createFileRoute("/browse")({
   validateSearch: (search: Record<string, unknown>): BrowseSearch => ({
-    genre: typeof search.genre === "string" ? search.genre : "",
-    type: typeof search.type === "string" ? search.type : "",
-    order: typeof search.order === "string" ? search.order : "popularity",
-    page: Number(search.page) > 0 ? Number(search.page) : 1,
+    genre: typeof search["genre"] === "string" ? search["genre"] : "",
+    type: typeof search["type"] === "string" ? search["type"] : "",
+    order: typeof search["order"] === "string" ? search["order"] : "popularity",
+    page: Number(search["page"]) > 0 ? Number(search["page"]) : 1,
   }),
   head: () => ({
     meta: [

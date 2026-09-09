@@ -10,8 +10,8 @@ type SearchParams = { q: string; page: number };
 
 export const Route = createFileRoute("/search")({
   validateSearch: (search: Record<string, unknown>): SearchParams => ({
-    q: typeof search.q === "string" ? search.q : "",
-    page: Number(search.page) > 0 ? Number(search.page) : 1,
+    q: typeof search["q"] === "string" ? search["q"] : "",
+    page: Number(search["page"]) > 0 ? Number(search["page"]) : 1,
   }),
   head: () => ({
     meta: [
