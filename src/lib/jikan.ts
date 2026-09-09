@@ -95,9 +95,15 @@ function enqueue<T>(job: () => Promise<T>): Promise<T> {
 async function request<T>(path: string, attempt = 0): Promise<T> {
   let res: Response;
   try {
-    res = await enqueue(() => fetch(`${BASE}${path}`, { headers: { Accept: "application/json" } }));
+    res = await enqueue(() =>
+      fetch(`${BASE}${path}`, {
+        headers: { Accept: "application/json" },
+        // A hung upstream request must never stall the shared queue.
+        signal: AbortSignal.timeout(9000),
+      }),
+    );
   } catch {
-    if (attempt < 2) {
+    if (attempt < 3) {
       await sleep(600 * (attempt + 1));
       return request<T>(path, attempt + 1);
     }
