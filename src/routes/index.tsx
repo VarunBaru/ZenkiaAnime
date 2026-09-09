@@ -33,7 +33,7 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-function SectionHeading({ title, to }: { title: string; to?: string }) {
+function SectionHeading({ title, to }: { title: string; to?: string | undefined }) {
   return (
     <div className="mb-4 flex items-end justify-between gap-4">
       <h2 className="font-display text-xl tracking-tight sm:text-2xl">{title}</h2>
@@ -55,7 +55,7 @@ function Rail({
   query,
 }: {
   title: string;
-  to?: string;
+  to?: string | undefined;
   query: ReturnType<typeof trendingQuery>;
 }) {
   const { data, isPending, isError, refetch } = useQuery(query);
