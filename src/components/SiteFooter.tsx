@@ -8,10 +8,14 @@ export function SiteFooter() {
           ANIMEHUB
         </Link>
         <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-mono text-[11px] tracking-widest text-muted-foreground uppercase">
-          <Link to="/browse" className="hover:text-foreground">
+          <Link
+            to="/browse"
+            search={{ genre: "", type: "", order: "popularity", page: 1 }}
+            className="hover:text-foreground"
+          >
             Browse
           </Link>
-          <Link to="/search" className="hover:text-foreground">
+          <Link to="/search" search={{ q: "", page: 1 }} className="hover:text-foreground">
             Search
           </Link>
           <Link to="/watchlist" className="hover:text-foreground">

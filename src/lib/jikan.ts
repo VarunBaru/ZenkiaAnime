@@ -74,21 +74,44 @@ export class JikanError extends Error {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * Jikan rate-limits at ~3 requests/second. All calls go through one queue that
+ * spaces requests out, so parallel page sections never trip the limiter.
+ */
+const MIN_GAP_MS = 400;
+let queue: Promise<unknown> = Promise.resolve();
+
+function enqueue<T>(job: () => Promise<T>): Promise<T> {
+  const run = queue.then(async () => {
+    const result = await job();
+    await sleep(MIN_GAP_MS);
+    return result;
+  });
+  queue = run.catch(() => undefined);
+  return run as Promise<T>;
+}
+
 /** Fetch with retry/backoff — Jikan rate-limits at ~3 req/sec. */
 async function request<T>(path: string, attempt = 0): Promise<T> {
   let res: Response;
   try {
-    res = await fetch(`${BASE}${path}`, { headers: { Accept: "application/json" } });
+    res = await enqueue(() =>
+      fetch(`${BASE}${path}`, {
+        headers: { Accept: "application/json" },
+        // A hung upstream request must never stall the shared queue.
+        signal: AbortSignal.timeout(9000),
+      }),
+    );
   } catch {
-    if (attempt < 2) {
+    if (attempt < 3) {
       await sleep(600 * (attempt + 1));
       return request<T>(path, attempt + 1);
     }
     throw new JikanError("Could not reach the anime database. Check your connection.", 0);
   }
 
-  if (res.status === 429 && attempt < 3) {
-    await sleep(900 * (attempt + 1));
+  if (res.status === 429 && attempt < 4) {
+    await sleep(1200 * (attempt + 1));
     return request<T>(path, attempt + 1);
   }
   if (res.status === 404) throw new JikanError("We couldn't find that anime.", 404);
