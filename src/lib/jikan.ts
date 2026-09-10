@@ -78,7 +78,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
  * Jikan rate-limits at ~3 requests/second. All calls go through one queue that
  * spaces requests out, so parallel page sections never trip the limiter.
  */
-const MIN_GAP_MS = 450;
+const MIN_GAP_MS = 700;
 let queue: Promise<unknown> = Promise.resolve();
 
 function enqueue<T>(job: () => Promise<T>): Promise<T> {
