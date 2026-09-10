@@ -139,22 +139,30 @@ export function posterOf(anime: Pick<Anime, "images">, large = false) {
   );
 }
 
-/** Remove duplicate mal_ids (Jikan pages can repeat entries). */
-function dedupe(list: Anime[]) {
+/**
+ * Remove duplicate mal_ids (Jikan pages can repeat entries) and drop adult
+ * titles. Filtering happens here rather than through Jikan's `sfw` query
+ * parameter, which currently makes their edge return 504s.
+ */
+function clean(list: Anime[]) {
   const seen = new Set<number>();
-  return list.filter((a) => (seen.has(a.mal_id) ? false : (seen.add(a.mal_id), true)));
+  return list.filter((a) => {
+    if (seen.has(a.mal_id)) return false;
+    seen.add(a.mal_id);
+    const rating = a.rating ?? "";
+    if (rating.startsWith("Rx")) return false;
+    return !(a.genres ?? []).some((g) => ["Hentai", "Erotica"].includes(g.name));
+  });
 }
 
 export const jikan = {
   async top(filter: "airing" | "bypopularity" | "favorite", limit = 14) {
-    const data = await request<{ data: Anime[] }>(
-      `/top/anime?filter=${filter}&limit=${limit}&sfw=true`,
-    );
-    return dedupe(data.data ?? []);
+    const data = await request<{ data: Anime[] }>(`/top/anime?filter=${filter}&limit=${limit}`);
+    return clean(data.data ?? []);
   },
   async seasonNow(limit = 14) {
-    const data = await request<{ data: Anime[] }>(`/seasons/now?limit=${limit}&sfw=true`);
-    return dedupe(data.data ?? []);
+    const data = await request<{ data: Anime[] }>(`/seasons/now?limit=${limit}`);
+    return clean(data.data ?? []);
   },
   async search(params: {
     q?: string;
@@ -164,7 +172,7 @@ export const jikan = {
     page?: number;
     limit?: number;
   }) {
-    const sp = new URLSearchParams({ sfw: "true", limit: String(params.limit ?? 24) });
+    const sp = new URLSearchParams({ limit: String(params.limit ?? 24) });
     if (params.q) sp.set("q", params.q);
     if (params.genre) sp.set("genres", params.genre);
     if (params.type) sp.set("type", params.type);
@@ -174,7 +182,7 @@ export const jikan = {
     }
     if (params.page) sp.set("page", String(params.page));
     const data = await request<{ data: Anime[]; pagination: Pagination }>(`/anime?${sp}`);
-    return { items: dedupe(data.data ?? []), pagination: data.pagination };
+    return { items: clean(data.data ?? []), pagination: data.pagination };
   },
   async genres() {
     const data = await request<{ data: Genre[] }>(`/genres/anime?filter=genres`);
