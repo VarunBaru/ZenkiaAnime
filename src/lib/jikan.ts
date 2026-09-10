@@ -5,7 +5,7 @@ import { queryOptions } from "@tanstack/react-query";
  * Metadata only — AnimeHub never hosts, mirrors or streams episodes.
  */
 
-const BASE = "https://api.jikan.moe/v4";
+const BASE = "/api/public/jikan";
 
 export type AnimeImage = {
   jpg?: { image_url?: string; large_image_url?: string };
@@ -78,7 +78,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
  * Jikan rate-limits at ~3 requests/second. All calls go through one queue that
  * spaces requests out, so parallel page sections never trip the limiter.
  */
-const MIN_GAP_MS = 700;
+const MIN_GAP_MS = 120;
 let queue: Promise<unknown> = Promise.resolve();
 
 function enqueue<T>(job: () => Promise<T>): Promise<T> {
