@@ -78,7 +78,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
  * Jikan rate-limits at ~3 requests/second. All calls go through one queue that
  * spaces requests out, so parallel page sections never trip the limiter.
  */
-const MIN_GAP_MS = 400;
+const MIN_GAP_MS = 1100;
 let queue: Promise<unknown> = Promise.resolve();
 
 function enqueue<T>(job: () => Promise<T>): Promise<T> {
@@ -110,14 +110,16 @@ async function request<T>(path: string, attempt = 0): Promise<T> {
     throw new JikanError("Could not reach the anime database. Check your connection.", 0);
   }
 
-  if (res.status === 429 && attempt < 4) {
-    await sleep(1200 * (attempt + 1));
+  if (res.status === 429 && attempt < 6) {
+    await sleep(1200 * (attempt + 1) + Math.random() * 400);
     return request<T>(path, attempt + 1);
   }
   if (res.status === 404) throw new JikanError("We couldn't find that anime.", 404);
   if (!res.ok) {
-    if (attempt < 2 && res.status >= 500) {
-      await sleep(700 * (attempt + 1));
+    // Jikan's upstream intermittently returns 502/503/504; the same request
+    // usually succeeds within a few retries.
+    if (attempt < 6 && res.status >= 500) {
+      await sleep(500 * (attempt + 1) + Math.random() * 300);
       return request<T>(path, attempt + 1);
     }
     throw new JikanError("The anime database is having trouble right now.", res.status);
