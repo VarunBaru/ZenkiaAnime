@@ -50,7 +50,10 @@ function BrowsePage() {
   const { genre, type, order, page } = Route.useSearch();
   const navigate = useNavigate({ from: "/browse" });
   const genres = useQuery(genresQuery());
-  const results = useQuery(searchQuery({ genre, type, orderBy: order, page, limit: 24 }));
+  const genreName = genres.data?.find((g) => String(g.mal_id) === genre)?.name;
+  const results = useQuery(
+    searchQuery({ genre, type, orderBy: order, page, limit: 24, ...(genreName ? { genreName } : {}) }),
+  );
 
   const update = (patch: Partial<BrowseSearch>) =>
     navigate({ search: (prev) => ({ ...prev, page: 1, ...patch }) });
