@@ -70,7 +70,7 @@ export async function kitsuSearch(params: {
   }
   if (!params.q) sp.set("sort", SORT_MAP[params.orderBy ?? "popularity"] ?? "-userCount");
 
-  const res = await fetch(`${BASE}/anime?${sp}`, { headers: { Accept: "application/json" } });
+  const res = await fetch(`${BASE}/anime?${sp}`, { headers: { Accept: "application/vnd.api+json" } });
   if (!res.ok) throw new Error("Kitsu request failed");
   const json = (await res.json()) as {
     data: KitsuAnime[];
