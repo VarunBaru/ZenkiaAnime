@@ -103,14 +103,14 @@ async function request<T>(path: string, attempt = 0): Promise<T> {
       }),
     );
   } catch {
-    if (attempt < 3) {
+    if (attempt < 1) {
       await sleep(600 * (attempt + 1));
       return request<T>(path, attempt + 1);
     }
     throw new JikanError("Could not reach the anime database. Check your connection.", 0);
   }
 
-  if (res.status === 429 && attempt < 6) {
+  if (res.status === 429 && attempt < 2) {
     await sleep(1200 * (attempt + 1) + Math.random() * 400);
     return request<T>(path, attempt + 1);
   }
@@ -118,7 +118,7 @@ async function request<T>(path: string, attempt = 0): Promise<T> {
   if (!res.ok) {
     // Jikan's upstream intermittently returns 502/503/504; the same request
     // usually succeeds within a few retries.
-    if (attempt < 6 && res.status >= 500) {
+    if (attempt < 1 && res.status >= 500) {
       await sleep(300 * (attempt + 1) + Math.random() * 200);
       return request<T>(path, attempt + 1);
     }
@@ -156,11 +156,11 @@ function clean(list: Anime[]) {
 }
 
 export const jikan = {
-  async top(filter: "airing" | "bypopularity" | "favorite", limit = 14) {
+  async top(filter: "airing" | "bypopularity" | "favorite", limit = 12) {
     const data = await request<{ data: Anime[] }>(`/top/anime?filter=${filter}&limit=${limit}`);
     return clean(data.data ?? []);
   },
-  async seasonNow(limit = 14) {
+  async seasonNow(limit = 12) {
     const data = await request<{ data: Anime[] }>(`/seasons/now?limit=${limit}`);
     return clean(data.data ?? []);
   },
@@ -185,7 +185,7 @@ export const jikan = {
     return { items: clean(data.data ?? []), pagination: data.pagination };
   },
   async genres() {
-    const data = await request<{ data: Genre[] }>(`/genres/anime?filter=genres`);
+    const data = await request<{ data: Genre[] }>(`/genres/anime`);
     return data.data ?? [];
   },
   async detail(id: number) {

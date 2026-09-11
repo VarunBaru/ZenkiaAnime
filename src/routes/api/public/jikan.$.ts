@@ -9,7 +9,7 @@ import { createFileRoute } from "@tanstack/react-router";
  */
 
 const UPSTREAM = "https://api.jikan.moe/v4";
-const TTL_MS = 10 * 60 * 1000;
+const TTL_MS = 30 * 60 * 1000;
 const MAX_ENTRIES = 300;
 
 type Entry = { body: string; expires: number };
@@ -22,7 +22,7 @@ let queue: Promise<unknown> = Promise.resolve();
 function enqueue<T>(job: () => Promise<T>): Promise<T> {
   const run = queue.then(async () => {
     const result = await job();
-    await sleep(1200);
+    await sleep(400);
     return result;
   });
   queue = run.catch(() => undefined);
@@ -30,21 +30,23 @@ function enqueue<T>(job: () => Promise<T>): Promise<T> {
 }
 
 async function fetchUpstream(target: string): Promise<{ status: number; body: string }> {
-  for (let attempt = 0; attempt < 6; attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const res = await enqueue(() =>
         fetch(target, {
-          headers: { Accept: "application/json" },
+          headers: { Accept: "application/json", "User-Agent": "AnimeHub/1.0 (+metadata client)" },
           signal: AbortSignal.timeout(12000),
         }),
       );
       if (res.status === 429 || res.status >= 500) {
-        await sleep(900 * (attempt + 1) + Math.random() * 400);
+        console.warn(`[jikan] ${res.status} ${target}`);
+        await sleep(600 * (attempt + 1) + Math.random() * 300);
         continue;
       }
       return { status: res.status, body: await res.text() };
-    } catch {
-      await sleep(700 * (attempt + 1));
+    } catch (err) {
+      console.warn(`[jikan] fetch failed ${target}`, err);
+      await sleep(500 * (attempt + 1));
     }
   }
   return {
@@ -86,6 +88,12 @@ export const Route = createFileRoute("/api/public/jikan/$")({
         if (status === 200) {
           if (cache.size >= MAX_ENTRIES) cache.clear();
           cache.set(key, { body, expires: Date.now() + TTL_MS });
+        } else if (hit) {
+          // Upstream is unhappy but we have an older good copy — stale data
+          // beats an error screen.
+          return new Response(hit.body, {
+            headers: { "Content-Type": "application/json", "X-Cache": "STALE" },
+          });
         }
         return new Response(body, {
           status,
