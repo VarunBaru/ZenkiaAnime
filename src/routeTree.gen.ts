@@ -18,6 +18,7 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedWatchlistRouteImport } from './routes/_authenticated/watchlist'
 import { Route as AnimeAnimeIdRouteImport } from './routes/anime.$animeId'
 import { Route as ApiPublicJikanSplatRouteImport } from './routes/api/public/jikan.$'
+import { Route as ApiPublicKitsuSplatRouteImport } from './routes/api/public/kitsu.$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -63,6 +64,11 @@ const ApiPublicJikanSplatRoute = ApiPublicJikanSplatRouteImport.update({
   path: '/api/public/jikan/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicKitsuSplatRoute = ApiPublicKitsuSplatRouteImport.update({
+  id: '/api/public/kitsu/$',
+  path: '/api/public/kitsu/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/watchlist': typeof AuthenticatedWatchlistRoute
   '/anime/$animeId': typeof AnimeAnimeIdRoute
   '/api/public/jikan/$': typeof ApiPublicJikanSplatRoute
+  '/api/public/kitsu/$': typeof ApiPublicKitsuSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/watchlist': typeof AuthenticatedWatchlistRoute
   '/anime/$animeId': typeof AnimeAnimeIdRoute
   '/api/public/jikan/$': typeof ApiPublicJikanSplatRoute
+  '/api/public/kitsu/$': typeof ApiPublicKitsuSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/_authenticated/watchlist': typeof AuthenticatedWatchlistRoute
   '/anime/$animeId': typeof AnimeAnimeIdRoute
   '/api/public/jikan/$': typeof ApiPublicJikanSplatRoute
+  '/api/public/kitsu/$': typeof ApiPublicKitsuSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/watchlist'
     | '/anime/$animeId'
     | '/api/public/jikan/$'
+    | '/api/public/kitsu/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/watchlist'
     | '/anime/$animeId'
     | '/api/public/jikan/$'
+    | '/api/public/kitsu/$'
   id:
     | '__root__'
     | '/'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/_authenticated/watchlist'
     | '/anime/$animeId'
     | '/api/public/jikan/$'
+    | '/api/public/kitsu/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -138,6 +150,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   AnimeAnimeIdRoute: typeof AnimeAnimeIdRoute
   ApiPublicJikanSplatRoute: typeof ApiPublicJikanSplatRoute
+  ApiPublicKitsuSplatRoute: typeof ApiPublicKitsuSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -205,6 +218,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicJikanSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/kitsu/$': {
+      id: '/api/public/kitsu/$'
+      path: '/api/public/kitsu/$'
+      fullPath: '/api/public/kitsu/$'
+      preLoaderRoute: typeof ApiPublicKitsuSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -229,6 +249,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   AnimeAnimeIdRoute: AnimeAnimeIdRoute,
   ApiPublicJikanSplatRoute: ApiPublicJikanSplatRoute,
+  ApiPublicKitsuSplatRoute: ApiPublicKitsuSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
