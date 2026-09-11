@@ -100,7 +100,7 @@ export async function kitsuSearch(params: {
       title_english: a.titles?.en ?? null,
       title_japanese: a.titles?.ja_jp ?? null,
       synopsis: a.synopsis ?? null,
-      images: poster ? { jpg: { image_url: poster, large_image_url: poster } } : undefined,
+      ...(poster ? { images: { jpg: { image_url: poster, large_image_url: poster } } } : {}),
       score: a.averageRating ? Math.round((Number(a.averageRating) / 10) * 10) / 10 : null,
       year: a.startDate ? Number(a.startDate.slice(0, 4)) : null,
       type: a.subtype ? a.subtype.toUpperCase() : null,
