@@ -167,6 +167,7 @@ export const jikan = {
   async search(params: {
     q?: string;
     genre?: string;
+    genreName?: string;
     type?: string;
     orderBy?: string;
     page?: number;
@@ -181,8 +182,20 @@ export const jikan = {
       sp.set("sort", params.orderBy === "title" ? "asc" : "desc");
     }
     if (params.page) sp.set("page", String(params.page));
-    const data = await request<{ data: Anime[]; pagination: Pagination }>(`/anime?${sp}`);
-    return { items: clean(data.data ?? []), pagination: data.pagination };
+    try {
+      const data = await request<{ data: Anime[]; pagination: Pagination }>(`/anime?${sp}`);
+      return { items: clean(data.data ?? []), pagination: data.pagination };
+    } catch (err) {
+      // MyAnimeList's search endpoint is often unavailable — fall back to the
+      // Kitsu catalogue so browse and search keep working.
+      const { kitsuSearch } = await import("./kitsu");
+      try {
+        const fallback = await kitsuSearch(params);
+        return { items: clean(fallback.items), pagination: fallback.pagination };
+      } catch {
+        throw err;
+      }
+    }
   },
   async genres() {
     const data = await request<{ data: Genre[] }>(`/genres/anime`);
