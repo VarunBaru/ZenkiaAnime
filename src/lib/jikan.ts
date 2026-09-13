@@ -17,6 +17,9 @@ export type Anime = {
   title: string;
   title_english?: string | null;
   title_japanese?: string | null;
+  title_synonyms?: string[];
+  source?: string | null;
+  licensors?: { mal_id: number; name: string }[];
   synopsis?: string | null;
   images?: AnimeImage;
   score?: number | null;
@@ -50,6 +53,7 @@ export type Character = {
 export type Episode = {
   mal_id: number;
   title: string;
+  title_japanese?: string | null;
   aired?: string | null;
   filler?: boolean;
   recap?: boolean;
@@ -246,6 +250,14 @@ export const jikan = {
       return [] as Episode[];
     }
   },
+  async recommendations(id: number) {
+    try {
+      const data = await request<{ data: { entry: Anime }[] }>(`/anime/${id}/recommendations`);
+      return clean((data.data ?? []).map((r) => r.entry)).slice(0, 12);
+    } catch {
+      return [] as Anime[];
+    }
+  },
 };
 
 const HOUR = 1000 * 60 * 60;
@@ -287,6 +299,13 @@ export const episodesQuery = (id: number) =>
   queryOptions({
     queryKey: ["jikan", "episodes", id],
     queryFn: () => jikan.episodes(id),
+    staleTime: HOUR,
+  });
+
+export const recommendationsQuery = (id: number) =>
+  queryOptions({
+    queryKey: ["jikan", "recommendations", id],
+    queryFn: () => jikan.recommendations(id),
     staleTime: HOUR,
   });
 
