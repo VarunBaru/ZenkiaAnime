@@ -10,7 +10,7 @@ import type { Anime, Pagination } from "./jikan";
  * and watchlist row is keyed by MAL id. Metadata only — no video.
  */
 
-const BASE = "https://kitsu.app/api/edge";
+const BASE = "/api/public/kitsu";
 
 type KitsuAnime = {
   id: string;
