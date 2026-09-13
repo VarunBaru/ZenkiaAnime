@@ -72,6 +72,12 @@ export class JikanError extends Error {
   }
 }
 
+type JikanPayloadError = {
+  error?: string;
+  upstreamStatus?: number;
+  degraded?: boolean;
+};
+
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
@@ -124,7 +130,14 @@ async function request<T>(path: string, attempt = 0): Promise<T> {
     }
     throw new JikanError("The anime database is having trouble right now.", res.status);
   }
-  return (await res.json()) as T;
+  const payload = (await res.json()) as T & JikanPayloadError;
+  if (payload.degraded || payload.error) {
+    throw new JikanError(
+      payload.error || "The anime database is having trouble right now.",
+      payload.upstreamStatus ?? 503,
+    );
+  }
+  return payload;
 }
 
 export function posterOf(anime: Pick<Anime, "images">, large = false) {

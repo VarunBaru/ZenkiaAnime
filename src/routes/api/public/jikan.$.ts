@@ -13,8 +13,9 @@ const TTL_MS = 30 * 60 * 1000;
 const MAX_ENTRIES = 300;
 
 type Entry = { body: string; expires: number };
+type UpstreamResult = { status: number; body: string };
 const cache = new Map<string, Entry>();
-const inflight = new Map<string, Promise<{ status: number; body: string }>>();
+const inflight = new Map<string, Promise<UpstreamResult>>();
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 let queue: Promise<unknown> = Promise.resolve();
@@ -29,7 +30,7 @@ function enqueue<T>(job: () => Promise<T>): Promise<T> {
   return run as Promise<T>;
 }
 
-async function fetchUpstream(target: string): Promise<{ status: number; body: string }> {
+async function fetchUpstream(target: string): Promise<UpstreamResult> {
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const res = await enqueue(() =>
@@ -94,6 +95,26 @@ export const Route = createFileRoute("/api/public/jikan/$")({
           return new Response(hit.body, {
             headers: { "Content-Type": "application/json", "X-Cache": "STALE" },
           });
+        }
+
+        if (status >= 500) {
+          // A third-party outage is expected degradation, not an unhandled app
+          // failure. Return a successful transport response with an explicit
+          // marker so the service layer can use its backup catalogue.
+          return Response.json(
+            {
+              error: "The anime database is unavailable right now.",
+              upstreamStatus: status,
+              degraded: true,
+            },
+            {
+              headers: {
+                "Cache-Control": "no-store",
+                "X-Cache": "MISS",
+                "X-Upstream-Status": String(status),
+              },
+            },
+          );
         }
         return new Response(body, {
           status,
