@@ -17,6 +17,9 @@ export type Anime = {
   title: string;
   title_english?: string | null;
   title_japanese?: string | null;
+  title_synonyms?: string[];
+  source?: string | null;
+  licensors?: { mal_id: number; name: string }[];
   synopsis?: string | null;
   images?: AnimeImage;
   score?: number | null;
@@ -50,6 +53,7 @@ export type Character = {
 export type Episode = {
   mal_id: number;
   title: string;
+  title_japanese?: string | null;
   aired?: string | null;
   filler?: boolean;
   recap?: boolean;
