@@ -201,14 +201,25 @@ export const jikan = {
     } catch (err) {
       // MyAnimeList's search endpoint is often unavailable — fall back to the
       // Kitsu catalogue so browse and search keep working.
-      const { kitsuSearch } = await import("./kitsu");
       try {
-        const fallback = await kitsuSearch(params);
+        const { kitsuSearch } = await import("./kitsu");
+        const fallback = await kitsuSearch({ ...params, limit: Math.min(params.limit ?? 20, 20) });
         return { items: clean(fallback.items), pagination: fallback.pagination };
       } catch {
-        throw err;
+        // Both catalogues are down: degrade to an empty result set so the page
+        // renders its empty state instead of blanking out.
+        console.warn("[jikan] search unavailable", err);
+        return {
+          items: [] as Anime[],
+          pagination: {
+            last_visible_page: 1,
+            has_next_page: false,
+            current_page: params.page ?? 1,
+          } as Pagination,
+        };
       }
     }
+
   },
   async genres() {
     const data = await request<{ data: Genre[] }>(`/genres/anime`);
