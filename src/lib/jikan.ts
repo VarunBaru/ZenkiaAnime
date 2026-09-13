@@ -205,13 +205,22 @@ export const jikan = {
     const data = await request<{ data: Anime }>(`/anime/${id}/full`);
     return data.data;
   },
+  // Secondary sections: never fail the page when upstream is flaky.
   async characters(id: number) {
-    const data = await request<{ data: Character[] }>(`/anime/${id}/characters`);
-    return (data.data ?? []).slice(0, 18);
+    try {
+      const data = await request<{ data: Character[] }>(`/anime/${id}/characters`);
+      return (data.data ?? []).slice(0, 18);
+    } catch {
+      return [] as Character[];
+    }
   },
   async episodes(id: number) {
-    const data = await request<{ data: Episode[] }>(`/anime/${id}/episodes`);
-    return data.data ?? [];
+    try {
+      const data = await request<{ data: Episode[] }>(`/anime/${id}/episodes`);
+      return data.data ?? [];
+    } catch {
+      return [] as Episode[];
+    }
   },
 };
 
