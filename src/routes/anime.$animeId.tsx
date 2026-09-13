@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { CheckCircle2, ExternalLink, Star } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -8,30 +9,85 @@ import {
   episodesQuery,
   legalSources,
   posterOf,
+  recommendationsQuery,
 } from "@/lib/jikan";
+import { AnimeCard } from "@/components/AnimeCard";
 import { WatchlistButton } from "@/components/WatchlistButton";
 import { CardSkeletonRow, EmptyState, ErrorState, PanelSkeleton } from "@/components/states";
 import { useAuth } from "@/hooks/useAuth";
 import { recordProgress } from "@/lib/library";
 
 export const Route = createFileRoute("/anime/$animeId")({
-  head: () => ({
-    meta: [
-      { title: "Anime details — AnimeHub" },
-      {
-        name: "description",
-        content:
-          "Full anime details: synopsis, rating, episodes, studios, genres, characters and official viewing links.",
-      },
-      { property: "og:title", content: "Anime details — AnimeHub" },
-      {
-        property: "og:description",
-        content: "Synopsis, cast, studios and official viewing links for this anime.",
-      },
-    ],
-  }),
+  loader: async ({ params, context }) => {
+    try {
+      const anime = await context.queryClient.ensureQueryData(animeQuery(Number(params.animeId)));
+      return {
+        title: anime.title_english || anime.title,
+        description: (anime.synopsis ?? "").replace(/\s+/g, " ").slice(0, 155),
+      };
+    } catch {
+      return null;
+    }
+  },
+  head: ({ loaderData }) => {
+    if (!loaderData) {
+      return {
+        meta: [
+          { title: "Anime details — AnimeHub" },
+          { name: "robots", content: "noindex" },
+        ],
+      };
+    }
+    const title = `${loaderData.title} — AnimeHub`;
+    const description =
+      loaderData.description ||
+      "Synopsis, cast, studios and official viewing links for this anime.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "video.tv_show" },
+        { name: "twitter:card", content: "summary_large_image" },
+      ],
+    };
+  },
   component: AnimeDetailPage,
+  errorComponent: () => <NotFoundPanel />,
+  notFoundComponent: () => <NotFoundPanel />,
 });
+
+const BROWSE_SEARCH = { genre: "", type: "", order: "popularity", page: 1 } as const;
+
+function BackToBrowse() {
+  return (
+    <Link
+      to="/browse"
+      search={BROWSE_SEARCH}
+      className="ink-panel-sm ink-press inline-block bg-card px-5 py-2.5 font-mono text-xs font-bold tracking-widest uppercase"
+    >
+      ← Back to browse
+    </Link>
+  );
+}
+
+function NotFoundPanel() {
+  return (
+    <div className="mx-auto max-w-[900px] px-4 py-16 sm:px-6">
+      <div className="ink-panel halftone p-8 text-center">
+        <p className="font-display text-2xl text-accent sm:text-3xl">Anime not found</p>
+        <p className="mx-auto mt-3 max-w-[46ch] text-sm text-muted-foreground">
+          We couldn't load this title. It may not exist, or the anime database is temporarily
+          unavailable.
+        </p>
+        <div className="mt-6 flex justify-center">
+          <BackToBrowse />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -42,15 +98,29 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col gap-1 border-b-2 border-border px-4 py-3 last:border-b-0 sm:flex-row sm:items-baseline sm:gap-4">
+      <span className="w-36 shrink-0 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+        {label}
+      </span>
+      <span className="min-w-0 flex-1 text-sm break-words">{value || "—"}</span>
+    </div>
+  );
+}
+
 function AnimeDetailPage() {
   const { animeId } = Route.useParams();
   const id = Number(animeId);
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [showEpisodes, setShowEpisodes] = useState(false);
 
   const anime = useQuery(animeQuery(id));
   const characters = useQuery({ ...charactersQuery(id), enabled: anime.isSuccess });
-  const episodes = useQuery({ ...episodesQuery(id), enabled: anime.isSuccess });
+  const recommendations = useQuery({ ...recommendationsQuery(id), enabled: anime.isSuccess });
+  // Episode metadata is only requested once the reader opens that section.
+  const episodes = useQuery({ ...episodesQuery(id), enabled: showEpisodes });
 
   const markWatched = useMutation({
     mutationFn: async () => {
@@ -66,28 +136,27 @@ function AnimeDetailPage() {
 
   if (anime.isPending) {
     return (
-      <div className="mx-auto max-w-[1500px] px-4 py-8 sm:px-6">
+      <div className="mx-auto max-w-[1500px] space-y-10 px-4 py-8 sm:px-6">
         <div className="grid gap-8 lg:grid-cols-12">
           <PanelSkeleton className="aspect-2/3 w-full max-w-[300px] lg:col-span-4" />
           <div className="space-y-4 lg:col-span-8">
             <div className="h-12 w-3/4 animate-pulse bg-muted" />
             <div className="h-32 w-full animate-pulse bg-muted" />
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <PanelSkeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
           </div>
         </div>
+        <PanelSkeleton className="h-64 w-full" />
+        <CardSkeletonRow count={6} />
       </div>
     );
   }
 
-  if (anime.isError) {
-    return (
-      <div className="mx-auto max-w-[900px] px-4 py-16 sm:px-6">
-        <ErrorState
-          title="Couldn't load this title"
-          message={anime.error instanceof Error ? anime.error.message : "Please try again."}
-          onRetry={() => anime.refetch()}
-        />
-      </div>
-    );
+  if (anime.isError || !anime.data) {
+    return <NotFoundPanel />;
   }
 
   const data = anime.data;
@@ -96,15 +165,17 @@ function AnimeDetailPage() {
   const sources = legalSources(data);
 
   return (
-    <article>
+    <article className="overflow-x-hidden">
       <header className="speed-lines border-b-[3px] border-border">
         <div className="mx-auto grid max-w-[1500px] gap-8 px-4 py-8 sm:px-6 lg:grid-cols-12 lg:py-12">
           <div className="lg:col-span-4">
-            <div className="ink-panel mx-auto max-w-[300px] p-2.5">
+            <div className="ink-panel halftone mx-auto max-w-[300px] p-2.5">
               {poster ? (
                 <img src={poster} alt={`${title} poster`} className="aspect-2/3 w-full object-cover" />
               ) : (
-                <div className="grid aspect-2/3 place-items-center bg-muted">No art</div>
+                <div className="grid aspect-2/3 place-items-center bg-muted font-mono text-xs uppercase">
+                  No art
+                </div>
               )}
             </div>
           </div>
@@ -133,7 +204,7 @@ function AnimeDetailPage() {
               ))}
             </div>
 
-            <p className="mt-5 max-w-[70ch] text-sm text-pretty sm:text-base">
+            <p className="mt-5 max-w-[70ch] line-clamp-6 text-sm text-pretty sm:text-base">
               {data.synopsis ?? "No synopsis available for this title yet."}
             </p>
 
@@ -153,7 +224,7 @@ function AnimeDetailPage() {
                   rel="noopener noreferrer"
                   className="ink-panel-sm ink-press inline-flex items-center gap-2 bg-accent px-5 py-3 font-mono text-xs font-bold tracking-widest text-accent-foreground uppercase"
                 >
-                  Watch official source <ExternalLink className="size-3.5" strokeWidth={3} />
+                  Official source <ExternalLink className="size-3.5" strokeWidth={3} />
                 </a>
               ) : (
                 data.url && (
@@ -169,11 +240,13 @@ function AnimeDetailPage() {
               )}
             </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+              <Stat label="Score" value={data.score ? data.score.toFixed(2) : "—"} />
+              <Stat label="Rank" value={data.rank ? `#${data.rank}` : "—"} />
+              <Stat label="Popularity" value={data.popularity ? `#${data.popularity}` : "—"} />
               <Stat label="Episodes" value={data.episodes ? String(data.episodes) : "Unknown"} />
-              <Stat label="Duration" value={data.duration ?? "—"} />
-              <Stat label="Aired" value={data.aired?.string ?? "—"} />
-              <Stat label="Season" value={[data.season, data.year].filter(Boolean).join(" ") || "—"} />
+              <Stat label="Type" value={data.type ?? "—"} />
+              <Stat label="Year" value={data.year ? String(data.year) : "—"} />
             </div>
           </div>
         </div>
@@ -181,34 +254,72 @@ function AnimeDetailPage() {
 
       <div className="mx-auto max-w-[1500px] space-y-12 px-4 py-10 sm:px-6">
         <section className="grid gap-6 lg:grid-cols-3">
-          <div className="ink-panel p-5">
-            <h2 className="font-display text-lg">Genres</h2>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {(data.genres ?? []).concat(data.themes ?? []).map((g) => (
-                <span
-                  key={`${g.mal_id}-${g.name}`}
-                  className="border-2 border-border px-2.5 py-1 font-mono text-[10px] tracking-widest uppercase"
-                >
-                  {g.name}
-                </span>
-              ))}
-              {(data.genres ?? []).length === 0 && (
-                <p className="text-sm text-muted-foreground">No genres listed.</p>
-              )}
+          <div className="ink-panel lg:col-span-2">
+            <h2 className="border-b-2 border-border px-4 py-3 font-display text-lg">Information</h2>
+            <InfoRow label="Japanese title" value={data.title_japanese ?? ""} />
+            <InfoRow label="English title" value={data.title_english ?? ""} />
+            <InfoRow label="Synonyms" value={(data.title_synonyms ?? []).join(", ")} />
+            <InfoRow label="Type" value={data.type ?? ""} />
+            <InfoRow label="Episodes" value={data.episodes ? String(data.episodes) : ""} />
+            <InfoRow label="Status" value={data.status ?? ""} />
+            <InfoRow label="Aired" value={data.aired?.string ?? ""} />
+            <InfoRow label="Duration" value={data.duration ?? ""} />
+            <InfoRow label="Rating" value={data.rating ?? ""} />
+            <InfoRow label="Score" value={data.score ? `${data.score.toFixed(2)} (${data.scored_by ?? 0} votes)` : ""} />
+            <InfoRow label="Rank" value={data.rank ? `#${data.rank}` : ""} />
+            <InfoRow label="Popularity" value={data.popularity ? `#${data.popularity}` : ""} />
+            <InfoRow label="Season" value={[data.season, data.year].filter(Boolean).join(" ")} />
+            <InfoRow label="Source" value={data.source ?? ""} />
+          </div>
+
+          <div className="space-y-6">
+            <div className="ink-panel p-5">
+              <h2 className="font-display text-lg">Genres</h2>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {(data.genres ?? []).concat(data.themes ?? []).map((g) => (
+                  <span
+                    key={`${g.mal_id}-${g.name}`}
+                    className="border-2 border-border px-2.5 py-1 font-mono text-[10px] tracking-widest uppercase"
+                  >
+                    {g.name}
+                  </span>
+                ))}
+                {(data.genres ?? []).length === 0 && (
+                  <p className="text-sm text-muted-foreground">No genres listed.</p>
+                )}
+              </div>
+            </div>
+            <div className="ink-panel p-5">
+              <h2 className="font-display text-lg">Studios &amp; producers</h2>
+              <dl className="mt-3 space-y-3 text-sm">
+                <div>
+                  <dt className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+                    Studios
+                  </dt>
+                  <dd>{(data.studios ?? []).map((s) => s.name).join(", ") || "Not listed."}</dd>
+                </div>
+                <div>
+                  <dt className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+                    Producers
+                  </dt>
+                  <dd>{(data.producers ?? []).map((s) => s.name).join(", ") || "Not listed."}</dd>
+                </div>
+                <div>
+                  <dt className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+                    Licensors
+                  </dt>
+                  <dd>{(data.licensors ?? []).map((s) => s.name).join(", ") || "Not listed."}</dd>
+                </div>
+              </dl>
             </div>
           </div>
-          <div className="ink-panel p-5">
-            <h2 className="font-display text-lg">Studios</h2>
-            <p className="mt-3 text-sm">
-              {(data.studios ?? []).map((s) => s.name).join(", ") || "Not listed."}
-            </p>
-          </div>
-          <div className="ink-panel p-5">
-            <h2 className="font-display text-lg">Producers</h2>
-            <p className="mt-3 text-sm">
-              {(data.producers ?? []).map((s) => s.name).join(", ") || "Not listed."}
-            </p>
-          </div>
+        </section>
+
+        <section className="ink-panel halftone p-5 sm:p-6">
+          <h2 className="font-display text-xl sm:text-2xl">Story</h2>
+          <p className="mt-3 max-w-[75ch] text-sm whitespace-pre-line text-pretty sm:text-base">
+            {data.synopsis ?? "No synopsis available for this title yet."}
+          </p>
         </section>
 
         <section>
@@ -220,11 +331,11 @@ function AnimeDetailPage() {
           ) : characters.data.length === 0 ? (
             <EmptyState title="No characters listed" message="This title has no character data yet." />
           ) : (
-            <div className="no-scrollbar flex gap-4 overflow-x-auto pb-3">
+            <div className="grid grid-cols-3 gap-4 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-9">
               {characters.data.map((c) => {
                 const img = c.character.images?.jpg?.image_url;
                 return (
-                  <div key={c.character.mal_id} className="w-[120px] shrink-0">
+                  <div key={c.character.mal_id}>
                     <div className="ink-panel-sm overflow-hidden">
                       {img ? (
                         <img
@@ -234,7 +345,9 @@ function AnimeDetailPage() {
                           className="aspect-2/3 w-full object-cover"
                         />
                       ) : (
-                        <div className="aspect-2/3 bg-muted" />
+                        <div className="grid aspect-2/3 place-items-center bg-muted font-mono text-[9px] uppercase">
+                          No art
+                        </div>
                       )}
                     </div>
                     <p className="mt-2 line-clamp-2 font-display text-[11px] leading-tight">
@@ -251,8 +364,22 @@ function AnimeDetailPage() {
         </section>
 
         <section>
-          <h2 className="mb-4 font-display text-xl sm:text-2xl">Episodes</h2>
-          {episodes.isPending ? (
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-display text-xl sm:text-2xl">Episodes</h2>
+            {!showEpisodes && (
+              <button
+                onClick={() => setShowEpisodes(true)}
+                className="ink-panel-sm ink-press bg-card px-4 py-2 font-mono text-[11px] font-bold tracking-widest uppercase"
+              >
+                Show episode list
+              </button>
+            )}
+          </div>
+          {!showEpisodes ? (
+            <p className="font-mono text-[11px] text-muted-foreground">
+              Episode metadata loads on request to keep this page fast.
+            </p>
+          ) : episodes.isPending ? (
             <PanelSkeleton className="h-40 w-full" />
           ) : episodes.isError ? (
             <ErrorState message="Episode list couldn't be loaded." onRetry={() => episodes.refetch()} />
@@ -267,12 +394,24 @@ function AnimeDetailPage() {
                 {episodes.data.map((ep) => (
                   <li
                     key={ep.mal_id}
-                    className="flex items-center gap-3 border-b-2 border-border px-4 py-3 last:border-b-0"
+                    className="flex flex-wrap items-center gap-3 border-b-2 border-border px-4 py-3 last:border-b-0"
                   >
                     <span className="w-10 shrink-0 font-mono text-xs font-bold">
                       {String(ep.mal_id).padStart(2, "0")}
                     </span>
-                    <span className="min-w-0 flex-1 truncate text-sm">{ep.title}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm">{ep.title}</span>
+                      {ep.title_japanese && (
+                        <span className="block truncate font-mono text-[10px] text-muted-foreground">
+                          {ep.title_japanese}
+                        </span>
+                      )}
+                    </span>
+                    {ep.aired && (
+                      <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+                        {new Date(ep.aired).toLocaleDateString()}
+                      </span>
+                    )}
                     {ep.filler && (
                       <span className="shrink-0 border-2 border-border px-2 py-0.5 font-mono text-[9px] tracking-widest uppercase">
                         Filler
@@ -314,14 +453,26 @@ function AnimeDetailPage() {
           </p>
         </section>
 
+        <section>
+          <h2 className="mb-4 font-display text-xl sm:text-2xl">Related anime</h2>
+          {recommendations.isPending ? (
+            <CardSkeletonRow count={6} />
+          ) : recommendations.isError || recommendations.data.length === 0 ? (
+            <EmptyState
+              title="No recommendations yet"
+              message="We couldn't find related titles for this anime."
+            />
+          ) : (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
+              {recommendations.data.map((rec) => (
+                <AnimeCard key={rec.mal_id} anime={rec} />
+              ))}
+            </div>
+          )}
+        </section>
+
         <div>
-          <Link
-            to="/browse"
-            search={{ genre: "", type: "", order: "popularity", page: 1 }}
-            className="ink-panel-sm ink-press inline-block bg-card px-5 py-2.5 font-mono text-xs font-bold tracking-widest uppercase"
-          >
-            ← Back to browse
-          </Link>
+          <BackToBrowse />
         </div>
       </div>
     </article>
