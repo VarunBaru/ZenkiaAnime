@@ -18,35 +18,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { recordProgress } from "@/lib/library";
 
 export const Route = createFileRoute("/anime/$animeId")({
-  loader: async ({ params, context }) => {
-    try {
-      const anime = await context.queryClient.ensureQueryData(animeQuery(Number(params.animeId)));
-      return {
-        title: anime.title_english || anime.title,
-        description: (anime.synopsis ?? "").replace(/\s+/g, " ").slice(0, 155),
-      };
-    } catch {
-      return null;
-    }
-  },
-  head: ({ loaderData }) => {
-    if (!loaderData) {
-      return {
-        meta: [
-          { title: "Anime details — AnimeHub" },
-          { name: "robots", content: "noindex" },
-        ],
-      };
-    }
-    const title = `${loaderData.title} — AnimeHub`;
+  head: () => {
     const description =
-      loaderData.description ||
-      "Synopsis, cast, studios and official viewing links for this anime.";
+      "Synopsis, cast, studios, characters, episodes and official viewing links for this anime.";
     return {
       meta: [
-        { title },
+        { title: "Anime details — AnimeHub" },
         { name: "description", content: description },
-        { property: "og:title", content: title },
+        { property: "og:title", content: "Anime details — AnimeHub" },
         { property: "og:description", content: description },
         { property: "og:type", content: "video.tv_show" },
         { name: "twitter:card", content: "summary_large_image" },
