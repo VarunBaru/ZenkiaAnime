@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle2, ExternalLink, Star } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -96,6 +96,11 @@ function AnimeDetailPage() {
   const [showEpisodes, setShowEpisodes] = useState(false);
 
   const anime = useQuery(animeQuery(id));
+
+  const pageTitle = anime.data ? anime.data.title_english || anime.data.title : null;
+  useEffect(() => {
+    if (pageTitle) document.title = `${pageTitle} — AnimeHub`;
+  }, [pageTitle]);
   const characters = useQuery({ ...charactersQuery(id), enabled: anime.isSuccess });
   const recommendations = useQuery({ ...recommendationsQuery(id), enabled: anime.isSuccess });
   // Episode metadata is only requested once the reader opens that section.
