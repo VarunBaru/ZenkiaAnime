@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
@@ -29,10 +30,19 @@ export const Route = createFileRoute("/_authenticated/watchlist")({
 
 const STATUSES: WatchStatus[] = ["planned", "watching", "completed", "on_hold", "dropped"];
 
+const FILTERS: { key: "all" | WatchStatus; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "planned", label: "Plan to watch" },
+  { key: "watching", label: "Watching" },
+  { key: "completed", label: "Completed" },
+];
+
 function WatchlistPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const list = useQuery(watchlistQuery());
+  const [filter, setFilter] = useState<"all" | WatchStatus>("all");
+  const rows = (list.data ?? []).filter((r) => filter === "all" || r.status === filter);
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["watchlist"] });
 
@@ -62,15 +72,29 @@ function WatchlistPage() {
         {list.data ? `${list.data.length} saved title${list.data.length === 1 ? "" : "s"}` : "\u00a0"}
       </p>
 
+      <div className="mt-5 flex flex-wrap gap-2">
+        {FILTERS.map((f) => (
+          <button
+            key={f.key}
+            onClick={() => setFilter(f.key)}
+            className={`ink-panel-sm px-3 py-2 font-mono text-[10px] font-bold tracking-widest uppercase ${
+              filter === f.key ? "bg-accent text-accent-foreground" : "bg-card"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       <div className="mt-8">
         {list.isPending ? (
           <CardSkeletonGrid count={6} />
         ) : list.isError ? (
           <ErrorState message="Your watchlist couldn't be loaded." onRetry={() => list.refetch()} />
-        ) : list.data.length === 0 ? (
+        ) : rows.length === 0 ? (
           <EmptyState
             title="Your watchlist is empty"
-            message="Save anything you want to watch and it will show up here."
+            message="Start building your anime collection."
             action={
               <Link
                 to="/browse"
@@ -83,7 +107,7 @@ function WatchlistPage() {
           />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {list.data.map((row) => (
+            {rows.map((row) => (
               <div key={row.id} className="ink-panel flex gap-4 p-3">
                 <Link
                   to="/anime/$animeId"
