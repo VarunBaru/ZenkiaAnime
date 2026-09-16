@@ -29,10 +29,19 @@ export const Route = createFileRoute("/_authenticated/watchlist")({
 
 const STATUSES: WatchStatus[] = ["planned", "watching", "completed", "on_hold", "dropped"];
 
+const FILTERS: { key: "all" | WatchStatus; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "planned", label: "Plan to watch" },
+  { key: "watching", label: "Watching" },
+  { key: "completed", label: "Completed" },
+];
+
 function WatchlistPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const list = useQuery(watchlistQuery());
+  const [filter, setFilter] = useState<"all" | WatchStatus>("all");
+  const rows = (list.data ?? []).filter((r) => filter === "all" || r.status === filter);
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["watchlist"] });
 
