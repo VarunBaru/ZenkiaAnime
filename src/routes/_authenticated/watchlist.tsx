@@ -72,15 +72,29 @@ function WatchlistPage() {
         {list.data ? `${list.data.length} saved title${list.data.length === 1 ? "" : "s"}` : "\u00a0"}
       </p>
 
+      <div className="mt-5 flex flex-wrap gap-2">
+        {FILTERS.map((f) => (
+          <button
+            key={f.key}
+            onClick={() => setFilter(f.key)}
+            className={`ink-panel-sm px-3 py-2 font-mono text-[10px] font-bold tracking-widest uppercase ${
+              filter === f.key ? "bg-accent text-accent-foreground" : "bg-card"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       <div className="mt-8">
         {list.isPending ? (
           <CardSkeletonGrid count={6} />
         ) : list.isError ? (
           <ErrorState message="Your watchlist couldn't be loaded." onRetry={() => list.refetch()} />
-        ) : list.data.length === 0 ? (
+        ) : rows.length === 0 ? (
           <EmptyState
             title="Your watchlist is empty"
-            message="Save anything you want to watch and it will show up here."
+            message="Start building your anime collection."
             action={
               <Link
                 to="/browse"
