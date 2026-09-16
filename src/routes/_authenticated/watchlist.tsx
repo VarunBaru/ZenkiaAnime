@@ -107,7 +107,7 @@ function WatchlistPage() {
           />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {list.data.map((row) => (
+            {rows.map((row) => (
               <div key={row.id} className="ink-panel flex gap-4 p-3">
                 <Link
                   to="/anime/$animeId"
