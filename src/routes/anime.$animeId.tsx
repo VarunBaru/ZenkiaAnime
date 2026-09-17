@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { CheckCircle2, ExternalLink, Star } from "lucide-react";
+import { CheckCircle2, ExternalLink, Play, Star } from "lucide-react";
 import { toast } from "sonner";
 import {
   animeQuery,
@@ -147,6 +147,8 @@ function AnimeDetailPage() {
   const title = data.title_english || data.title;
   const poster = posterOf(data, true);
   const sources = legalSources(data);
+  // Episode metadata is lazy; fall back to episode 1 when it isn't loaded yet.
+  const firstEpisode = episodes.data?.length ? 1 : 1;
 
   return (
     <article className="overflow-x-hidden">
