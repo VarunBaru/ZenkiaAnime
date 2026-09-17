@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { CheckCircle2, ExternalLink, Star } from "lucide-react";
+import { CheckCircle2, ExternalLink, Play, Star } from "lucide-react";
 import { toast } from "sonner";
 import {
   animeQuery,
@@ -147,6 +147,8 @@ function AnimeDetailPage() {
   const title = data.title_english || data.title;
   const poster = posterOf(data, true);
   const sources = legalSources(data);
+  // Episode metadata is lazy; fall back to episode 1 when it isn't loaded yet.
+  const firstEpisode = episodes.data?.[0]?.mal_id ?? 1;
 
   return (
     <article className="overflow-x-hidden">
@@ -193,6 +195,13 @@ function AnimeDetailPage() {
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                to="/watch/$animeId/$episodeNumber"
+                params={{ animeId: String(data.mal_id), episodeNumber: String(firstEpisode) }}
+                className="ink-panel-sm ink-press inline-flex items-center gap-2 bg-accent px-5 py-3 font-mono text-xs font-bold tracking-widest text-accent-foreground uppercase"
+              >
+                <Play className="size-4" strokeWidth={3} /> Watch now
+              </Link>
               <WatchlistButton anime={data} />
               <button
                 onClick={() => markWatched.mutate()}
@@ -401,6 +410,13 @@ function AnimeDetailPage() {
                         Filler
                       </span>
                     )}
+                    <Link
+                      to="/watch/$animeId/$episodeNumber"
+                      params={{ animeId: String(data.mal_id), episodeNumber: String(ep.mal_id) }}
+                      className="ink-panel-sm ink-press shrink-0 bg-card px-3 py-1 font-mono text-[10px] font-bold tracking-widest uppercase"
+                    >
+                      Watch
+                    </Link>
                   </li>
                 ))}
               </ul>

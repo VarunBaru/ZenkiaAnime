@@ -41,6 +41,7 @@ export type Database = {
       watch_history: {
         Row: {
           created_at: string
+          episode_number: number | null
           episodes_watched: number
           id: string
           image_url: string | null
@@ -52,6 +53,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          episode_number?: number | null
           episodes_watched?: number
           id?: string
           image_url?: string | null
@@ -63,6 +65,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          episode_number?: number | null
           episodes_watched?: number
           id?: string
           image_url?: string | null

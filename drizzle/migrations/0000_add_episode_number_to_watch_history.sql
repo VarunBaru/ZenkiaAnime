@@ -1,0 +1,1 @@
+ALTER TABLE public.watch_history ADD COLUMN IF NOT EXISTS episode_number integer;

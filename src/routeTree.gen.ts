@@ -19,6 +19,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedWatchlistRouteImport } from './routes/_authenticated/watchlist'
 import { Route as AnimeAnimeIdRouteImport } from './routes/anime.$animeId'
+import { Route as WatchAnimeIdEpisodeNumberRouteImport } from './routes/watch.$animeId.$episodeNumber'
 import { Route as ApiPublicJikanSplatRouteImport } from './routes/api/public/jikan.$'
 import { Route as ApiPublicKitsuSplatRouteImport } from './routes/api/public/kitsu.$'
 
@@ -71,6 +72,12 @@ const AnimeAnimeIdRoute = AnimeAnimeIdRouteImport.update({
   path: '/anime/$animeId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WatchAnimeIdEpisodeNumberRoute =
+  WatchAnimeIdEpisodeNumberRouteImport.update({
+    id: '/watch/$animeId/$episodeNumber',
+    path: '/watch/$animeId/$episodeNumber',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicJikanSplatRoute = ApiPublicJikanSplatRouteImport.update({
   id: '/api/public/jikan/$',
   path: '/api/public/jikan/$',
@@ -92,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/watchlist': typeof AuthenticatedWatchlistRoute
   '/anime/$animeId': typeof AnimeAnimeIdRoute
+  '/watch/$animeId/$episodeNumber': typeof WatchAnimeIdEpisodeNumberRoute
   '/api/public/jikan/$': typeof ApiPublicJikanSplatRoute
   '/api/public/kitsu/$': typeof ApiPublicKitsuSplatRoute
 }
@@ -105,6 +113,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/watchlist': typeof AuthenticatedWatchlistRoute
   '/anime/$animeId': typeof AnimeAnimeIdRoute
+  '/watch/$animeId/$episodeNumber': typeof WatchAnimeIdEpisodeNumberRoute
   '/api/public/jikan/$': typeof ApiPublicJikanSplatRoute
   '/api/public/kitsu/$': typeof ApiPublicKitsuSplatRoute
 }
@@ -120,6 +129,7 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/watchlist': typeof AuthenticatedWatchlistRoute
   '/anime/$animeId': typeof AnimeAnimeIdRoute
+  '/watch/$animeId/$episodeNumber': typeof WatchAnimeIdEpisodeNumberRoute
   '/api/public/jikan/$': typeof ApiPublicJikanSplatRoute
   '/api/public/kitsu/$': typeof ApiPublicKitsuSplatRoute
 }
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/watchlist'
     | '/anime/$animeId'
+    | '/watch/$animeId/$episodeNumber'
     | '/api/public/jikan/$'
     | '/api/public/kitsu/$'
   fileRoutesByTo: FileRoutesByTo
@@ -148,6 +159,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/watchlist'
     | '/anime/$animeId'
+    | '/watch/$animeId/$episodeNumber'
     | '/api/public/jikan/$'
     | '/api/public/kitsu/$'
   id:
@@ -162,6 +174,7 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/watchlist'
     | '/anime/$animeId'
+    | '/watch/$animeId/$episodeNumber'
     | '/api/public/jikan/$'
     | '/api/public/kitsu/$'
   fileRoutesById: FileRoutesById
@@ -175,6 +188,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SignupRoute: typeof SignupRoute
   AnimeAnimeIdRoute: typeof AnimeAnimeIdRoute
+  WatchAnimeIdEpisodeNumberRoute: typeof WatchAnimeIdEpisodeNumberRoute
   ApiPublicJikanSplatRoute: typeof ApiPublicJikanSplatRoute
   ApiPublicKitsuSplatRoute: typeof ApiPublicKitsuSplatRoute
 }
@@ -251,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnimeAnimeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/watch/$animeId/$episodeNumber': {
+      id: '/watch/$animeId/$episodeNumber'
+      path: '/watch/$animeId/$episodeNumber'
+      fullPath: '/watch/$animeId/$episodeNumber'
+      preLoaderRoute: typeof WatchAnimeIdEpisodeNumberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/jikan/$': {
       id: '/api/public/jikan/$'
       path: '/api/public/jikan/$'
@@ -290,6 +311,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SignupRoute: SignupRoute,
   AnimeAnimeIdRoute: AnimeAnimeIdRoute,
+  WatchAnimeIdEpisodeNumberRoute: WatchAnimeIdEpisodeNumberRoute,
   ApiPublicJikanSplatRoute: ApiPublicJikanSplatRoute,
   ApiPublicKitsuSplatRoute: ApiPublicKitsuSplatRoute,
 }
