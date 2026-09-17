@@ -410,6 +410,13 @@ function AnimeDetailPage() {
                         Filler
                       </span>
                     )}
+                    <Link
+                      to="/watch/$animeId/$episodeNumber"
+                      params={{ animeId: String(data.mal_id), episodeNumber: String(ep.mal_id) }}
+                      className="ink-panel-sm ink-press shrink-0 bg-card px-3 py-1 font-mono text-[10px] font-bold tracking-widest uppercase"
+                    >
+                      Watch
+                    </Link>
                   </li>
                 ))}
               </ul>
