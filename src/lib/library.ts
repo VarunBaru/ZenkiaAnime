@@ -134,6 +134,31 @@ export async function recordProgress(
   if (error) throw new Error(error.message);
 }
 
+/**
+ * Records that a user opened a specific episode. One row per user + anime is
+ * kept (unique on user_id, mal_id) so re-watching updates instead of piling up.
+ */
+export async function recordEpisodeWatch(
+  userId: string,
+  anime: Pick<Anime, "mal_id" | "title" | "title_english" | "episodes" | "images">,
+  episodeNumber: number,
+) {
+  const { error } = await supabase.from("watch_history").upsert(
+    {
+      user_id: userId,
+      mal_id: anime.mal_id,
+      title: anime.title_english || anime.title,
+      image_url: posterOf(anime),
+      episode_number: episodeNumber,
+      episodes_watched: Math.max(0, episodeNumber),
+      total_episodes: anime.episodes ?? null,
+      last_watched_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id,mal_id" },
+  );
+  if (error) throw new Error(error.message);
+}
+
 export async function ensureProfile(userId: string, username?: string | null) {
   const { error } = await supabase
     .from("profiles")
