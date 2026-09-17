@@ -193,6 +193,13 @@ function AnimeDetailPage() {
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                to="/watch/$animeId/$episodeNumber"
+                params={{ animeId: String(data.mal_id), episodeNumber: String(firstEpisode) }}
+                className="ink-panel-sm ink-press inline-flex items-center gap-2 bg-accent px-5 py-3 font-mono text-xs font-bold tracking-widest text-accent-foreground uppercase"
+              >
+                <Play className="size-4" strokeWidth={3} /> Watch now
+              </Link>
               <WatchlistButton anime={data} />
               <button
                 onClick={() => markWatched.mutate()}
