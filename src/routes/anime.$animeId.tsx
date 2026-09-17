@@ -148,7 +148,7 @@ function AnimeDetailPage() {
   const poster = posterOf(data, true);
   const sources = legalSources(data);
   // Episode metadata is lazy; fall back to episode 1 when it isn't loaded yet.
-  const firstEpisode = episodes.data?.length ? 1 : 1;
+  const firstEpisode = episodes.data?.[0]?.mal_id ?? 1;
 
   return (
     <article className="overflow-x-hidden">
