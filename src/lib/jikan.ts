@@ -242,13 +242,33 @@ export const jikan = {
       return [] as Character[];
     }
   },
+  /**
+   * Jikan paginates episodes (100 per page). Walk every page until the API
+   * reports no more, then dedupe and sort numerically. Works for any anime.
+   */
   async episodes(id: number) {
+    const all: Episode[] = [];
     try {
-      const data = await request<{ data: Episode[] }>(`/anime/${id}/episodes`);
-      return data.data ?? [];
+      let page = 1;
+      // Safety bound: no anime has this many pages; prevents an endless loop
+      // if upstream ever misreports pagination.
+      const MAX_PAGES = 60;
+      while (page <= MAX_PAGES) {
+        const data = await request<{ data: Episode[]; pagination?: Pagination }>(
+          `/anime/${id}/episodes?page=${page}`,
+        );
+        const batch = data.data ?? [];
+        all.push(...batch);
+        if (!data.pagination?.has_next_page || batch.length === 0) break;
+        page++;
+      }
     } catch {
-      return [] as Episode[];
+      // Keep whatever pages already succeeded rather than losing everything.
     }
+    const seen = new Set<number>();
+    return all
+      .filter((ep) => (seen.has(ep.mal_id) ? false : (seen.add(ep.mal_id), true)))
+      .sort((a, b) => a.mal_id - b.mal_id);
   },
   async recommendations(id: number) {
     try {
