@@ -35,7 +35,14 @@ async function fetchUpstream(target: string): Promise<UpstreamResult> {
     try {
       const res = await enqueue(() =>
         fetch(target, {
-          headers: { Accept: "application/json", "User-Agent": "AnimeHub/1.0 (+metadata client)" },
+          headers: {
+            Accept: "application/json",
+            "User-Agent": "AnimeHub/1.0 (+metadata client)",
+            // Jikan's edge caches per Accept-Encoding variant; its compressed
+            // variants intermittently serve 504s. An empty value opts out of
+            // compression and reliably reaches the healthy cached copy.
+            "Accept-Encoding": "",
+          },
           signal: AbortSignal.timeout(12000),
         }),
       );
