@@ -243,23 +243,39 @@ export const jikan = {
     }
   },
   /**
-   * Jikan paginates episodes (100 per page). Walk every page until the API
-   * reports no more, then dedupe and sort numerically. Works for any anime.
+   * Jikan paginates episodes (100 per page). Walk every page until Jikan's own
+   * pagination metadata says there are no more — the loop is bounded only by
+   * what the API reports (last_visible_page / has_next_page), never by an
+   * app-defined episode or page cap. Later pages intermittently 504/429, so
+   * each page is retried several times before giving up; if a page ultimately
+   * fails we keep everything fetched so far rather than losing the list.
    */
   async episodes(id: number) {
     const all: Episode[] = [];
     try {
       let page = 1;
-      // Safety bound: no anime has this many pages; prevents an endless loop
-      // if upstream ever misreports pagination.
-      const MAX_PAGES = 60;
-      while (page <= MAX_PAGES) {
-        const data = await request<{ data: Episode[]; pagination?: Pagination }>(
-          `/anime/${id}/episodes?page=${page}`,
-        );
-        const batch = data.data ?? [];
+      // Refined from Jikan's pagination metadata as pages arrive.
+      let lastVisiblePage = Number.POSITIVE_INFINITY;
+      while (page <= lastVisiblePage) {
+        let batch: Episode[] | null = null;
+        let hasNext = false;
+        for (let attempt = 0; attempt < 4 && !batch; attempt++) {
+          try {
+            const data = await request<{ data: Episode[]; pagination?: Pagination }>(
+              `/anime/${id}/episodes?page=${page}`,
+            );
+            batch = data.data ?? [];
+            hasNext = data.pagination?.has_next_page ?? false;
+            const reported = data.pagination?.last_visible_page;
+            if (typeof reported === "number") lastVisiblePage = reported;
+          } catch {
+            if (attempt < 3) await sleep(900 * (attempt + 1));
+          }
+        }
+        // Page unrecoverable after retries: keep episodes already fetched.
+        if (!batch) break;
         all.push(...batch);
-        if (!data.pagination?.has_next_page || batch.length === 0) break;
+        if (!hasNext || batch.length === 0) break;
         page++;
       }
     } catch {
