@@ -13,6 +13,7 @@ import {
 import { AnimeCard } from "@/components/AnimeCard";
 import { WatchlistButton } from "@/components/WatchlistButton";
 import { CardSkeletonRow, EmptyState, ErrorState, PanelSkeleton } from "@/components/states";
+import { ContinueWatching } from "@/components/ContinueWatching";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -196,6 +197,7 @@ function HomePage() {
       </section>
 
       <div className="mx-auto max-w-[1500px] px-4 pb-8 sm:px-6">
+        <ContinueWatching />
         <Rail title="Trending now" to="/browse" query={trendingQuery()} />
         <Rail title="Popular of all time" to="/browse" query={popularQuery()} />
         <Rail title="This season" to="/browse" query={seasonQuery()} />
