@@ -435,6 +435,7 @@ function AnimeDetailPage() {
                 ))}
               </ul>
             </div>
+            </>
           )}
         </section>
 
