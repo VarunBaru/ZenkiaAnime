@@ -172,6 +172,17 @@ function clean(list: Anime[]) {
   });
 }
 
+export type EpisodeDiagnostics = {
+  pagesReported: number;
+  pagesFetched: number;
+  failedPages: number[];
+  rawCount: number;
+  uniqueCount: number;
+};
+
+/** Per-anime record of what the last episode walk actually retrieved. */
+export const episodeDiagnostics = new Map<number, EpisodeDiagnostics>();
+
 export const jikan = {
   async top(filter: "airing" | "bypopularity" | "favorite", limit = 12) {
     const data = await request<{ data: Anime[] }>(`/top/anime?filter=${filter}&limit=${limit}`);
