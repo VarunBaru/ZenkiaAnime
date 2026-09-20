@@ -172,6 +172,17 @@ function clean(list: Anime[]) {
   });
 }
 
+export type EpisodeDiagnostics = {
+  pagesReported: number;
+  pagesFetched: number;
+  failedPages: number[];
+  rawCount: number;
+  uniqueCount: number;
+};
+
+/** Per-anime record of what the last episode walk actually retrieved. */
+export const episodeDiagnostics = new Map<number, EpisodeDiagnostics>();
+
 export const jikan = {
   async top(filter: "airing" | "bypopularity" | "favorite", limit = 12) {
     const data = await request<{ data: Anime[] }>(`/top/anime?filter=${filter}&limit=${limit}`);
@@ -243,48 +254,72 @@ export const jikan = {
     }
   },
   /**
-   * Jikan paginates episodes (100 per page). Walk every page until Jikan's own
-   * pagination metadata says there are no more — the loop is bounded only by
-   * what the API reports (last_visible_page / has_next_page), never by an
-   * app-defined episode or page cap. Later pages intermittently 504/429, so
-   * each page is retried several times before giving up; if a page ultimately
-   * fails we keep everything fetched so far rather than losing the list.
+   * Jikan paginates episodes (100 per page). Every page Jikan reports is
+   * fetched; a page that keeps failing is retried again at the end instead of
+   * truncating the list. No episode is ever filtered out here — filler, recap,
+   * untitled and un-aired entries are all preserved; only exact duplicate
+   * mal_ids (Jikan repeats entries across page boundaries) are dropped.
    */
   async episodes(id: number) {
     const all: Episode[] = [];
-    try {
-      let page = 1;
-      // Refined from Jikan's pagination metadata as pages arrive.
-      let lastVisiblePage = Number.POSITIVE_INFINITY;
-      while (page <= lastVisiblePage) {
-        let batch: Episode[] | null = null;
-        let hasNext = false;
-        for (let attempt = 0; attempt < 4 && !batch; attempt++) {
-          try {
-            const data = await request<{ data: Episode[]; pagination?: Pagination }>(
-              `/anime/${id}/episodes?page=${page}`,
-            );
-            batch = data.data ?? [];
-            hasNext = data.pagination?.has_next_page ?? false;
-            const reported = data.pagination?.last_visible_page;
-            if (typeof reported === "number") lastVisiblePage = reported;
-          } catch {
-            if (attempt < 3) await sleep(900 * (attempt + 1));
-          }
+    const failedPages: number[] = [];
+    let pagesFetched = 0;
+    let lastVisiblePage = 1;
+
+    const fetchPage = async (page: number) => {
+      for (let attempt = 0; attempt < 4; attempt++) {
+        try {
+          const data = await request<{ data: Episode[]; pagination?: Pagination }>(
+            `/anime/${id}/episodes?page=${page}`,
+          );
+          const reported = data.pagination?.last_visible_page;
+          if (typeof reported === "number" && reported > lastVisiblePage) lastVisiblePage = reported;
+          return data.data ?? [];
+        } catch {
+          if (attempt < 3) await sleep(900 * (attempt + 1));
         }
-        // Page unrecoverable after retries: keep episodes already fetched.
-        if (!batch) break;
-        all.push(...batch);
-        if (!hasNext || batch.length === 0) break;
-        page++;
       }
-    } catch {
-      // Keep whatever pages already succeeded rather than losing everything.
+      return null;
+    };
+
+    for (let page = 1; page <= lastVisiblePage; page++) {
+      const batch = await fetchPage(page);
+      if (batch === null) {
+        // Don't stop the walk — a single flaky page must not hide later ones.
+        failedPages.push(page);
+        continue;
+      }
+      pagesFetched++;
+      all.push(...batch);
     }
+
+    // Second pass for pages that failed the first time around.
+    for (const page of [...failedPages]) {
+      const batch = await fetchPage(page);
+      if (batch === null) continue;
+      failedPages.splice(failedPages.indexOf(page), 1);
+      pagesFetched++;
+      all.push(...batch);
+    }
+
     const seen = new Set<number>();
-    return all
+    const items = all
       .filter((ep) => (seen.has(ep.mal_id) ? false : (seen.add(ep.mal_id), true)))
       .sort((a, b) => a.mal_id - b.mal_id);
+
+    episodeDiagnostics.set(id, {
+      pagesReported: lastVisiblePage,
+      pagesFetched,
+      failedPages: [...failedPages],
+      rawCount: all.length,
+      uniqueCount: items.length,
+    });
+    if (failedPages.length) {
+      console.warn(
+        `[jikan] episodes ${id}: ${items.length} loaded from ${pagesFetched}/${lastVisiblePage} pages; pages ${failedPages.join(", ")} unavailable`,
+      );
+    }
+    return items;
   },
   async recommendations(id: number) {
     try {

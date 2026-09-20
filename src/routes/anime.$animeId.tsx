@@ -382,6 +382,20 @@ function AnimeDetailPage() {
               message="This title has no published episode information — it may be a movie or not yet aired."
             />
           ) : (
+            <>
+            {typeof data.episodes === "number" && data.episodes > episodes.data.length && (
+              <p className="mb-3 border-2 border-border bg-card px-3 py-2 font-mono text-[10px] tracking-wide uppercase">
+                Showing {episodes.data.length} of {data.episodes} episodes — the database has no
+                published entries for the rest yet.{" "}
+                <button
+                  type="button"
+                  onClick={() => episodes.refetch()}
+                  className="underline underline-offset-2"
+                >
+                  Retry
+                </button>
+              </p>
+            )}
             <div className="ink-panel max-h-[420px] overflow-y-auto">
               <ul>
                 {episodes.data.map((ep) => (
@@ -421,6 +435,7 @@ function AnimeDetailPage() {
                 ))}
               </ul>
             </div>
+            </>
           )}
         </section>
 
