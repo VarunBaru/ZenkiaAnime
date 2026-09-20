@@ -34,6 +34,7 @@ export type HistoryRow = {
   title: string;
   image_url: string | null;
   episodes_watched: number;
+  episode_number: number | null;
   total_episodes: number | null;
   last_watched_at: string;
 };
