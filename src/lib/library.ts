@@ -165,3 +165,28 @@ export async function ensureProfile(userId: string, username?: string | null) {
     .upsert({ id: userId, username: username ?? null }, { onConflict: "id" });
   if (error) throw new Error(error.message);
 }
+
+export async function deleteHistoryEntry(userId: string, id: string) {
+  const { error } = await supabase
+    .from("watch_history")
+    .delete()
+    .eq("user_id", userId)
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function clearHistory(userId: string) {
+  const { error } = await supabase.from("watch_history").delete().eq("user_id", userId);
+  if (error) throw new Error(error.message);
+}
+
+export function formatWatchedAt(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
