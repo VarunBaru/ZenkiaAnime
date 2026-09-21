@@ -1,8 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { formatWatchedAt, historyQuery, type HistoryRow } from "@/lib/library";
+import { deleteHistoryEntry, formatWatchedAt, historyQuery, type HistoryRow } from "@/lib/library";
 import { CardSkeletonRow } from "@/components/states";
+import { Button } from "@/components/ui/button";
 
 export function HistoryCard({
   row,
@@ -56,7 +59,20 @@ export function HistoryCard({
 
 export function ContinueWatching() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const history = useQuery({ ...historyQuery(), enabled: Boolean(user) });
+
+  const removeMutation = useMutation({
+    mutationFn: async (id: string) => {
+      if (!user) throw new Error("Sign in required");
+      await deleteHistoryEntry(user.id, id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["history"] });
+      toast.success("Removed from watch history");
+    },
+    onError: () => toast.error("Couldn't remove that history item. Please try again."),
+  });
 
   if (!user) return null;
   if (history.isPending) {
@@ -82,7 +98,28 @@ export function ContinueWatching() {
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {history.data.slice(0, 6).map((row) => (
-          <HistoryCard key={row.id} row={row} />
+          <HistoryCard
+            key={row.id}
+            row={row}
+            actions={
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                disabled={removeMutation.isPending && removeMutation.variables === row.id}
+                onClick={() => {
+                  if (window.confirm(`Remove ${row.title} from your watch history?`)) {
+                    removeMutation.mutate(row.id);
+                  }
+                }}
+                aria-label={`Remove ${row.title} from watch history`}
+                title="Remove from watch history"
+                className="ink-panel-sm size-8 rounded-none border-2 bg-card p-0 hover:bg-accent hover:text-accent-foreground"
+              >
+                <Trash2 className="size-3.5" strokeWidth={2.5} />
+              </Button>
+            }
+          />
         ))}
       </div>
     </section>

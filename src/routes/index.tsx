@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ExternalLink, Star } from "lucide-react";
+import { ExternalLink, Play, Star } from "lucide-react";
 import {
   genresQuery,
   popularQuery,
@@ -14,6 +14,7 @@ import { AnimeCard } from "@/components/AnimeCard";
 import { WatchlistButton } from "@/components/WatchlistButton";
 import { CardSkeletonRow, EmptyState, ErrorState, PanelSkeleton } from "@/components/states";
 import { ContinueWatching } from "@/components/ContinueWatching";
+import { HomeWatchlist } from "@/components/HomeWatchlist";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -29,6 +30,8 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Trending, popular and seasonal anime with watchlists and official viewing links.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: HomePage,
@@ -120,6 +123,13 @@ function Hero({ anime }: { anime: Anime }) {
         </div>
         <div className="mt-7 flex flex-wrap gap-3">
           <Link
+            to="/watch/$animeId/$episodeNumber"
+            params={{ animeId: String(anime.mal_id), episodeNumber: "1" }}
+            className="ink-panel-sm ink-press inline-flex items-center gap-2 bg-accent px-5 py-3 font-mono text-xs font-bold tracking-widest text-accent-foreground uppercase"
+          >
+            <Play className="size-4" fill="currentColor" strokeWidth={3} /> Watch now
+          </Link>
+          <Link
             to="/anime/$animeId"
             params={{ animeId: String(anime.mal_id) }}
             className="ink-panel-sm ink-press bg-accent px-5 py-3 font-mono text-xs font-bold tracking-widest text-accent-foreground uppercase"
@@ -198,8 +208,9 @@ function HomePage() {
 
       <div className="mx-auto max-w-[1500px] px-4 pb-8 sm:px-6">
         <ContinueWatching />
+        <HomeWatchlist />
         <Rail title="Trending now" to="/browse" query={trendingQuery()} />
-        <Rail title="Popular of all time" to="/browse" query={popularQuery()} />
+        <Rail title="Popular anime" to="/browse" query={popularQuery()} />
         <Rail title="This season" to="/browse" query={seasonQuery()} />
 
         <section className="pt-12">
