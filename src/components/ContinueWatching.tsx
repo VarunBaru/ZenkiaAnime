@@ -3,9 +3,42 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { deleteHistoryEntry, formatWatchedAt, historyQuery, type HistoryRow } from "@/lib/library";
+import {
+  deleteHistoryEntry,
+  formatClock,
+  formatWatchedAt,
+  historyQuery,
+  latestPerAnime,
+  type HistoryRow,
+} from "@/lib/library";
 import { CardSkeletonRow } from "@/components/states";
 import { Button } from "@/components/ui/button";
+
+/** Real timeline progress only — rows without saved player data show nothing. */
+export function ProgressLine({ row }: { row: HistoryRow }) {
+  const pos = row.progress_seconds;
+  const dur = row.duration_seconds;
+  if (pos == null || !dur || dur <= 0) return null;
+  const pct = Math.round(row.completed ? 100 : (row.progress_percent ?? (pos / dur) * 100));
+  return (
+    <div className="my-1.5">
+      <div
+        className="h-2 w-full border-2 border-border bg-muted"
+        role="progressbar"
+        aria-valuenow={pct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Episode progress"
+      >
+        <div className="h-full bg-accent" style={{ width: `${pct}%` }} />
+      </div>
+      <p className="mt-1 font-mono text-[10px] tracking-widest text-muted-foreground tabular-nums">
+        {pct}% · {formatClock(pos)} / {formatClock(dur)}
+      </p>
+    </div>
+  );
+}
+
 
 export function HistoryCard({
   row,
@@ -38,7 +71,9 @@ export function HistoryCard({
         <p className="line-clamp-2 font-display text-sm sm:text-base">{row.title}</p>
         <p className="mt-1 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
           Episode {episode}
+          {row.completed ? " · Completed" : ""}
         </p>
+        <ProgressLine row={row} />
         <p className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
           {formatWatchedAt(row.last_watched_at)}
         </p>
@@ -97,7 +132,7 @@ export function ContinueWatching() {
         </Link>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {history.data.slice(0, 6).map((row) => (
+        {latestPerAnime(history.data).slice(0, 6).map((row) => (
           <HistoryCard
             key={row.id}
             row={row}

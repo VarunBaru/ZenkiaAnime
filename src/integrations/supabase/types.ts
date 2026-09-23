@@ -40,37 +40,49 @@ export type Database = {
       }
       watch_history: {
         Row: {
+          completed: boolean
           created_at: string
-          episode_number: number | null
+          duration_seconds: number | null
+          episode_number: number
           episodes_watched: number
           id: string
           image_url: string | null
           last_watched_at: string
           mal_id: number
+          progress_percent: number | null
+          progress_seconds: number | null
           title: string
           total_episodes: number | null
           user_id: string
         }
         Insert: {
+          completed?: boolean
           created_at?: string
-          episode_number?: number | null
+          duration_seconds?: number | null
+          episode_number?: number
           episodes_watched?: number
           id?: string
           image_url?: string | null
           last_watched_at?: string
           mal_id: number
+          progress_percent?: number | null
+          progress_seconds?: number | null
           title: string
           total_episodes?: number | null
           user_id: string
         }
         Update: {
+          completed?: boolean
           created_at?: string
-          episode_number?: number | null
+          duration_seconds?: number | null
+          episode_number?: number
           episodes_watched?: number
           id?: string
           image_url?: string | null
           last_watched_at?: string
           mal_id?: number
+          progress_percent?: number | null
+          progress_seconds?: number | null
           title?: string
           total_episodes?: number | null
           user_id?: string
