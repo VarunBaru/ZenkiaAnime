@@ -8,6 +8,13 @@
       "when": 1789643492057,
       "tag": "0000_add_episode_number_to_watch_history",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790184720574,
+      "tag": "0001_add_progress_to_watch_history",
+      "breakpoints": true
     }
   ]
 }
