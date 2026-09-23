@@ -43,7 +43,7 @@ export type Database = {
           completed: boolean
           created_at: string
           duration_seconds: number | null
-          episode_number: number | null
+          episode_number: number
           episodes_watched: number
           id: string
           image_url: string | null
@@ -59,7 +59,7 @@ export type Database = {
           completed?: boolean
           created_at?: string
           duration_seconds?: number | null
-          episode_number?: number | null
+          episode_number?: number
           episodes_watched?: number
           id?: string
           image_url?: string | null
@@ -75,7 +75,7 @@ export type Database = {
           completed?: boolean
           created_at?: string
           duration_seconds?: number | null
-          episode_number?: number | null
+          episode_number?: number
           episodes_watched?: number
           id?: string
           image_url?: string | null
