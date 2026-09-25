@@ -62,12 +62,15 @@ function WatchPage() {
   const id = Number(animeId);
   const episode = Math.max(1, Number(episodeNumber) || 1);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const [frameFailed, setFrameFailed] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const anime = useQuery(animeQuery(id));
   const anilist = useQuery(anilistQuery(id));
   const episodes = useQuery({ ...episodesQuery(id), enabled: anime.isSuccess });
+  const history = useQuery({ ...historyQuery(), enabled: Boolean(user) });
 
   const title = anime.data ? anime.data.title_english || anime.data.title : null;
 
@@ -77,22 +80,134 @@ function WatchPage() {
 
   useEffect(() => setFrameFailed(false), [id, episode]);
 
-  // Watch history: one row per user + anime, updated as episodes are opened.
+  // Episode-level history: one row per user + anime + episode.
   useEffect(() => {
     if (!user || !anime.data) return;
-    recordEpisodeWatch(user.id, anime.data, episode).catch(() => undefined);
-  }, [user, anime.data, episode]);
+    recordEpisodeWatch(user.id, anime.data, episode)
+      .then(() => queryClient.invalidateQueries({ queryKey: ["history"] }))
+      .catch(() => undefined);
+  }, [user, anime.data, episode, queryClient]);
+
+  // ---- Timeline tracking via AniEmbed's documented postMessage API ----
+  const saved = useMemo(
+    () => history.data?.find((r) => r.mal_id === id && r.episode_number === episode),
+    [history.data, id, episode],
+  );
+  const [live, setLive] = useState<{ t: number; d: number } | null>(null);
+  const [resumeChoice, setResumeChoice] = useState<"pending" | "done">("pending");
+  const playerReady = useRef(false);
+  const pendingSeek = useRef<number | null>(null);
+
+  const sendCommand = useCallback((name: string, data: Record<string, unknown> = {}) => {
+    iframeRef.current?.contentWindow?.postMessage(
+      { source: "aniembed", version: 1, type: "command", name, requestId: crypto.randomUUID(), data },
+      PLAYER_ORIGIN,
+    );
+  }, []);
+
+  useEffect(() => {
+    setLive(null);
+    setResumeChoice("pending");
+    playerReady.current = false;
+    pendingSeek.current = null;
+  }, [id, episode]);
+
+  useEffect(() => {
+    if (!user || !anime.data) return;
+    const userId = user.id;
+    const animeRef = anime.data;
+    const ep = episode;
+    let latest: PlaybackProgress | null = null;
+    let lastSavedAt = 0;
+    let lastSavedTime = -1;
+    let writesDisabled = false;
+
+    const save = (force: boolean) => {
+      if (!latest || writesDisabled) return;
+      if (!force && Date.now() - lastSavedAt < SAVE_INTERVAL_MS) return;
+      if (Math.abs(latest.currentTime - lastSavedTime) < 1 && !latest.completed) return;
+      lastSavedAt = Date.now();
+      lastSavedTime = latest.currentTime;
+      saveEpisodeProgress(userId, animeRef, ep, latest)
+        .then(() => queryClient.invalidateQueries({ queryKey: ["history"] }))
+        .catch((e) => {
+          // Stop writing for this episode; episode-level history still exists.
+          writesDisabled = true;
+          console.warn("[watch] progress save failed, tracking paused", e);
+        });
+    };
+
+    const onMessage = (event: MessageEvent) => {
+      const frame = iframeRef.current;
+      const msg = event.data as PlayerMessage | undefined;
+      if (!frame || event.source !== frame.contentWindow || event.origin !== PLAYER_ORIGIN) return;
+      if (!msg || msg.source !== "aniembed" || msg.type !== "event") return;
+
+      if (msg.name === "ready") {
+        playerReady.current = true;
+        if (pendingSeek.current != null) {
+          sendCommand("seek", { time: pendingSeek.current });
+          pendingSeek.current = null;
+        }
+      }
+      if (msg.name === "next") return void navigateEpisode(ep + 1);
+      if (msg.name === "previous") return void (ep > 1 && navigateEpisode(ep - 1));
+
+      const d = msg.data;
+      if (!d || typeof d.currentTime !== "number" || typeof d.duration !== "number") return;
+      if (!(d.duration > 0)) return;
+      const ended = msg.name === "ended";
+      const pct = (d.currentTime / d.duration) * 100;
+      latest = {
+        currentTime: ended ? d.duration : d.currentTime,
+        duration: d.duration,
+        completed: ended || pct >= COMPLETE_PERCENT || (latest?.completed ?? false),
+      };
+      setLive({ t: latest.currentTime, d: d.duration });
+      if (msg.name === "progress") save(false);
+      else if (msg.name === "pause" || ended) save(true);
+    };
+
+    const onHide = () => save(true);
+    window.addEventListener("message", onMessage);
+    window.addEventListener("pagehide", onHide);
+    return () => {
+      window.removeEventListener("message", onMessage);
+      window.removeEventListener("pagehide", onHide);
+      save(true); // episode change or leaving the Watch page
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, anime.data, episode, queryClient, sendCommand]);
+
+  const resumeAt =
+    saved && !saved.completed && saved.progress_seconds != null && saved.progress_seconds >= 10
+      ? Number(saved.progress_seconds)
+      : null;
+
+  const doResume = () => {
+    if (resumeAt == null) return;
+    if (playerReady.current) sendCommand("seek", { time: resumeAt });
+    else pendingSeek.current = resumeAt;
+    setResumeChoice("done");
+  };
+  const doStartOver = () => {
+    if (playerReady.current) sendCommand("seek", { time: 0 });
+    pendingSeek.current = null;
+    setResumeChoice("done");
+  };
 
   const totalFromList = episodes.data?.length ?? 0;
   const total = totalFromList || anime.data?.episodes || 0;
   const hasPrev = episode > 1;
   const hasNext = total ? episode < total : true;
 
-  const go = (next: number) =>
+  function navigateEpisode(next: number) {
     navigate({
       to: "/watch/$animeId/$episodeNumber",
       params: { animeId, episodeNumber: String(next) },
     });
+  }
+  const go = navigateEpisode;
 
   if (anime.isPending || anilist.isPending) {
     return (
