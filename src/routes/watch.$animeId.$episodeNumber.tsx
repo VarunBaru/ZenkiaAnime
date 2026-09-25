@@ -284,6 +284,7 @@ function WatchPage() {
         ) : (
           <div className="relative aspect-video w-full bg-black">
             <iframe
+              ref={iframeRef}
               key={src}
               src={src}
               title={`${title} episode ${episode}`}
@@ -296,6 +297,46 @@ function WatchPage() {
           </div>
         )}
       </div>
+
+      {user && resumeAt != null && resumeChoice === "pending" && !frameFailed ? (
+        <div className="ink-panel-sm flex flex-wrap items-center gap-3 bg-card p-3">
+          <p className="font-display text-base">Resume from {formatClock(resumeAt)}</p>
+          <div className="ml-auto flex gap-2">
+            <button
+              onClick={doResume}
+              className="ink-panel-sm ink-press bg-accent px-4 py-2 font-mono text-[11px] font-bold tracking-widest text-accent-foreground uppercase"
+            >
+              Resume
+            </button>
+            <button
+              onClick={doStartOver}
+              className="ink-panel-sm ink-press bg-card px-4 py-2 font-mono text-[11px] font-bold tracking-widest uppercase"
+            >
+              Start over
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {user
+        ? (() => {
+            const t = live?.t ?? (saved?.progress_seconds != null ? Number(saved.progress_seconds) : null);
+            const d = live?.d ?? (saved?.duration_seconds != null ? Number(saved.duration_seconds) : null);
+            if (t == null || !d) return null;
+            const pct = Math.min(100, Math.round((t / d) * 100));
+            return (
+              <div className="space-y-1">
+                <div className="h-2.5 w-full border-2 border-border bg-muted" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="Episode progress">
+                  <div className="h-full bg-accent transition-[width]" style={{ width: `${pct}%` }} />
+                </div>
+                <p className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase tabular-nums">
+                  {live ? "Progress" : "Saved progress"} · {pct}% · {formatClock(t)} / {formatClock(d)}
+                  {saved?.completed || pct >= COMPLETE_PERCENT ? " · Completed" : ""}
+                </p>
+              </div>
+            );
+          })()
+        : null}
 
       <header className="space-y-2">
         <h1 className="font-display text-2xl leading-tight break-words sm:text-3xl">{title}</h1>
