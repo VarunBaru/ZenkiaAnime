@@ -1,12 +1,35 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { animeQuery, episodesQuery } from "@/lib/jikan";
 import { anilistQuery, embedUrl } from "@/lib/anilist";
-import { ErrorState, PanelSkeleton } from "@/components/states";
+import { PanelSkeleton } from "@/components/states";
 import { useAuth } from "@/hooks/useAuth";
-import { recordEpisodeWatch } from "@/lib/library";
+import {
+  formatClock,
+  historyQuery,
+  recordEpisodeWatch,
+  saveEpisodeProgress,
+  type PlaybackProgress,
+} from "@/lib/library";
+
+/**
+ * AniEmbed documents a postMessage API (see aniembed.se → API Docs):
+ * events `ready`, `play`/`pause`, `progress` (every ~5s), `ended`, `next`/`previous`,
+ * each carrying { currentTime, duration, percentage, paused }, and commands such as
+ * `seek { time }`. No API key needed. We only use those documented messages.
+ */
+const PLAYER_ORIGIN = "https://aniembed.se";
+const SAVE_INTERVAL_MS = 12_000;
+const COMPLETE_PERCENT = 92;
+
+type PlayerMessage = {
+  source?: string;
+  type?: string;
+  name?: string;
+  data?: { currentTime?: number; duration?: number; paused?: boolean };
+};
 
 export const Route = createFileRoute("/watch/$animeId/$episodeNumber")({
   head: () => {
