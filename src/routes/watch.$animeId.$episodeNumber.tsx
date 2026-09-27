@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { animeQuery, episodesQuery } from "@/lib/jikan";
 import { anilistQuery, embedUrl } from "@/lib/anilist";
+import { providerLang, usePreferences } from "@/lib/preferences";
 import { PanelSkeleton } from "@/components/states";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -89,6 +90,10 @@ function WatchPage() {
   const { user } = useAuth();
   const [frameFailed, setFrameFailed] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const { language } = usePreferences();
+  const preferredLang = providerLang(language);
+  // Manual override for this visit; null = follow the saved EN/JP preference.
+  const [sourceLang, setSourceLang] = useState<"sub" | "dub" | null>(null);
 
   const anime = useQuery(animeQuery(id));
   const anilist = useQuery(anilistQuery(id));
@@ -254,7 +259,8 @@ function WatchPage() {
     );
   }
 
-  const src = embedUrl(anilist.data.id, episode);
+  const activeLang = sourceLang ?? preferredLang;
+  const src = embedUrl(anilist.data.id, episode, activeLang);
   const currentEpisode = episodes.data?.[episode - 1];
 
   return (
@@ -297,6 +303,32 @@ function WatchPage() {
           </div>
         )}
       </div>
+
+      <div className="ink-panel-sm flex flex-wrap items-center gap-3 bg-card p-3">
+        <span className="font-mono text-[11px] font-bold tracking-widest uppercase">Audio source</span>
+        <div role="radiogroup" aria-label="Audio source" className="inline-flex border-2 border-border">
+          {(["dub", "sub"] as const).map((l) => (
+            <button
+              key={l}
+              type="button"
+              role="radio"
+              aria-checked={activeLang === l}
+              onClick={() => setSourceLang(l)}
+              className={`px-3 py-1.5 font-mono text-[11px] font-bold tracking-widest uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                activeLang === l ? "bg-accent text-accent-foreground underline underline-offset-4" : "hover:bg-muted"
+              }`}
+            >
+              {l === "dub" ? "English dub" : "Japanese (sub)"}
+            </button>
+          ))}
+        </div>
+        <p className="basis-full text-xs text-muted-foreground">
+          {activeLang === "dub"
+            ? "English dub requested. The provider doesn't publish dub availability in advance — if this episode has no dub, the player will say so; switch to Japanese (sub)."
+            : "Japanese original audio with subtitles requested."}
+        </p>
+      </div>
+
 
       {user && resumeAt != null && resumeChoice === "pending" && !frameFailed ? (
         <div className="ink-panel-sm flex flex-wrap items-center gap-3 bg-card p-3">
