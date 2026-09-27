@@ -33,7 +33,7 @@ export function CardSkeletonGrid({ count = 12 }: { count?: number }) {
 }
 
 export function ErrorState({
-  title = "Panel torn!",
+  title = "Couldn't load this right now",
   message = "Something went wrong while loading this.",
   onRetry,
 }: {

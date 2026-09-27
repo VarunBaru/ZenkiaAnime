@@ -26,8 +26,9 @@ export function SiteFooter() {
           </Link>
         </nav>
         <p className="max-w-[36ch] text-center font-mono text-[11px] text-muted-foreground lg:text-right">
-          A catalogue, not a streaming service. Metadata from Jikan/MyAnimeList; episodes only ever
-          link out to official licensed platforms.
+          AnimeHub is an anime discovery and viewing platform. Metadata is provided by
+          Jikan/MyAnimeList. External official platforms are listed where available. AnimeHub
+          playback is provided through authorized embedded sources.
         </p>
       </div>
     </footer>

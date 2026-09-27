@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ExternalLink, Play, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, ExternalLink, Play, Star } from "lucide-react";
+import { useState } from "react";
 import {
   genresQuery,
   popularQuery,
@@ -84,7 +85,7 @@ function Rail({
   );
 }
 
-function Hero({ anime }: { anime: Anime }) {
+function Hero({ anime, nav }: { anime: Anime; nav?: React.ReactNode }) {
   const poster = posterOf(anime, true);
   const title = anime.title_english || anime.title;
   const sources = legalSources(anime);
@@ -95,6 +96,7 @@ function Hero({ anime }: { anime: Anime }) {
         <span className="ink-panel-sm inline-block bg-accent px-3 py-1 font-mono text-[11px] font-bold tracking-[0.2em] text-accent-foreground uppercase">
           Featured · Now airing
         </span>
+        {nav}
         <h1 className="mt-5 font-display text-4xl leading-[0.95] break-words sm:text-5xl lg:text-6xl">
           {title}
         </h1>
@@ -175,7 +177,23 @@ function Hero({ anime }: { anime: Anime }) {
 function HomePage() {
   const trending = useQuery(trendingQuery());
   const genres = useQuery(genresQuery());
-  const featured = trending.data?.[0];
+  // Featured reuses the cached "top airing" request — no extra API call.
+  const airing = (trending.data ?? []).slice(0, 8);
+  const [index, setIndex] = useState(0);
+  const featured = airing.length ? airing[index % airing.length] : undefined;
+  const step = (d: number) => setIndex((i) => (i + d + airing.length) % airing.length);
+  const nav =
+    airing.length > 1 ? (
+      <div className="mt-4 flex items-center gap-2 font-mono text-[11px] font-bold tracking-widest uppercase">
+        <button aria-label="Previous featured anime" onClick={() => step(-1)} className="ink-panel-sm ink-press bg-card p-1.5">
+          <ChevronLeft className="size-4" strokeWidth={3} />
+        </button>
+        <span>{(index % airing.length) + 1} / {airing.length}</span>
+        <button aria-label="Next featured anime" onClick={() => step(1)} className="ink-panel-sm ink-press bg-card p-1.5">
+          <ChevronRight className="size-4" strokeWidth={3} />
+        </button>
+      </div>
+    ) : null;
 
   return (
     <div>
@@ -198,7 +216,7 @@ function HomePage() {
             />
           </div>
         ) : featured ? (
-          <Hero anime={featured} />
+          <Hero key={featured.mal_id} anime={featured} nav={nav} />
         ) : (
           <div className="mx-auto max-w-[1500px] px-4 py-10 sm:px-6">
             <EmptyState title="No featured anime" message="Nothing is airing in the catalogue right now." />
