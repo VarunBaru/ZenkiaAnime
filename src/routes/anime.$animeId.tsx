@@ -147,6 +147,9 @@ function AnimeDetailPage() {
   const title = data.title_english || data.title;
   const poster = posterOf(data, true);
   const sources = legalSources(data);
+  const relatedEntries = (data.relations ?? [])
+    .flatMap((r) => r.entry.filter((e) => e.type === "anime" && e.mal_id !== data.mal_id).map((e) => ({ ...e, relation: r.relation })))
+    .filter((e, i, arr) => arr.findIndex((x) => x.mal_id === e.mal_id) === i);
   // Episode metadata is lazy; fall back to episode 1 when it isn't loaded yet.
   const firstEpisode = episodes.data?.[0]?.mal_id ?? 1;
 
@@ -322,7 +325,7 @@ function AnimeDetailPage() {
           ) : characters.isError ? (
             <ErrorState message="Characters couldn't be loaded." onRetry={() => characters.refetch()} />
           ) : characters.data.length === 0 ? (
-            <EmptyState title="No characters listed" message="This title has no character data yet." />
+            <EmptyState title="Character information unavailable" message="The database has no character data for this title." />
           ) : (
             <div className="grid grid-cols-3 gap-4 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-9">
               {characters.data.map((c) => {
@@ -440,7 +443,16 @@ function AnimeDetailPage() {
         </section>
 
         <section>
-          <h2 className="mb-4 font-display text-xl sm:text-2xl">Where to watch — official only</h2>
+          <h2 className="mb-4 font-display text-xl sm:text-2xl">Where to watch</h2>
+          <h3 className="mb-3 font-mono text-[11px] font-bold tracking-widest uppercase">Watch on AnimeHub</h3>
+          <Link
+            to="/watch/$animeId/$episodeNumber"
+            params={{ animeId: String(data.mal_id), episodeNumber: String(episodes.data?.[0]?.mal_id ?? 1) }}
+            className="ink-panel-sm ink-press mb-6 inline-flex items-center gap-2 bg-accent px-5 py-3 font-mono text-xs font-bold tracking-widest text-accent-foreground uppercase"
+          >
+            Open watch page
+          </Link>
+          <h3 className="mb-3 font-mono text-[11px] font-bold tracking-widest uppercase">Official platforms</h3>
           {sources.length === 0 ? (
             <EmptyState
               title="No official links listed"
@@ -463,8 +475,8 @@ function AnimeDetailPage() {
             </div>
           )}
           <p className="mt-4 font-mono text-[11px] text-muted-foreground">
-            AnimeHub is a catalogue. We never host or stream episodes, and we don't link to
-            unofficial sources.
+            AnimeHub playback uses authorized embedded sources. External links go only to official
+            platforms listed for this title.
           </p>
         </section>
 
@@ -472,11 +484,26 @@ function AnimeDetailPage() {
           <h2 className="mb-4 font-display text-xl sm:text-2xl">Related anime</h2>
           {recommendations.isPending ? (
             <CardSkeletonRow count={6} />
-          ) : recommendations.isError || recommendations.data.length === 0 ? (
-            <EmptyState
-              title="No recommendations yet"
-              message="We couldn't find related titles for this anime."
-            />
+          ) : recommendations.isError ? (
+            <ErrorState message="Recommendations couldn't be loaded." onRetry={() => recommendations.refetch()} />
+          ) : recommendations.data.length === 0 ? (
+            relatedEntries.length > 0 ? (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {relatedEntries.map((r) => (
+                  <Link
+                    key={r.mal_id}
+                    to="/anime/$animeId"
+                    params={{ animeId: String(r.mal_id) }}
+                    className="ink-panel-sm ink-press bg-card px-4 py-3"
+                  >
+                    <p className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">{r.relation}</p>
+                    <p className="truncate font-display text-sm">{r.name}</p>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <EmptyState title="No recommendations yet" message="We couldn't find related titles for this anime." />
+            )
           ) : (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
               {recommendations.data.map((rec) => (

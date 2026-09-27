@@ -41,6 +41,7 @@ export type Anime = {
   streaming?: { name: string; url: string }[];
   external?: { name: string; url: string }[];
   url?: string;
+  relations?: { relation: string; entry: { mal_id: number; type: string; name: string }[] }[];
   trailer?: { url?: string | null; youtube_id?: string | null } | null;
 };
 
@@ -128,8 +129,8 @@ async function request<T>(path: string, attempt = 0): Promise<T> {
   if (!res.ok) {
     // Jikan's upstream intermittently returns 502/503/504; the same request
     // usually succeeds within a few retries.
-    if (attempt < 1 && res.status >= 500) {
-      await sleep(300 * (attempt + 1) + Math.random() * 200);
+    if (attempt < 2 && res.status >= 500) {
+      await sleep(700 * (attempt + 1) + Math.random() * 300);
       return request<T>(path, attempt + 1);
     }
     throw new JikanError("The anime database is having trouble right now.", res.status);
@@ -238,7 +239,12 @@ export const jikan = {
   },
   async genres() {
     const data = await request<{ data: Genre[] }>(`/genres/anime`);
-    return data.data ?? [];
+    const seen = new Set<number>();
+    return (data.data ?? []).filter(
+      (g) =>
+        !["Hentai", "Erotica"].includes(g.name) &&
+        (seen.has(g.mal_id) ? false : (seen.add(g.mal_id), true)),
+    );
   },
   async detail(id: number) {
     const data = await request<{ data: Anime }>(`/anime/${id}/full`);
@@ -246,12 +252,12 @@ export const jikan = {
   },
   // Secondary sections: never fail the page when upstream is flaky.
   async characters(id: number) {
-    try {
-      const data = await request<{ data: Character[] }>(`/anime/${id}/characters`);
-      return (data.data ?? []).slice(0, 18);
-    } catch {
-      return [] as Character[];
-    }
+    // Errors propagate so the page can offer Retry instead of caching an empty list.
+    const data = await request<{ data: Character[] }>(`/anime/${id}/characters`);
+    const seen = new Set<number>();
+    return (data.data ?? []).filter((c) =>
+      seen.has(c.character.mal_id) ? false : (seen.add(c.character.mal_id), true),
+    );
   },
   /**
    * Jikan paginates episodes (100 per page). Every page Jikan reports is
@@ -322,12 +328,10 @@ export const jikan = {
     return items;
   },
   async recommendations(id: number) {
-    try {
-      const data = await request<{ data: { entry: Anime }[] }>(`/anime/${id}/recommendations`);
-      return clean((data.data ?? []).map((r) => r.entry)).slice(0, 12);
-    } catch {
-      return [] as Anime[];
-    }
+    const data = await request<{ data: { entry: Anime }[] }>(`/anime/${id}/recommendations`);
+    return clean((data.data ?? []).map((r) => r.entry))
+      .filter((a) => a.mal_id !== id)
+      .slice(0, 12);
   },
 };
 
