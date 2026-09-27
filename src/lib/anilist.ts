@@ -48,6 +48,8 @@ export const anilistQuery = (malId: number) =>
   });
 
 /** Authorised embed source for this project. */
-export function embedUrl(anilistId: number, episode: number) {
-  return `https://aniembed.se/e/${anilistId}/${episode}`;
+/** AniEmbed documents `?lang=sub|dub` on its embed endpoint. */
+export function embedUrl(anilistId: number, episode: number, lang?: "sub" | "dub") {
+  const base = `https://aniembed.se/e/${anilistId}/${episode}`;
+  return lang ? `${base}?lang=${lang}` : base;
 }
