@@ -13,7 +13,7 @@ function Segment<T extends string>({
   value: T;
   options: { value: T; text: string; icon?: React.ReactNode }[];
   onChange: (v: T) => void;
-  showText?: boolean;
+  showText?: boolean | undefined;
 }) {
   return (
     <div role="radiogroup" aria-label={label} className="ink-panel-sm inline-flex bg-card">
