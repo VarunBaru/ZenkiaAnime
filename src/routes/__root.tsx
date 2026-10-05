@@ -15,6 +15,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { PreferencesProvider, THEME_BOOT_SCRIPT } from "@/lib/preferences";
 
 function NotFoundComponent() {
   return (
@@ -112,8 +113,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>
@@ -129,6 +131,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <PreferencesProvider>
       <AuthSync />
       <div className="flex min-h-screen flex-col">
         <SiteHeader />
@@ -139,6 +142,7 @@ function RootComponent() {
         <SiteFooter />
       </div>
       <Toaster />
+      </PreferencesProvider>
     </QueryClientProvider>
   );
 }
