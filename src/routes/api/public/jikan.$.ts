@@ -9,13 +9,18 @@ import { createFileRoute } from "@tanstack/react-router";
  */
 
 const UPSTREAM = "https://api.jikan.moe/v4";
-const TTL_MS = 30 * 60 * 1000;
+const LIST_TTL_MS = 30 * 60 * 1000;
+const DETAIL_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_ENTRIES = 300;
+const UPSTREAM_COOLDOWN_MS = 15_000;
+const MIN_REQUEST_GAP_MS = 400;
 
-type Entry = { body: string; expires: number };
+type Entry = { body: string; expires: number; status: number };
 type UpstreamResult = { status: number; body: string };
 const cache = new Map<string, Entry>();
 const inflight = new Map<string, Promise<UpstreamResult>>();
+let upstreamCooldownUntil = 0;
+let lastUpstreamFailure: UpstreamResult | undefined;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 let queue: Promise<unknown> = Promise.resolve();
@@ -23,14 +28,47 @@ let queue: Promise<unknown> = Promise.resolve();
 function enqueue<T>(job: () => Promise<T>): Promise<T> {
   const run = queue.then(async () => {
     const result = await job();
-    await sleep(400);
+    await sleep(MIN_REQUEST_GAP_MS);
     return result;
   });
   queue = run.catch(() => undefined);
   return run as Promise<T>;
 }
 
+function responseMessage(body: string) {
+  try {
+    const parsed = JSON.parse(body) as { message?: unknown; error?: unknown };
+    const message = parsed.message ?? parsed.error;
+    return typeof message === "string" ? message : body.slice(0, 300);
+  } catch {
+    return body.slice(0, 300);
+  }
+}
+
+function logUpstreamFailure(target: string, status: number, body: string) {
+  if (import.meta.env.DEV) {
+    console.warn("[jikan] upstream request failed", {
+      endpoint: target,
+      status,
+      responseMessage: responseMessage(body),
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+
 async function fetchUpstream(target: string): Promise<UpstreamResult> {
+  if (Date.now() < upstreamCooldownUntil) {
+    return lastUpstreamFailure ?? {
+      status: 503,
+      body: JSON.stringify({ error: "The anime database is temporarily unavailable." }),
+    };
+  }
+
+  let lastResult: UpstreamResult = {
+    status: 503,
+    body: JSON.stringify({ error: "The anime database is temporarily unavailable." }),
+  };
+
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const res = await enqueue(() =>
@@ -46,21 +84,43 @@ async function fetchUpstream(target: string): Promise<UpstreamResult> {
           signal: AbortSignal.timeout(12000),
         }),
       );
-      if (res.status === 429 || res.status >= 500) {
-        console.warn(`[jikan] ${res.status} ${target}`);
-        await sleep(600 * (attempt + 1) + Math.random() * 300);
+      const body = await res.text();
+      lastResult = { status: res.status, body };
+      if (res.status === 429 || res.status === 500 || res.status === 503 || res.status >= 500) {
+        if (attempt < 2) {
+          const retryAfter = Number(res.headers.get("Retry-After"));
+          const delay = Number.isFinite(retryAfter) && retryAfter > 0
+            ? Math.min(retryAfter * 1000, 10_000)
+            : 1000 * 2 ** attempt + Math.random() * 300;
+          await sleep(delay);
+        }
         continue;
       }
-      return { status: res.status, body: await res.text() };
-    } catch (err) {
-      console.warn(`[jikan] fetch failed ${target}`, err);
-      await sleep(500 * (attempt + 1));
+      if (res.ok) {
+        upstreamCooldownUntil = 0;
+        lastUpstreamFailure = undefined;
+      }
+      return lastResult;
+    } catch (error) {
+      lastResult = {
+        status: 503,
+        body: JSON.stringify({
+          error: error instanceof Error ? error.message : "Temporary network failure",
+        }),
+      };
+      if (attempt < 2) await sleep(1000 * 2 ** attempt + Math.random() * 300);
     }
   }
-  return {
-    status: 503,
-    body: JSON.stringify({ error: "The anime database is unavailable right now." }),
-  };
+
+  logUpstreamFailure(target, lastResult.status, lastResult.body);
+  lastUpstreamFailure = lastResult;
+  upstreamCooldownUntil = Date.now() + UPSTREAM_COOLDOWN_MS;
+  return lastResult;
+}
+
+function cacheTtl(path: string) {
+  if (/^anime\/\d+\/full$/.test(path) || path === "genres/anime") return DETAIL_TTL_MS;
+  return LIST_TTL_MS;
 }
 
 export const Route = createFileRoute("/api/public/jikan/$")({
@@ -95,22 +155,24 @@ export const Route = createFileRoute("/api/public/jikan/$")({
 
         if (status === 200) {
           if (cache.size >= MAX_ENTRIES) cache.clear();
-          cache.set(key, { body, expires: Date.now() + TTL_MS });
+          cache.set(key, { body, expires: Date.now() + cacheTtl(path), status });
         } else if (hit) {
           // Upstream is unhappy but we have an older good copy — stale data
           // beats an error screen.
           return new Response(hit.body, {
+            status: hit.status,
             headers: { "Content-Type": "application/json", "X-Cache": "STALE" },
           });
         }
 
-        if (status >= 500) {
+        if (status >= 500 || status === 429) {
           // A third-party outage is expected degradation, not an unhandled app
           // failure. Return a successful transport response with an explicit
           // marker so the service layer can use its backup catalogue.
           return Response.json(
             {
               error: "The anime database is unavailable right now.",
+              upstreamMessage: responseMessage(body),
               upstreamStatus: status,
               degraded: true,
             },
