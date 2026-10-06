@@ -86,6 +86,25 @@ type JikanPayloadError = {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/** Space browser requests so multiple homepage sections do not burst upstream. */
+const MIN_REQUEST_GAP_MS = 400;
+let lastRequestStartedAt = 0;
+let requestQueue: Promise<unknown> = Promise.resolve();
+
+function enqueueRequest<T>(job: () => Promise<T>): Promise<T> {
+  const run = requestQueue.then(async () => {
+    const wait = Math.max(0, lastRequestStartedAt + MIN_REQUEST_GAP_MS - Date.now());
+    if (wait > 0) await sleep(wait);
+    lastRequestStartedAt = Date.now();
+    return job();
+  });
+  requestQueue = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
 function logJikanFailure(path: string, status: number, responseMessage: string) {
   if (import.meta.env.DEV) {
     console.warn("[jikan] request failed", {
@@ -104,10 +123,12 @@ function logJikanFailure(path: string, status: number, responseMessage: string) 
 async function request<T>(path: string): Promise<T> {
   let res: Response;
   try {
-    res = await fetch(`${BASE}${path}`, {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(15000),
-    });
+    res = await enqueueRequest(() =>
+      fetch(`${BASE}${path}`, {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(15000),
+      }),
+    );
   } catch (error) {
     logJikanFailure(path, 0, error instanceof Error ? error.message : String(error));
     throw new JikanError("Could not reach the anime database. Check your connection.", 0);
