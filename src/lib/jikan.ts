@@ -79,67 +79,86 @@ export class JikanError extends Error {
 
 type JikanPayloadError = {
   error?: string;
+  upstreamMessage?: string;
   upstreamStatus?: number;
   degraded?: boolean;
 };
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-/**
- * Jikan rate-limits at ~3 requests/second. All calls go through one queue that
- * spaces requests out, so parallel page sections never trip the limiter.
- */
-const MIN_GAP_MS = 120;
-let queue: Promise<unknown> = Promise.resolve();
+/** Space browser requests so multiple homepage sections do not burst upstream. */
+const MIN_REQUEST_GAP_MS = 400;
+let lastRequestStartedAt = 0;
+let requestQueue: Promise<unknown> = Promise.resolve();
 
-function enqueue<T>(job: () => Promise<T>): Promise<T> {
-  const run = queue.then(async () => {
-    const result = await job();
-    await sleep(MIN_GAP_MS);
-    return result;
+function enqueueRequest<T>(job: () => Promise<T>): Promise<T> {
+  const run = requestQueue.then(async () => {
+    const wait = Math.max(0, lastRequestStartedAt + MIN_REQUEST_GAP_MS - Date.now());
+    if (wait > 0) await sleep(wait);
+    lastRequestStartedAt = Date.now();
+    return job();
   });
-  queue = run.catch(() => undefined);
-  return run as Promise<T>;
+  requestQueue = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
 }
 
-/** Fetch with retry/backoff — Jikan rate-limits at ~3 req/sec. */
-async function request<T>(path: string, attempt = 0): Promise<T> {
+function logJikanFailure(path: string, status: number, responseMessage: string) {
+  if (import.meta.env.DEV) {
+    console.warn("[jikan] request failed", {
+      endpoint: `${BASE}${path}`,
+      status,
+      responseMessage,
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+
+/**
+ * All upstream retries and rate limiting happen in the shared proxy. Keeping
+ * this client request single-attempt avoids multiplying retries in each layer.
+ */
+async function request<T>(path: string): Promise<T> {
   let res: Response;
   try {
-    res = await enqueue(() =>
+    res = await enqueueRequest(() =>
       fetch(`${BASE}${path}`, {
         headers: { Accept: "application/json" },
-        // A hung upstream request must never stall the shared queue.
-        signal: AbortSignal.timeout(9000),
+        signal: AbortSignal.timeout(15000),
       }),
     );
-  } catch {
-    if (attempt < 1) {
-      await sleep(600 * (attempt + 1));
-      return request<T>(path, attempt + 1);
-    }
+  } catch (error) {
+    logJikanFailure(path, 0, error instanceof Error ? error.message : String(error));
     throw new JikanError("Could not reach the anime database. Check your connection.", 0);
   }
 
-  if (res.status === 429 && attempt < 2) {
-    await sleep(1200 * (attempt + 1) + Math.random() * 400);
-    return request<T>(path, attempt + 1);
+  const responseText = await res.text();
+  let payload: (T & JikanPayloadError) | undefined;
+  try {
+    payload = JSON.parse(responseText) as T & JikanPayloadError;
+  } catch {
+    payload = undefined;
   }
-  if (res.status === 404) throw new JikanError("We couldn't find that anime.", 404);
+
+  const status = payload?.upstreamStatus ?? res.status;
+  const responseMessage = payload?.upstreamMessage ?? payload?.error ?? responseText.slice(0, 300);
   if (!res.ok) {
-    // Jikan's upstream intermittently returns 502/503/504; the same request
-    // usually succeeds within a few retries.
-    if (attempt < 2 && res.status >= 500) {
-      await sleep(700 * (attempt + 1) + Math.random() * 300);
-      return request<T>(path, attempt + 1);
-    }
+    logJikanFailure(path, status, responseMessage || res.statusText || "Empty response");
+    if (res.status === 404) throw new JikanError("We couldn't find that anime.", 404);
+    throw new JikanError("The anime database is having trouble right now.", status);
+  }
+
+  if (!payload) {
+    logJikanFailure(path, res.status, "The response was not valid JSON.");
     throw new JikanError("The anime database is having trouble right now.", res.status);
   }
-  const payload = (await res.json()) as T & JikanPayloadError;
   if (payload.degraded || payload.error) {
+    logJikanFailure(path, status, responseMessage || "The service returned an error.");
     throw new JikanError(
-      payload.error || "The anime database is having trouble right now.",
-      payload.upstreamStatus ?? 503,
+      "The anime database is having trouble right now.",
+      status,
     );
   }
   return payload;
@@ -221,21 +240,20 @@ export const jikan = {
         const { kitsuSearch } = await import("./kitsu");
         const fallback = await kitsuSearch({ ...params, limit: Math.min(params.limit ?? 20, 20) });
         return { items: clean(fallback.items), pagination: fallback.pagination };
-      } catch {
-        // Both catalogues are down: degrade to an empty result set so the page
-        // renders its empty state instead of blanking out.
-        console.warn("[jikan] search unavailable", err);
-        return {
-          items: [] as Anime[],
-          pagination: {
-            last_visible_page: 1,
-            has_next_page: false,
-            current_page: params.page ?? 1,
-          } as Pagination,
-        };
+      } catch (fallbackError) {
+        if (import.meta.env.DEV) {
+          console.warn("[jikan] search fallback failed", {
+            endpoint: `${BASE}/anime`,
+            timestamp: new Date().toISOString(),
+            primaryError: err instanceof Error ? err.message : String(err),
+            fallbackError:
+              fallbackError instanceof Error ? fallbackError.message : String(fallbackError),
+          });
+        }
+        const status = err instanceof JikanError ? err.status : 503;
+        throw new JikanError("The anime database is having trouble right now.", status);
       }
     }
-
   },
   async genres() {
     const data = await request<{ data: Genre[] }>(`/genres/anime`);
@@ -335,53 +353,79 @@ export const jikan = {
   },
 };
 
-const HOUR = 1000 * 60 * 60;
+const HALF_HOUR = 30 * 60 * 1000;
+const DAY = 24 * 60 * 60 * 1000;
 
 export const trendingQuery = () =>
-  queryOptions({ queryKey: ["jikan", "trending"], queryFn: () => jikan.top("airing"), staleTime: HOUR });
+  queryOptions({
+    queryKey: ["jikan", "trending"],
+    queryFn: () => jikan.top("airing"),
+    staleTime: HALF_HOUR,
+    retry: false,
+  });
 
 export const popularQuery = () =>
   queryOptions({
     queryKey: ["jikan", "popular"],
     queryFn: () => jikan.top("bypopularity"),
-    staleTime: HOUR,
+    staleTime: HALF_HOUR,
+    retry: false,
   });
 
 export const seasonQuery = () =>
-  queryOptions({ queryKey: ["jikan", "season"], queryFn: () => jikan.seasonNow(), staleTime: HOUR });
+  queryOptions({
+    queryKey: ["jikan", "season"],
+    queryFn: () => jikan.seasonNow(),
+    staleTime: HALF_HOUR,
+    retry: false,
+  });
 
 export const genresQuery = () =>
-  queryOptions({ queryKey: ["jikan", "genres"], queryFn: () => jikan.genres(), staleTime: 24 * HOUR });
+  queryOptions({
+    queryKey: ["jikan", "genres"],
+    queryFn: () => jikan.genres(),
+    staleTime: DAY,
+    retry: false,
+  });
 
 export const searchQuery = (params: Parameters<typeof jikan.search>[0]) =>
   queryOptions({
     queryKey: ["jikan", "search", params],
     queryFn: () => jikan.search(params),
     staleTime: 10 * 60 * 1000,
+    retry: false,
   });
 
 export const animeQuery = (id: number) =>
-  queryOptions({ queryKey: ["jikan", "anime", id], queryFn: () => jikan.detail(id), staleTime: HOUR });
+  queryOptions({
+    queryKey: ["jikan", "anime", id],
+    queryFn: () => jikan.detail(id),
+    staleTime: DAY,
+    retry: false,
+  });
 
 export const charactersQuery = (id: number) =>
   queryOptions({
     queryKey: ["jikan", "characters", id],
     queryFn: () => jikan.characters(id),
-    staleTime: HOUR,
+    staleTime: HALF_HOUR,
+    retry: false,
   });
 
 export const episodesQuery = (id: number) =>
   queryOptions({
     queryKey: ["jikan", "episodes", id],
     queryFn: () => jikan.episodes(id),
-    staleTime: HOUR,
+    staleTime: HALF_HOUR,
+    retry: false,
   });
 
 export const recommendationsQuery = (id: number) =>
   queryOptions({
     queryKey: ["jikan", "recommendations", id],
     queryFn: () => jikan.recommendations(id),
-    staleTime: HOUR,
+    staleTime: HALF_HOUR,
+    retry: false,
   });
 
 /** Official / legal places to watch — derived from Jikan's licensed links only. */
