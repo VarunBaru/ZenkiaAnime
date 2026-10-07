@@ -33,8 +33,8 @@ async function enqueue<T>(job: () => Promise<T>): Promise<T> {
   while (upstreamStartTimes.length && upstreamStartTimes[0] <= now - 60_000) {
     upstreamStartTimes.shift();
   }
-  const minuteWindowStart =
-    upstreamStartTimes.length >= 60 ? (upstreamStartTimes[0] ?? now) + 60_000 : now;
+  const firstStartInWindow = upstreamStartTimes[0] ?? now;
+  const minuteWindowStart = upstreamStartTimes.length >= 60 ? firstStartInWindow + 60_000 : now;
   const startAt = Math.max(now, nextUpstreamStartAt, minuteWindowStart);
   nextUpstreamStartAt = startAt + MIN_REQUEST_GAP_MS;
   upstreamStartTimes.push(startAt);
