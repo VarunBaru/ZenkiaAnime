@@ -85,7 +85,15 @@ function Rail({
   );
 }
 
-function Hero({ anime, nav }: { anime: Anime; nav?: React.ReactNode }) {
+function Hero({
+  anime,
+  nav,
+  label = "Featured · Now airing",
+}: {
+  anime: Anime;
+  nav?: React.ReactNode;
+  label?: string;
+}) {
   const poster = posterOf(anime, true);
   const title = anime.title_english || anime.title;
   const sources = legalSources(anime);
@@ -94,7 +102,7 @@ function Hero({ anime, nav }: { anime: Anime; nav?: React.ReactNode }) {
     <div className="mx-auto grid max-w-[1500px] gap-8 px-4 py-8 sm:px-6 lg:grid-cols-12 lg:py-12">
       <div className="ink-rise lg:col-span-7">
         <span className="ink-panel-sm inline-block bg-accent px-3 py-1 font-mono text-[11px] font-bold tracking-[0.2em] text-accent-foreground uppercase">
-          Featured · Now airing
+          {label}
         </span>
         {nav}
         <h1 className="mt-5 font-display text-4xl leading-[0.95] break-words sm:text-5xl lg:text-6xl">
@@ -176,19 +184,28 @@ function Hero({ anime, nav }: { anime: Anime; nav?: React.ReactNode }) {
 
 function HomePage() {
   const trending = useQuery(trendingQuery());
+  const popular = useQuery(popularQuery());
+  const season = useQuery(seasonQuery());
   const genres = useQuery(genresQuery());
-  // Featured reuses the cached "top airing" request — no extra API call.
+  // Featured prefers the cached airing list, then real catalogue results if it
+  // is unavailable. The shared query keys keep the rails from duplicating calls.
   const airing = (trending.data ?? []).slice(0, 8);
+  const fallbackFeatured = [...(popular.data ?? []), ...(season.data ?? [])].filter(
+    (anime, index, list) => list.findIndex((entry) => entry.mal_id === anime.mal_id) === index,
+  );
+  const featuredList = airing.length > 0 ? airing : fallbackFeatured;
+  const usingFallback = airing.length === 0 && featuredList.length > 0;
   const [index, setIndex] = useState(0);
-  const featured = airing.length ? airing[index % airing.length] : undefined;
-  const step = (d: number) => setIndex((i) => (i + d + airing.length) % airing.length);
+  const featured = featuredList.length ? featuredList[index % featuredList.length] : undefined;
+  const step = (d: number) =>
+    setIndex((i) => (i + d + featuredList.length) % featuredList.length);
   const nav =
-    airing.length > 1 ? (
+    featuredList.length > 1 ? (
       <div className="mt-4 flex items-center gap-2 font-mono text-[11px] font-bold tracking-widest uppercase">
         <button aria-label="Previous featured anime" onClick={() => step(-1)} className="ink-panel-sm ink-press bg-card p-1.5">
           <ChevronLeft className="size-4" strokeWidth={3} />
         </button>
-        <span>{(index % airing.length) + 1} / {airing.length}</span>
+        <span>{(index % featuredList.length) + 1} / {featuredList.length}</span>
         <button aria-label="Next featured anime" onClick={() => step(1)} className="ink-panel-sm ink-press bg-card p-1.5">
           <ChevronRight className="size-4" strokeWidth={3} />
         </button>
@@ -198,7 +215,7 @@ function HomePage() {
   return (
     <div>
       <section className="speed-lines border-b-[3px] border-border">
-        {trending.isPending ? (
+        {trending.isPending && !featured ? (
           <div className="mx-auto grid max-w-[1500px] gap-8 px-4 py-10 sm:px-6 lg:grid-cols-12">
             <div className="space-y-4 lg:col-span-7">
               <div className="h-6 w-40 animate-pulse bg-muted" />
@@ -207,16 +224,25 @@ function HomePage() {
             </div>
             <PanelSkeleton className="mx-auto aspect-3/4 w-full max-w-[320px] lg:col-span-5" />
           </div>
-        ) : trending.isError ? (
+        ) : trending.isError && !featured ? (
           <div className="mx-auto max-w-[1500px] px-4 py-10 sm:px-6">
             <ErrorState
               title="Couldn't reach the anime database"
               message="The catalogue service didn't respond. It may be rate-limited — try again in a moment."
-              onRetry={() => trending.refetch()}
+              onRetry={() => {
+                void trending.refetch();
+                if (!popular.data?.length) void popular.refetch();
+                if (!season.data?.length) void season.refetch();
+              }}
             />
           </div>
         ) : featured ? (
-          <Hero key={featured.mal_id} anime={featured} nav={nav} />
+          <Hero
+            key={featured.mal_id}
+            anime={featured}
+            nav={nav}
+            label={usingFallback ? "Featured · AnimeHub pick" : undefined}
+          />
         ) : (
           <div className="mx-auto max-w-[1500px] px-4 py-10 sm:px-6">
             <EmptyState title="No featured anime" message="Nothing is airing in the catalogue right now." />
