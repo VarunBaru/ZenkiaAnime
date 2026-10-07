@@ -25,7 +25,7 @@ let lastUpstreamFailure: UpstreamResult | undefined;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 let queue: Promise<unknown> = Promise.resolve();
 
-function enqueue<T>(job: () => Promise<T>): Promise<T> {
+function enqueue<T>(job: () => Promise<T> | T): Promise<T> {
   const run = queue.then(async () => {
     const result = await job();
     await sleep(MIN_REQUEST_GAP_MS);
@@ -72,9 +72,9 @@ async function fetchUpstream(target: string): Promise<UpstreamResult> {
 
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const res = await enqueue(() => {
+      const res = await enqueue(async () => {
         if (Date.now() < upstreamCooldownUntil && !recoveringThisRequest) return null;
-        return fetch(target, {
+        return await fetch(target, {
           headers: {
             Accept: "application/json",
             "User-Agent": "AnimeHub/1.0 (+metadata client)",
