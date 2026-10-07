@@ -68,11 +68,13 @@ async function fetchUpstream(target: string): Promise<UpstreamResult> {
     status: 503,
     body: JSON.stringify({ error: "The anime database is temporarily unavailable." }),
   };
+  let recoveringThisRequest = false;
 
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const res = await enqueue(() =>
-        fetch(target, {
+      const res = await enqueue(() => {
+        if (Date.now() < upstreamCooldownUntil && !recoveringThisRequest) return null;
+        return fetch(target, {
           headers: {
             Accept: "application/json",
             "User-Agent": "AnimeHub/1.0 (+metadata client)",
@@ -82,11 +84,16 @@ async function fetchUpstream(target: string): Promise<UpstreamResult> {
             "Accept-Encoding": "",
           },
           signal: AbortSignal.timeout(12000),
-        }),
-      );
+        });
+      });
+      if (!res) return lastUpstreamFailure ?? lastResult;
+
       const body = await res.text();
       lastResult = { status: res.status, body };
-      if (res.status === 429 || res.status === 500 || res.status === 503 || res.status >= 500) {
+      if (res.status === 429 || res.status >= 500) {
+        recoveringThisRequest = true;
+        lastUpstreamFailure = lastResult;
+        upstreamCooldownUntil = Date.now() + UPSTREAM_COOLDOWN_MS;
         if (attempt < 2) {
           const retryAfter = Number(res.headers.get("Retry-After"));
           const delay = Number.isFinite(retryAfter) && retryAfter > 0
@@ -108,6 +115,9 @@ async function fetchUpstream(target: string): Promise<UpstreamResult> {
           error: error instanceof Error ? error.message : "Temporary network failure",
         }),
       };
+      recoveringThisRequest = true;
+      lastUpstreamFailure = lastResult;
+      upstreamCooldownUntil = Date.now() + UPSTREAM_COOLDOWN_MS;
       if (attempt < 2) await sleep(1000 * 2 ** attempt + Math.random() * 300);
     }
   }
