@@ -86,23 +86,17 @@ type JikanPayloadError = {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-/** Space browser requests so multiple homepage sections do not burst upstream. */
+/** Space browser request starts without making sections wait on prior responses. */
 const MIN_REQUEST_GAP_MS = 400;
-let lastRequestStartedAt = 0;
-let requestQueue: Promise<unknown> = Promise.resolve();
+let nextRequestAt = 0;
 
-function enqueueRequest<T>(job: () => Promise<T>): Promise<T> {
-  const run = requestQueue.then(async () => {
-    const wait = Math.max(0, lastRequestStartedAt + MIN_REQUEST_GAP_MS - Date.now());
-    if (wait > 0) await sleep(wait);
-    lastRequestStartedAt = Date.now();
-    return job();
-  });
-  requestQueue = run.then(
-    () => undefined,
-    () => undefined,
-  );
-  return run;
+async function enqueueRequest<T>(job: () => Promise<T>): Promise<T> {
+  const now = Date.now();
+  const startAt = Math.max(now, nextRequestAt);
+  nextRequestAt = startAt + MIN_REQUEST_GAP_MS;
+  const wait = startAt - now;
+  if (wait > 0) await sleep(wait);
+  return job();
 }
 
 function logJikanFailure(path: string, status: number, responseMessage: string) {
