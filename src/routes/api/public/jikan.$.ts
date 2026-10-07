@@ -22,15 +22,22 @@ const inflight = new Map<string, Promise<UpstreamResult>>();
 let upstreamCooldownUntil = 0;
 let lastUpstreamFailure: UpstreamResult | undefined;
 let nextUpstreamStartAt = 0;
+const upstreamStartTimes: number[] = [];
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function enqueue<T>(job: () => Promise<T>): Promise<T> {
-  // Reserve evenly spaced start slots, but don't serialize response waiting:
-  // a slow upstream response must not stall every other Home section.
-  const now = Date.now();
-  const startAt = Math.max(now, nextUpstreamStartAt);
+  // Reserve evenly spaced start slots and honor Jikan's rolling per-minute
+  // quota, without serializing response waiting between independent sections.
+  let now = Date.now();
+  while (upstreamStartTimes.length && upstreamStartTimes[0] <= now - 60_000) {
+    upstreamStartTimes.shift();
+  }
+  const minuteWindowStart =
+    upstreamStartTimes.length >= 60 ? (upstreamStartTimes[0] ?? now) + 60_000 : now;
+  const startAt = Math.max(now, nextUpstreamStartAt, minuteWindowStart);
   nextUpstreamStartAt = startAt + MIN_REQUEST_GAP_MS;
+  upstreamStartTimes.push(startAt);
   const wait = startAt - now;
   if (wait > 0) await sleep(wait);
   return job();
