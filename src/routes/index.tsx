@@ -241,7 +241,7 @@ function HomePage() {
             key={featured.mal_id}
             anime={featured}
             nav={nav}
-            label={usingFallback ? "Featured · AnimeHub pick" : undefined}
+            {...(usingFallback ? { label: "Featured · AnimeHub pick" } : {})}
           />
         ) : (
           <div className="mx-auto max-w-[1500px] px-4 py-10 sm:px-6">
