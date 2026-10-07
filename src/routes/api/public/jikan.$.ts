@@ -30,7 +30,9 @@ async function enqueue<T>(job: () => Promise<T>): Promise<T> {
   // Reserve evenly spaced start slots and honor Jikan's rolling per-minute
   // quota, without serializing response waiting between independent sections.
   let now = Date.now();
-  while (upstreamStartTimes.length && upstreamStartTimes[0] <= now - 60_000) {
+  while (true) {
+    const oldestStart = upstreamStartTimes[0];
+    if (oldestStart === undefined || oldestStart > now - 60_000) break;
     upstreamStartTimes.shift();
   }
   const firstStartInWindow = upstreamStartTimes[0] ?? now;
