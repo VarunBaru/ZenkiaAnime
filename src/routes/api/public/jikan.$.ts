@@ -21,18 +21,28 @@ const cache = new Map<string, Entry>();
 const inflight = new Map<string, Promise<UpstreamResult>>();
 let upstreamCooldownUntil = 0;
 let lastUpstreamFailure: UpstreamResult | undefined;
+let nextUpstreamStartAt = 0;
+const upstreamStartTimes: number[] = [];
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-let queue: Promise<unknown> = Promise.resolve();
 
-function enqueue<T>(job: () => Promise<T>): Promise<T> {
-  const run = queue.then(async () => {
-    const result = await job();
-    await sleep(MIN_REQUEST_GAP_MS);
-    return result;
-  });
-  queue = run.catch(() => undefined);
-  return run as Promise<T>;
+async function enqueue<T>(job: () => Promise<T>): Promise<T> {
+  // Reserve evenly spaced start slots and honor Jikan's rolling per-minute
+  // quota, without serializing response waiting between independent sections.
+  let now = Date.now();
+  while (true) {
+    const oldestStart = upstreamStartTimes[0];
+    if (oldestStart === undefined || oldestStart > now - 60_000) break;
+    upstreamStartTimes.shift();
+  }
+  const firstStartInWindow = upstreamStartTimes[0] ?? now;
+  const minuteWindowStart = upstreamStartTimes.length >= 60 ? firstStartInWindow + 60_000 : now;
+  const startAt = Math.max(now, nextUpstreamStartAt, minuteWindowStart);
+  nextUpstreamStartAt = startAt + MIN_REQUEST_GAP_MS;
+  upstreamStartTimes.push(startAt);
+  const wait = startAt - now;
+  if (wait > 0) await sleep(wait);
+  return job();
 }
 
 function responseMessage(body: string) {
@@ -68,11 +78,13 @@ async function fetchUpstream(target: string): Promise<UpstreamResult> {
     status: 503,
     body: JSON.stringify({ error: "The anime database is temporarily unavailable." }),
   };
+  let recoveringThisRequest = false;
 
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const res = await enqueue(() =>
-        fetch(target, {
+      const res = await enqueue(async () => {
+        if (Date.now() < upstreamCooldownUntil && !recoveringThisRequest) return null;
+        return await fetch(target, {
           headers: {
             Accept: "application/json",
             "User-Agent": "AnimeHub/1.0 (+metadata client)",
@@ -82,11 +94,16 @@ async function fetchUpstream(target: string): Promise<UpstreamResult> {
             "Accept-Encoding": "",
           },
           signal: AbortSignal.timeout(12000),
-        }),
-      );
+        });
+      });
+      if (!res) return lastUpstreamFailure ?? lastResult;
+
       const body = await res.text();
       lastResult = { status: res.status, body };
-      if (res.status === 429 || res.status === 500 || res.status === 503 || res.status >= 500) {
+      if (res.status === 429 || res.status >= 500) {
+        recoveringThisRequest = true;
+        lastUpstreamFailure = lastResult;
+        upstreamCooldownUntil = Date.now() + UPSTREAM_COOLDOWN_MS;
         if (attempt < 2) {
           const retryAfter = Number(res.headers.get("Retry-After"));
           const delay = Number.isFinite(retryAfter) && retryAfter > 0
@@ -108,6 +125,9 @@ async function fetchUpstream(target: string): Promise<UpstreamResult> {
           error: error instanceof Error ? error.message : "Temporary network failure",
         }),
       };
+      recoveringThisRequest = true;
+      lastUpstreamFailure = lastResult;
+      upstreamCooldownUntil = Date.now() + UPSTREAM_COOLDOWN_MS;
       if (attempt < 2) await sleep(1000 * 2 ** attempt + Math.random() * 300);
     }
   }
