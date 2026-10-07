@@ -21,18 +21,19 @@ const cache = new Map<string, Entry>();
 const inflight = new Map<string, Promise<UpstreamResult>>();
 let upstreamCooldownUntil = 0;
 let lastUpstreamFailure: UpstreamResult | undefined;
+let nextUpstreamStartAt = 0;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-let queue: Promise<unknown> = Promise.resolve();
 
-function enqueue<T>(job: () => Promise<T> | T): Promise<T> {
-  const run = queue.then(async () => {
-    const result = await job();
-    await sleep(MIN_REQUEST_GAP_MS);
-    return result;
-  });
-  queue = run.catch(() => undefined);
-  return run as Promise<T>;
+async function enqueue<T>(job: () => Promise<T>): Promise<T> {
+  // Reserve evenly spaced start slots, but don't serialize response waiting:
+  // a slow upstream response must not stall every other Home section.
+  const now = Date.now();
+  const startAt = Math.max(now, nextUpstreamStartAt);
+  nextUpstreamStartAt = startAt + MIN_REQUEST_GAP_MS;
+  const wait = startAt - now;
+  if (wait > 0) await sleep(wait);
+  return job();
 }
 
 function responseMessage(body: string) {
