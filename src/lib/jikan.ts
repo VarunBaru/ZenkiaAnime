@@ -86,7 +86,7 @@ type JikanPayloadError = {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-/** Space browser request starts without making sections wait on prior responses. */
+/** Keep client-side request starts under Jikan's published 3 requests/second. */
 const MIN_REQUEST_GAP_MS = 400;
 let nextRequestAt = 0;
 
@@ -114,7 +114,7 @@ function logJikanFailure(path: string, status: number, responseMessage: string) 
  * All upstream retries and rate limiting happen in the shared proxy. Keeping
  * this client request single-attempt avoids multiplying retries in each layer.
  */
-async function request<T>(path: string): Promise<T> {
+async function request<T>(path: string, signal?: AbortSignal): Promise<T> {
   let res: Response;
   try {
     res = await enqueueRequest(() =>
@@ -124,6 +124,7 @@ async function request<T>(path: string): Promise<T> {
       }),
     );
   } catch (error) {
+    if (signal?.aborted) throw error;
     logJikanFailure(path, 0, error instanceof Error ? error.message : String(error));
     throw new JikanError("Could not reach the anime database. Check your connection.", 0);
   }

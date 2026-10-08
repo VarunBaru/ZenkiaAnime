@@ -13,14 +13,15 @@ const LIST_TTL_MS = 30 * 60 * 1000;
 const DETAIL_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_ENTRIES = 300;
 const UPSTREAM_COOLDOWN_MS = 15_000;
+const UPSTREAM_TIMEOUT_MS = 6_000;
+const MAX_ATTEMPTS = 2;
 const MIN_REQUEST_GAP_MS = 400;
 
 type Entry = { body: string; expires: number; status: number };
 type UpstreamResult = { status: number; body: string };
 const cache = new Map<string, Entry>();
 const inflight = new Map<string, Promise<UpstreamResult>>();
-let upstreamCooldownUntil = 0;
-let lastUpstreamFailure: UpstreamResult | undefined;
+const upstreamFailures = new Map<string, { retryAfter: number; result: UpstreamResult }>();
 let nextUpstreamStartAt = 0;
 const upstreamStartTimes: number[] = [];
 
@@ -67,24 +68,20 @@ function logUpstreamFailure(target: string, status: number, body: string) {
 }
 
 async function fetchUpstream(target: string): Promise<UpstreamResult> {
-  if (Date.now() < upstreamCooldownUntil) {
-    return lastUpstreamFailure ?? {
-      status: 503,
-      body: JSON.stringify({ error: "The anime database is temporarily unavailable." }),
-    };
+  const previousFailure = upstreamFailures.get(target);
+  if (previousFailure && Date.now() < previousFailure.retryAfter) {
+    return previousFailure.result;
   }
 
-  let lastResult: UpstreamResult = {
+  let lastResult: UpstreamResult = previousFailure?.result ?? {
     status: 503,
     body: JSON.stringify({ error: "The anime database is temporarily unavailable." }),
   };
-  let recoveringThisRequest = false;
 
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     try {
-      const res = await enqueue(async () => {
-        if (Date.now() < upstreamCooldownUntil && !recoveringThisRequest) return null;
-        return await fetch(target, {
+      const res = await enqueue(() =>
+        fetch(target, {
           headers: {
             Accept: "application/json",
             "User-Agent": "AnimeHub/1.0 (+metadata client)",
@@ -93,18 +90,14 @@ async function fetchUpstream(target: string): Promise<UpstreamResult> {
             // compression and reliably reaches the healthy cached copy.
             "Accept-Encoding": "",
           },
-          signal: AbortSignal.timeout(12000),
-        });
-      });
-      if (!res) return lastUpstreamFailure ?? lastResult;
-
+          signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+        }),
+      );
       const body = await res.text();
       lastResult = { status: res.status, body };
       if (res.status === 429 || res.status >= 500) {
-        recoveringThisRequest = true;
-        lastUpstreamFailure = lastResult;
-        upstreamCooldownUntil = Date.now() + UPSTREAM_COOLDOWN_MS;
-        if (attempt < 2) {
+        upstreamFailures.set(target, { retryAfter: Date.now() + UPSTREAM_COOLDOWN_MS, result: lastResult });
+        if (attempt + 1 < MAX_ATTEMPTS) {
           const retryAfter = Number(res.headers.get("Retry-After"));
           const delay = Number.isFinite(retryAfter) && retryAfter > 0
             ? Math.min(retryAfter * 1000, 10_000)
@@ -113,10 +106,7 @@ async function fetchUpstream(target: string): Promise<UpstreamResult> {
         }
         continue;
       }
-      if (res.ok) {
-        upstreamCooldownUntil = 0;
-        lastUpstreamFailure = undefined;
-      }
+      if (res.ok) upstreamFailures.delete(target);
       return lastResult;
     } catch (error) {
       lastResult = {
@@ -125,16 +115,13 @@ async function fetchUpstream(target: string): Promise<UpstreamResult> {
           error: error instanceof Error ? error.message : "Temporary network failure",
         }),
       };
-      recoveringThisRequest = true;
-      lastUpstreamFailure = lastResult;
-      upstreamCooldownUntil = Date.now() + UPSTREAM_COOLDOWN_MS;
-      if (attempt < 2) await sleep(1000 * 2 ** attempt + Math.random() * 300);
+      upstreamFailures.set(target, { retryAfter: Date.now() + UPSTREAM_COOLDOWN_MS, result: lastResult });
+      if (attempt + 1 < MAX_ATTEMPTS) await sleep(1000 * 2 ** attempt + Math.random() * 300);
     }
   }
 
   logUpstreamFailure(target, lastResult.status, lastResult.body);
-  lastUpstreamFailure = lastResult;
-  upstreamCooldownUntil = Date.now() + UPSTREAM_COOLDOWN_MS;
+  upstreamFailures.set(target, { retryAfter: Date.now() + UPSTREAM_COOLDOWN_MS, result: lastResult });
   return lastResult;
 }
 
@@ -188,7 +175,7 @@ export const Route = createFileRoute("/api/public/jikan/$")({
         if (status >= 500 || status === 429) {
           // A third-party outage is expected degradation, not an unhandled app
           // failure. Return a successful transport response with an explicit
-          // marker so the service layer can use its backup catalogue.
+          // marker so the service layer can show a friendly section error.
           return Response.json(
             {
               error: "The anime database is unavailable right now.",
