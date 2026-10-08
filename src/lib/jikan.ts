@@ -86,7 +86,7 @@ type JikanPayloadError = {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-/** Space browser request starts without making sections wait on prior responses. */
+/** Keep client-side request starts under Jikan's published 3 requests/second. */
 const MIN_REQUEST_GAP_MS = 400;
 let nextRequestAt = 0;
 
