@@ -357,7 +357,6 @@ export const trendingQuery = () =>
     queryFn: () => jikan.top("airing"),
     staleTime: HALF_HOUR,
     retry: false,
-    refetchOnMount: false,
   });
 
 export const popularQuery = () =>
@@ -366,7 +365,6 @@ export const popularQuery = () =>
     queryFn: () => jikan.top("bypopularity"),
     staleTime: HALF_HOUR,
     retry: false,
-    refetchOnMount: false,
   });
 
 export const seasonQuery = () =>
@@ -375,7 +373,6 @@ export const seasonQuery = () =>
     queryFn: () => jikan.seasonNow(),
     staleTime: HALF_HOUR,
     retry: false,
-    refetchOnMount: false,
   });
 
 export const genresQuery = () =>
@@ -384,7 +381,6 @@ export const genresQuery = () =>
     queryFn: () => jikan.genres(),
     staleTime: DAY,
     retry: false,
-    refetchOnMount: false,
   });
 
 export const searchQuery = (params: Parameters<typeof jikan.search>[0]) =>
@@ -393,7 +389,6 @@ export const searchQuery = (params: Parameters<typeof jikan.search>[0]) =>
     queryFn: () => jikan.search(params),
     staleTime: 10 * 60 * 1000,
     retry: false,
-    refetchOnMount: false,
   });
 
 export const animeQuery = (id: number) =>
@@ -402,7 +397,6 @@ export const animeQuery = (id: number) =>
     queryFn: () => jikan.detail(id),
     staleTime: DAY,
     retry: false,
-    refetchOnMount: false,
   });
 
 export const charactersQuery = (id: number) =>
@@ -411,7 +405,6 @@ export const charactersQuery = (id: number) =>
     queryFn: () => jikan.characters(id),
     staleTime: HALF_HOUR,
     retry: false,
-    refetchOnMount: false,
   });
 
 export const episodesQuery = (id: number) =>
@@ -420,7 +413,6 @@ export const episodesQuery = (id: number) =>
     queryFn: () => jikan.episodes(id),
     staleTime: HALF_HOUR,
     retry: false,
-    refetchOnMount: false,
   });
 
 export const recommendationsQuery = (id: number) =>
@@ -429,7 +421,6 @@ export const recommendationsQuery = (id: number) =>
     queryFn: () => jikan.recommendations(id),
     staleTime: HALF_HOUR,
     retry: false,
-    refetchOnMount: false,
   });
 
 /** Official / legal places to watch — derived from Jikan's licensed links only. */
