@@ -13,6 +13,8 @@ const LIST_TTL_MS = 30 * 60 * 1000;
 const DETAIL_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_ENTRIES = 300;
 const UPSTREAM_COOLDOWN_MS = 15_000;
+const UPSTREAM_TIMEOUT_MS = 6_000;
+const MAX_ATTEMPTS = 2;
 const MIN_REQUEST_GAP_MS = 400;
 
 type Entry = { body: string; expires: number; status: number };
@@ -76,7 +78,7 @@ async function fetchUpstream(target: string): Promise<UpstreamResult> {
     body: JSON.stringify({ error: "The anime database is temporarily unavailable." }),
   };
 
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     try {
       const res = await enqueue(() =>
         fetch(target, {
@@ -88,14 +90,14 @@ async function fetchUpstream(target: string): Promise<UpstreamResult> {
             // compression and reliably reaches the healthy cached copy.
             "Accept-Encoding": "",
           },
-          signal: AbortSignal.timeout(12000),
+          signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
         }),
       );
       const body = await res.text();
       lastResult = { status: res.status, body };
       if (res.status === 429 || res.status >= 500) {
         upstreamFailures.set(target, { retryAfter: Date.now() + UPSTREAM_COOLDOWN_MS, result: lastResult });
-        if (attempt < 2) {
+        if (attempt + 1 < MAX_ATTEMPTS) {
           const retryAfter = Number(res.headers.get("Retry-After"));
           const delay = Number.isFinite(retryAfter) && retryAfter > 0
             ? Math.min(retryAfter * 1000, 10_000)
@@ -114,7 +116,7 @@ async function fetchUpstream(target: string): Promise<UpstreamResult> {
         }),
       };
       upstreamFailures.set(target, { retryAfter: Date.now() + UPSTREAM_COOLDOWN_MS, result: lastResult });
-      if (attempt < 2) await sleep(1000 * 2 ** attempt + Math.random() * 300);
+      if (attempt + 1 < MAX_ATTEMPTS) await sleep(1000 * 2 ** attempt + Math.random() * 300);
     }
   }
 
