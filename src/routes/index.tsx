@@ -228,7 +228,7 @@ function HomePage() {
           <div className="mx-auto max-w-[1500px] px-4 py-10 sm:px-6">
             <ErrorState
               title="Couldn't reach the anime database"
-              message="The catalogue service didn't respond. It may be rate-limited — try again in a moment."
+              message="We couldn't get the latest titles. Please try again in a moment."
               onRetry={() => {
                 void trending.refetch();
                 if (!popular.data?.length) void popular.refetch();

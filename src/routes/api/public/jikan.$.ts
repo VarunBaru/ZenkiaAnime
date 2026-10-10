@@ -14,7 +14,7 @@ const DETAIL_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_ENTRIES = 300;
 const UPSTREAM_COOLDOWN_MS = 15_000;
 const UPSTREAM_TIMEOUT_MS = 6_000;
-const MAX_ATTEMPTS = 2;
+const MAX_ATTEMPTS = 3;
 const MIN_REQUEST_GAP_MS = 400;
 
 type Entry = { body: string; expires: number; status: number };
@@ -161,7 +161,10 @@ export const Route = createFileRoute("/api/public/jikan/$")({
         const { status, body } = await pending;
 
         if (status === 200) {
-          if (cache.size >= MAX_ENTRIES) cache.clear();
+          if (cache.size >= MAX_ENTRIES) {
+            const oldestKey = cache.keys().next().value;
+            if (oldestKey !== undefined) cache.delete(oldestKey);
+          }
           cache.set(key, { body, expires: Date.now() + cacheTtl(path), status });
         } else if (hit) {
           // Upstream is unhappy but we have an older good copy — stale data

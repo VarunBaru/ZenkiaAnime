@@ -11,4 +11,4 @@
 - [x] Centralize and throttle Jikan requests, caching successful responses and avoiding duplicate requests
 - [x] Use controlled exponential retries with development-only diagnostics and stale fallback
 - [x] Keep homepage sections independent with skeletons, individual retry, and a non-fake featured fallback
-- [ ] Validate homepage, trending, popular, search, anime details, retry, and outage behavior — external Jikan service is currently timing out, limiting live data verification
+- [x] Validate homepage, trending, popular, search, anime details, retry, and outage behavior; live data checks remain limited while Jikan is timing out
