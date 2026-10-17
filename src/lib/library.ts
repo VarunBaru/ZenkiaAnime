@@ -63,10 +63,12 @@ export const historyQuery = () =>
       const { data, error } = await supabase
         .from("watch_history")
         .select("*")
-        .order("last_watched_at", { ascending: false });
+        .order("last_watched_at", { ascending: false })
+        .abortSignal(AbortSignal.timeout(10_000));
       if (error) throw new Error(error.message);
       return (data ?? []) as HistoryRow[];
     },
+    retry: false,
   });
 
 export const profileQuery = (userId: string | undefined) =>
