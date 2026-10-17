@@ -39,11 +39,9 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 border-b-[3px] border-border bg-background/95 backdrop-blur-sm">
       <div className="mx-auto grid max-w-[1500px] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-6 lg:flex lg:gap-5">
         <Link to="/" className="flex min-w-0 items-center gap-2">
-          <span className="ink-panel-sm bg-accent px-2 py-1 font-display text-lg leading-none text-accent-foreground">
-            A
-          </span>
+          <img src="/brand-logo.webp" alt="Zenkia Anime Logo" className="h-9 w-9 object-cover rounded border-[2px] border-border" />
           <span className="truncate font-display text-xl leading-none tracking-tight sm:text-2xl">
-            ANIMEHUB
+            ZENKIA
           </span>
         </Link>
 

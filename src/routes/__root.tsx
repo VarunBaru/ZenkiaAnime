@@ -81,16 +81,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "AnimeHub — Manga-styled anime discovery & tracking" },
+      { title: "Zenkia Anime — Manga-styled anime discovery & tracking" },
       {
         name: "description",
         content:
-          "Discover anime, browse genres, track your watchlist and episode progress, and jump to official licensed streaming sources.",
+          "Zenkia Anime: Discover anime, browse genres, track your watchlist and episode progress, and jump to official licensed streaming sources.",
       },
-      { property: "og:title", content: "AnimeHub — anime discovery & tracking" },
+      { property: "og:title", content: "Zenkia Anime — anime discovery & tracking" },
       {
         property: "og:description",
-        content: "Discover, search and track anime in a manga-inspired catalogue.",
+        content: "Discover, search and track anime in a manga-inspired Zenkia Anime catalogue.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
