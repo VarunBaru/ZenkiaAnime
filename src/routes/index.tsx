@@ -19,6 +19,7 @@ import { HomeWatchlist } from "@/components/HomeWatchlist";
 import { AuthForm } from "@/components/AuthForm";
 import { useAuth } from "@/hooks/useAuth";
 import { profileQuery } from "@/lib/library";
+import { usePreferences } from "@/lib/preferences";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -191,6 +192,7 @@ function Hero({
 
 function HomePage() {
   const { user, loading: authLoading } = useAuth();
+  const { showHomeHistory, showHomeWatchlist } = usePreferences();
   const profile = useQuery(profileQuery(user?.id));
   const trending = useQuery(trendingQuery());
   const popular = useQuery(popularQuery());
@@ -308,8 +310,8 @@ function HomePage() {
       </section>
 
       <div className="mx-auto max-w-[1500px] px-4 pb-8 sm:px-6">
-        <ContinueWatching />
-        <HomeWatchlist />
+        {showHomeHistory && <ContinueWatching />}
+        {showHomeWatchlist && <HomeWatchlist />}
         <Rail title="Trending now" to="/browse" query={trendingQuery()} />
         <Rail title="Popular anime" to="/browse" query={popularQuery()} />
         <Rail title="This season" to="/browse" query={seasonQuery()} />
