@@ -6,6 +6,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ensureProfile } from "@/lib/library";
 
+const SAKURA_PETALS = [
+  { left: "8%", top: "12%", delay: "-3s", duration: "13s" },
+  { left: "28%", top: "4%", delay: "-9s", duration: "15s" },
+  { left: "53%", top: "16%", delay: "-6s", duration: "12s" },
+  { left: "74%", top: "6%", delay: "-11s", duration: "16s" },
+  { left: "91%", top: "24%", delay: "-1s", duration: "14s" },
+] as const;
+
 function friendly(message: string) {
   const m = message.toLowerCase();
   if (m.includes("invalid login")) return "Wrong email or password — try again.";
@@ -85,7 +93,7 @@ export function AuthForm({ initialMode = "signin" }: { initialMode?: "signin" | 
         aria-hidden="true"
         viewBox="0 0 460 340"
         fill="none"
-        className="pointer-events-none absolute -top-8 -right-20 z-0 h-64 w-80 text-accent/35 sm:h-80 sm:w-[460px]"
+        className="sakura-branch-motion pointer-events-none absolute -top-8 -right-20 z-0 h-64 w-80 text-accent/35 sm:h-80 sm:w-[460px]"
       >
         <path
           d="M452 16C362 56 360 117 292 143c-71 27-101 7-151 54C98 236 65 288 13 322M348 105c-9-42-3-65 19-90m-89 137c-40-8-61-25-76-57m25 71c-5 39-25 62-58 81m153-101c28-1 49-13 70-39"
@@ -115,6 +123,21 @@ export function AuthForm({ initialMode = "signin" }: { initialMode?: "signin" | 
         </g>
         <path d="M64 93c13 9 16 17 12 28m221 151c14-4 23-2 31 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
       </svg>
+
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        {SAKURA_PETALS.map((petal, index) => (
+          <span
+            key={index}
+            className="sakura-petal-motion absolute"
+            style={{
+              left: petal.left,
+              top: petal.top,
+              animationDelay: petal.delay,
+              animationDuration: petal.duration,
+            }}
+          />
+        ))}
+      </div>
 
       <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-8 lg:grid-cols-[1fr_minmax(0,0.95fr)] lg:gap-14">
         <section className="relative">
