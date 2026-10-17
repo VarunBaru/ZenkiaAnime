@@ -20,6 +20,10 @@ type Ctx = {
   setLanguage: (l: AnimeLanguage) => void;
   theme: ThemePref;
   setTheme: (t: ThemePref) => void;
+  showHomeHistory: boolean;
+  setShowHomeHistory: (show: boolean) => void;
+  showHomeWatchlist: boolean;
+  setShowHomeWatchlist: (show: boolean) => void;
 };
 
 const PreferencesContext = createContext<Ctx | null>(null);
@@ -35,6 +39,8 @@ function applyTheme(theme: ThemePref) {
 export function PreferencesProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<AnimeLanguage>("en");
   const [theme, setThemeState] = useState<ThemePref>("system");
+  const [showHomeHistory, setShowHomeHistoryState] = useState(true);
+  const [showHomeWatchlist, setShowHomeWatchlistState] = useState(true);
 
   // Read stored values after hydration to avoid SSR mismatches.
   useEffect(() => {
@@ -43,6 +49,8 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
       if (l === "en" || l === "jp") setLanguageState(l);
       const t = localStorage.getItem(THEME_KEY);
       if (t === "light" || t === "dark" || t === "system") setThemeState(t);
+      setShowHomeHistoryState(localStorage.getItem("animehub:home-history") !== "hidden");
+      setShowHomeWatchlistState(localStorage.getItem("animehub:home-watchlist") !== "hidden");
     } catch {
       /* storage unavailable */
     }
@@ -75,8 +83,26 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const setShowHomeHistory = useCallback((show: boolean) => {
+    setShowHomeHistoryState(show);
+    try {
+      localStorage.setItem("animehub:home-history", show ? "visible" : "hidden");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const setShowHomeWatchlist = useCallback((show: boolean) => {
+    setShowHomeWatchlistState(show);
+    try {
+      localStorage.setItem("animehub:home-watchlist", show ? "visible" : "hidden");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   return (
-    <PreferencesContext.Provider value={{ language, setLanguage, theme, setTheme }}>
+    <PreferencesContext.Provider value={{ language, setLanguage, theme, setTheme, showHomeHistory, setShowHomeHistory, showHomeWatchlist, setShowHomeWatchlist }}>
       {children}
     </PreferencesContext.Provider>
   );
