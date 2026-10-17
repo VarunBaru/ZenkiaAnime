@@ -6,9 +6,14 @@ export function SiteFooter() {
       <div className="mx-auto flex max-w-[1500px] flex-col items-center justify-between gap-6 px-4 py-10 sm:px-6 lg:flex-row">
         <Link to="/" aria-label="Zenkia Anime home" className="inline-flex items-center">
           <img
+            src="/brand-wordmark-light.webp"
+            alt="Zenkia Anime"
+            className="h-10 w-auto max-w-[170px] dark:hidden"
+          />
+          <img
             src="/brand-wordmark.webp"
             alt="Zenkia Anime"
-            className="h-10 w-auto max-w-[170px]"
+            className="hidden h-10 w-auto max-w-[170px] dark:block"
           />
         </Link>
         <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-mono text-[11px] tracking-widest text-muted-foreground uppercase">
