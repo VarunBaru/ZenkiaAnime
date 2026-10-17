@@ -379,7 +379,7 @@ export async function kitsuCharactersByMalId(malId: number) {
 /**
  * Fetch episodes with real titles from Kitsu for a given MAL ID
  */
-export async function kitsuEpisodesByMalId(malId: number) {
+export async function kitsuEpisodesByMalId(malId: number, fromEpisode = 1) {
   try {
     const kitsuId = await getKitsuId(malId);
     if (!kitsuId) return [];
@@ -412,7 +412,8 @@ export async function kitsuEpisodesByMalId(malId: number) {
 
     // Fetch in batches of 20 (Kitsu's max page limit)
     const BATCH = 20;
-    for (let offset = 0; offset < totalCount; offset += BATCH) {
+    const startOffset = Math.floor((Math.max(1, fromEpisode) - 1) / BATCH) * BATCH;
+    for (let offset = startOffset; offset < totalCount; offset += BATCH) {
       try {
         const url = `${BASE}/episodes?filter[mediaId]=${kitsuId}&filter[mediaType]=Anime&page[limit]=${BATCH}&page[offset]=${offset}&sort=number`;
         console.log(`[kitsu] fetching episodes batch at ${offset}/${totalCount}: ${url}`);

@@ -399,7 +399,29 @@ export const jikan = {
         .filter((ep) => (seen.has(ep.mal_id) ? false : (seen.add(ep.mal_id), true)))
         .sort((a, b) => a.mal_id - b.mal_id);
 
-      if (items.length > 0) return items;
+      if (items.length > 0) {
+        // Jikan's One Piece episode feed stops including Japanese titles after
+        // episode 743. Fill only missing titles from Kitsu; keep Jikan's episode
+        // list and English titles authoritative, and leave unknown titles empty.
+        if (id === 21 && items.some((ep) => ep.mal_id >= 744 && !ep.title_japanese)) {
+          try {
+            const { kitsuEpisodesByMalId } = await import("./kitsu");
+            const fallback = await kitsuEpisodesByMalId(21, 744);
+            const japaneseTitles = new Map(
+              fallback
+                .filter((ep) => ep.title_japanese?.trim())
+                .map((ep) => [ep.mal_id, ep.title_japanese!.trim()]),
+            );
+            return items.map((ep) => {
+              const titleJapanese = ep.title_japanese?.trim() || japaneseTitles.get(ep.mal_id);
+              return titleJapanese ? { ...ep, title_japanese: titleJapanese } : ep;
+            });
+          } catch {
+            // The primary Jikan episode data remains usable without the fallback.
+          }
+        }
+        return items;
+      }
     } catch {
       // Fall through to Kitsu
     }

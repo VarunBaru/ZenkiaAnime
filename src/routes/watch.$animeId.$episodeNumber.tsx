@@ -8,9 +8,9 @@ import {
   Grid3x3,
   List,
   Cast,
-  Maximize,
   ExternalLink,
 } from "lucide-react";
+import { toast } from "sonner";
 import { animeQuery, episodesQuery } from "@/lib/jikan";
 import { anilistQuery, embedUrl } from "@/lib/anilist";
 import { providerLang, usePreferences } from "@/lib/preferences";
@@ -99,7 +99,6 @@ function WatchPage() {
   const { user } = useAuth();
   const [frameFailed, setFrameFailed] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const playerContainerRef = useRef<HTMLDivElement>(null);
   const { language } = usePreferences();
   const preferredLang = providerLang(language);
   // Manual override for this visit; null = follow the saved EN/JP preference.
@@ -114,13 +113,7 @@ function WatchPage() {
   const [castSupported, setCastSupported] = useState(false);
 
   useEffect(() => {
-    // Check if Remote Playback API is supported
-    if (
-      "remote" in HTMLVideoElement.prototype ||
-      "webkitShowPlaybackTargetPicker" in HTMLVideoElement.prototype
-    ) {
-      setCastSupported(true);
-    }
+    setCastSupported(typeof PresentationRequest !== "undefined");
   }, []);
 
   const anime = useQuery(animeQuery(id));
@@ -302,42 +295,20 @@ function WatchPage() {
   const src = embedUrl(anilist.data.id, episode, activeLang, streamServer);
   const currentEpisode = episodes.data?.[episode - 1];
 
-  const handleCast = () => {
-    // 1. If currently in fullscreen, exit
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
+  const handleCastToTv = async () => {
+    if (typeof PresentationRequest === "undefined") {
+      toast.error("Direct TV casting is not supported in this browser.");
       return;
     }
 
-    // 2. Request fullscreen on the player container (most reliable way)
-    const container = playerContainerRef.current;
-    if (container) {
-      if (container.requestFullscreen) {
-        container.requestFullscreen().catch(() => {
-          // Fallback: open popout player window for native Chrome/Edge Chromecast
-          window.open(
-            src,
-            "_blank",
-            "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no",
-          );
-        });
-      } else {
-        window.open(
-          src,
-          "_blank",
-          "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no",
-        );
-      }
+    try {
+      await new PresentationRequest(src).start();
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      toast.error(
+        "Couldn't connect to a TV. Check that a compatible TV is available on your network.",
+      );
     }
-  };
-
-  const handlePopoutCast = () => {
-    // Opens a clean popup player which allows Chrome/Edge right-click -> Cast to TV
-    window.open(
-      src,
-      "AnimeHubPlayer",
-      "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes",
-    );
   };
 
   return (
@@ -365,7 +336,7 @@ function WatchPage() {
             </p>
           </div>
         ) : (
-          <div ref={playerContainerRef} className="relative aspect-video w-full bg-black group">
+          <div className="relative aspect-video w-full bg-black group">
             <iframe
               ref={iframeRef}
               key={src}
@@ -377,24 +348,19 @@ function WatchPage() {
               referrerPolicy="origin"
               onError={() => setFrameFailed(true)}
             />
-            {/* Top Right Action Overlay (Fullscreen & Cast Popout) */}
+            {/* Directly choose an available TV with the browser Presentation API. */}
             <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
               <button
-                onClick={handleCast}
-                title="Toggle Fullscreen"
-                className="ink-panel-sm ink-press bg-black/80 hover:bg-black text-white px-3 py-2 opacity-80 hover:opacity-100 backdrop-blur transition-opacity flex items-center gap-1.5 font-mono text-[10px] font-bold tracking-widest uppercase border border-white/20"
-              >
-                <Maximize className="size-3.5" />
-                <span>Fullscreen</span>
-              </button>
-
-              <button
-                onClick={handlePopoutCast}
-                title="Open in Cast Window (for Chromecast/AirPlay)"
+                onClick={handleCastToTv}
+                title={
+                  castSupported
+                    ? "Cast this episode to a TV"
+                    : "TV casting is unavailable in this browser"
+                }
                 className="ink-panel-sm ink-press bg-accent hover:bg-accent/90 text-accent-foreground px-3 py-2 opacity-90 hover:opacity-100 backdrop-blur transition-opacity flex items-center gap-1.5 font-mono text-[10px] font-bold tracking-widest uppercase border border-white/20 shadow-md"
               >
                 <Cast className="size-3.5" />
-                <span>Cast Window</span>
+                <span>Cast to TV</span>
               </button>
             </div>
           </div>

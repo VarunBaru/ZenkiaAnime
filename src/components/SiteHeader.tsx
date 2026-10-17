@@ -39,10 +39,17 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 border-b-[3px] border-border bg-background/95 backdrop-blur-sm">
       <div className="mx-auto grid max-w-[1500px] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-6 lg:flex lg:gap-5">
         <Link to="/" className="flex min-w-0 items-center gap-2">
-          <img src="/brand-logo.webp" alt="Zenkia Anime Logo" className="h-9 w-9 object-cover rounded border-[2px] border-border" />
-          <span className="truncate font-display text-xl leading-none tracking-tight sm:text-2xl">
-            ZENKIA
-          </span>
+          <img src="/brand-icon.webp" alt="Zenkia Anime" className="size-9 sm:hidden" />
+          <img
+            src="/brand-logo-light.webp"
+            alt="Zenkia Anime"
+            className="hidden h-10 w-auto max-w-[150px] object-contain dark:hidden sm:block"
+          />
+          <img
+            src="/brand-logo-dark.webp"
+            alt="Zenkia Anime"
+            className="hidden h-10 w-auto max-w-[150px] object-contain dark:sm:block"
+          />
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
