@@ -26,7 +26,7 @@ function ProfilePage() {
   const queryClient = useQueryClient();
   const profile = useQuery(profileQuery(user?.id));
   const list = useQuery(watchlistQuery());
-  const history = useQuery(historyQuery());
+  const history = useQuery(historyQuery(user?.id));
   const [name, setName] = useState("");
 
   useEffect(() => {
