@@ -33,7 +33,12 @@ function ProfilePage() {
   const profile = useQuery(profileQuery(user?.id));
   const list = useQuery(watchlistQuery(user?.id));
   const history = useQuery(historyQuery(user?.id));
-  const { showHomeHistory, setShowHomeHistory, showHomeWatchlist, setShowHomeWatchlist } = usePreferences();
+  const {
+    showHomeHistory,
+    setShowHomeHistory,
+    showHomeWatchlist,
+    setShowHomeWatchlist,
+  } = usePreferences();
   const metadataDisplayName = user?.user_metadata?.["display_name"] ?? null;
   const metadataAvatarUrl = user?.user_metadata?.["avatar_url"] ?? null;
   const [name, setName] = useState("");
