@@ -118,7 +118,7 @@ export function AuthForm({ initialMode = "signin" }: { initialMode?: "signin" | 
 
       <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-8 lg:grid-cols-[1fr_minmax(0,0.95fr)] lg:gap-14">
         <section className="relative">
-          <div className="mb-8 inline-flex items-center border-2 border-border bg-card p-3 shadow-[4px_4px_0_hsl(var(--border))]">
+          <div className="mb-8 flex items-center">
             <img src="/brand-logo-light.webp" alt="Zenkia Anime" className="h-14 w-auto max-w-[230px] object-contain dark:hidden" />
             <img src="/brand-logo-dark.webp" alt="Zenkia Anime" className="hidden h-14 w-auto max-w-[230px] object-contain dark:block" />
           </div>
