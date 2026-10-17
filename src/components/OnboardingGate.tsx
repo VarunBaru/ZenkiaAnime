@@ -45,8 +45,10 @@ export function OnboardingGate({ children }: { children: ReactNode }) {
     }
 
     const name = profile.data?.username?.trim() ?? "";
-    setDisplayName(name);
-    setStep(name ? "tour" : "name");
+    const emailName = user.email?.split("@")[0]?.trim().toLocaleLowerCase();
+    const isEmailPlaceholder = Boolean(emailName && name.toLocaleLowerCase() === emailName);
+    setDisplayName(isEmailPlaceholder ? "" : name);
+    setStep(name && !isEmailPlaceholder ? "tour" : "name");
   }, [user, profile.data, profile.isPending, profile.isError, doneForUser]);
 
   const saveName = async (event: FormEvent<HTMLFormElement>) => {
