@@ -139,7 +139,12 @@ function WatchPage() {
     if (!user || !anime.data) return;
     recordEpisodeWatch(user.id, anime.data, episode)
       .then(() => queryClient.invalidateQueries({ queryKey: ["history"] }))
-      .catch(() => undefined);
+      .catch((error: unknown) => {
+        console.error("[watch] episode history save failed", error);
+        toast.error(
+          `Watch history couldn't be saved: ${error instanceof Error ? error.message : "Please try again."}`,
+        );
+      });
   }, [user, anime.data, episode, queryClient]);
 
   // ---- Timeline tracking via AniEmbed's documented postMessage API ----
@@ -655,3 +660,4 @@ function WatchPage() {
     </div>
   );
 }
+

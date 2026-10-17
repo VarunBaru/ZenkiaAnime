@@ -99,7 +99,7 @@ function HistoryPage() {
           </div>
         ) : history.isError ? (
           <ErrorState
-            message="Your watch history couldn't be loaded."
+            message={`Your watch history couldn't be loaded: ${history.error.message}`}
             onRetry={() => history.refetch()}
           />
         ) : history.data.length === 0 ? (
@@ -143,3 +143,4 @@ function HistoryPage() {
     </div>
   );
 }
+
