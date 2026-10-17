@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { BookMarked, History, LogOut, Menu, Search, User as UserIcon, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { LanguageToggle, MobileSettings, ThemeToggle } from "@/components/PreferenceControls";
+import { LanguageToggle, MobileSettings } from "@/components/PreferenceControls";
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -88,7 +88,6 @@ export function SiteHeader() {
 
         <div className="hidden shrink-0 items-center gap-2 lg:flex">
           <LanguageToggle />
-          <ThemeToggle />
           {user ? (
             <>
               <Link
@@ -217,3 +216,4 @@ export function SiteHeader() {
     </header>
   );
 }
+
