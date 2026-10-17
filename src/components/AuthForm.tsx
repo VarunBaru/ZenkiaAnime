@@ -22,7 +22,6 @@ export function AuthForm({ initialMode = "signin" }: { initialMode?: "signin" | 
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
   const [busy, setBusy] = useState(false);
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -45,7 +44,7 @@ export function AuthForm({ initialMode = "signin" }: { initialMode?: "signin" | 
         });
         if (error) throw error;
         if (data.user && data.session) {
-          await ensureProfile(data.user.id, username || email.split("@")[0]);
+          await ensureProfile(data.user.id, null);
           toast.success("Welcome to AnimeHub!");
           navigate({ to: "/watchlist" });
         } else {
@@ -109,23 +108,6 @@ export function AuthForm({ initialMode = "signin" }: { initialMode?: "signin" | 
         </div>
 
         <form onSubmit={submit} className="space-y-4">
-          {mode === "signup" && (
-            <div>
-              <label
-                htmlFor="username"
-                className="font-mono text-[10px] font-bold tracking-widest uppercase"
-              >
-                Display name
-              </label>
-              <input
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="ink-panel-sm mt-1.5 w-full bg-card px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
-                placeholder="Your name"
-              />
-            </div>
-          )}
           <div>
             <label
               htmlFor="email"
@@ -184,3 +166,4 @@ export function AuthForm({ initialMode = "signin" }: { initialMode?: "signin" | 
     </div>
   );
 }
+
