@@ -82,18 +82,11 @@ export function ThemeToggle({ showText }: { showText?: boolean }) {
 export function MobileSettings() {
   return (
     <div className="mt-4 space-y-3 border-t-2 border-border pt-4">
-      <p className="font-display text-sm">Settings</p>
       <div>
         <p className="mb-1.5 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
           Anime language
         </p>
         <LanguageToggle />
-      </div>
-      <div>
-        <p className="mb-1.5 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
-          Theme
-        </p>
-        <ThemeToggle showText />
       </div>
     </div>
   );

@@ -40,11 +40,11 @@ const FILTERS: { key: "all" | WatchStatus; label: string }[] = [
 function WatchlistPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const list = useQuery(watchlistQuery());
+  const list = useQuery(watchlistQuery(user?.id));
   const [filter, setFilter] = useState<"all" | WatchStatus>("all");
   const rows = (list.data ?? []).filter((r) => filter === "all" || r.status === filter);
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["watchlist"] });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["watchlist", user?.id] });
 
   const statusMutation = useMutation({
     mutationFn: ({ malId, status }: { malId: number; status: WatchStatus }) =>
@@ -53,7 +53,8 @@ function WatchlistPage() {
       invalidate();
       toast.success("Status updated");
     },
-    onError: () => toast.error("Couldn't update that. Please try again."),
+    onError: (error) =>
+      toast.error(`Couldn't update your watchlist: ${error.message || "Please try again."}`),
   });
 
   const removeMutation = useMutation({
@@ -62,7 +63,8 @@ function WatchlistPage() {
       invalidate();
       toast.success("Removed from your watchlist");
     },
-    onError: () => toast.error("Couldn't remove that. Please try again."),
+    onError: (error) =>
+      toast.error(`Couldn't remove that: ${error.message || "Please try again."}`),
   });
 
   return (
@@ -92,7 +94,10 @@ function WatchlistPage() {
         {list.isPending ? (
           <CardSkeletonGrid count={6} />
         ) : list.isError ? (
-          <ErrorState message="Your watchlist couldn't be loaded." onRetry={() => list.refetch()} />
+          <ErrorState
+            message={`Your watchlist couldn't be loaded: ${list.error.message}`}
+            onRetry={() => list.refetch()}
+          />
         ) : rows.length === 0 ? (
           <EmptyState
             title="Your watchlist is empty"
@@ -171,3 +176,4 @@ function WatchlistPage() {
     </div>
   );
 }
+

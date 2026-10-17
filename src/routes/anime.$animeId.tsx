@@ -369,12 +369,12 @@ function AnimeDetailPage() {
                         {String(ep.mal_id).padStart(2, "0")}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm">{ep.title}</span>
-                        {ep.title_japanese && (
-                          <span className="block truncate font-mono text-[10px] text-muted-foreground">
-                            {ep.title_japanese}
-                          </span>
-                        )}
+                        <span className="block truncate text-sm">
+                          {ep.title?.trim() || `Episode ${ep.mal_id}`}
+                        </span>
+                        <span className="block truncate font-mono text-[10px] text-muted-foreground">
+                          {ep.title_japanese?.trim() || "Japanese title unavailable"}
+                        </span>
                       </span>
                       {ep.aired && (
                         <span className="shrink-0 font-mono text-[10px] text-muted-foreground">

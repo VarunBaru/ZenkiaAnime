@@ -1,16 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Info,
-  Grid3x3,
-  List,
-  Cast,
-  Maximize,
-  ExternalLink,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, Grid3x3, List, Cast, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
 import { animeQuery, episodesQuery } from "@/lib/jikan";
 import { anilistQuery, embedUrl } from "@/lib/anilist";
 import { providerLang, usePreferences } from "@/lib/preferences";
@@ -23,6 +15,15 @@ import {
   saveEpisodeProgress,
   type PlaybackProgress,
 } from "@/lib/library";
+
+type PresentationRequestConstructor = new (urls: string | string[]) => {
+  start: () => Promise<unknown>;
+};
+
+function presentationRequestConstructor() {
+  return (window as Window & { PresentationRequest?: PresentationRequestConstructor })
+    .PresentationRequest;
+}
 
 /**
  * AniEmbed documents a postMessage API (see aniembed.se → API Docs):
@@ -99,7 +100,6 @@ function WatchPage() {
   const { user } = useAuth();
   const [frameFailed, setFrameFailed] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const playerContainerRef = useRef<HTMLDivElement>(null);
   const { language } = usePreferences();
   const preferredLang = providerLang(language);
   // Manual override for this visit; null = follow the saved EN/JP preference.
@@ -114,19 +114,13 @@ function WatchPage() {
   const [castSupported, setCastSupported] = useState(false);
 
   useEffect(() => {
-    // Check if Remote Playback API is supported
-    if (
-      "remote" in HTMLVideoElement.prototype ||
-      "webkitShowPlaybackTargetPicker" in HTMLVideoElement.prototype
-    ) {
-      setCastSupported(true);
-    }
+    setCastSupported(typeof window !== "undefined" && Boolean(presentationRequestConstructor()));
   }, []);
 
   const anime = useQuery(animeQuery(id));
   const anilist = useQuery(anilistQuery(id));
   const episodes = useQuery({ ...episodesQuery(id), enabled: anime.isSuccess });
-  const history = useQuery({ ...historyQuery(), enabled: Boolean(user) });
+  const history = useQuery(historyQuery(user?.id));
 
   const title = anime.data ? anime.data.title_english || anime.data.title : null;
 
@@ -145,7 +139,12 @@ function WatchPage() {
     if (!user || !anime.data) return;
     recordEpisodeWatch(user.id, anime.data, episode)
       .then(() => queryClient.invalidateQueries({ queryKey: ["history"] }))
-      .catch(() => undefined);
+      .catch((error: unknown) => {
+        console.error("[watch] episode history save failed", error);
+        toast.error(
+          `Watch history couldn't be saved: ${error instanceof Error ? error.message : "Please try again."}`,
+        );
+      });
   }, [user, anime.data, episode, queryClient]);
 
   // ---- Timeline tracking via AniEmbed's documented postMessage API ----
@@ -302,42 +301,21 @@ function WatchPage() {
   const src = embedUrl(anilist.data.id, episode, activeLang, streamServer);
   const currentEpisode = episodes.data?.[episode - 1];
 
-  const handleCast = () => {
-    // 1. If currently in fullscreen, exit
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
+  const handleCastToTv = async () => {
+    const PresentationRequest = presentationRequestConstructor();
+    if (!PresentationRequest) {
+      toast.error("Direct TV casting is not supported in this browser.");
       return;
     }
 
-    // 2. Request fullscreen on the player container (most reliable way)
-    const container = playerContainerRef.current;
-    if (container) {
-      if (container.requestFullscreen) {
-        container.requestFullscreen().catch(() => {
-          // Fallback: open popout player window for native Chrome/Edge Chromecast
-          window.open(
-            src,
-            "_blank",
-            "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no",
-          );
-        });
-      } else {
-        window.open(
-          src,
-          "_blank",
-          "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no",
-        );
-      }
+    try {
+      await new PresentationRequest(src).start();
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      toast.error(
+        "Couldn't connect to a TV. Check that a compatible TV is available on your network.",
+      );
     }
-  };
-
-  const handlePopoutCast = () => {
-    // Opens a clean popup player which allows Chrome/Edge right-click -> Cast to TV
-    window.open(
-      src,
-      "AnimeHubPlayer",
-      "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes",
-    );
   };
 
   return (
@@ -365,7 +343,7 @@ function WatchPage() {
             </p>
           </div>
         ) : (
-          <div ref={playerContainerRef} className="relative aspect-video w-full bg-black group">
+          <div className="relative aspect-video w-full bg-black group">
             <iframe
               ref={iframeRef}
               key={src}
@@ -377,24 +355,19 @@ function WatchPage() {
               referrerPolicy="origin"
               onError={() => setFrameFailed(true)}
             />
-            {/* Top Right Action Overlay (Fullscreen & Cast Popout) */}
+            {/* Directly choose an available TV with the browser Presentation API. */}
             <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
               <button
-                onClick={handleCast}
-                title="Toggle Fullscreen"
-                className="ink-panel-sm ink-press bg-black/80 hover:bg-black text-white px-3 py-2 opacity-80 hover:opacity-100 backdrop-blur transition-opacity flex items-center gap-1.5 font-mono text-[10px] font-bold tracking-widest uppercase border border-white/20"
-              >
-                <Maximize className="size-3.5" />
-                <span>Fullscreen</span>
-              </button>
-
-              <button
-                onClick={handlePopoutCast}
-                title="Open in Cast Window (for Chromecast/AirPlay)"
+                onClick={handleCastToTv}
+                title={
+                  castSupported
+                    ? "Cast this episode to a TV"
+                    : "TV casting is unavailable in this browser"
+                }
                 className="ink-panel-sm ink-press bg-accent hover:bg-accent/90 text-accent-foreground px-3 py-2 opacity-90 hover:opacity-100 backdrop-blur transition-opacity flex items-center gap-1.5 font-mono text-[10px] font-bold tracking-widest uppercase border border-white/20 shadow-md"
               >
                 <Cast className="size-3.5" />
-                <span>Cast Window</span>
+                <span>Cast to TV</span>
               </button>
             </div>
           </div>
@@ -431,9 +404,7 @@ function WatchPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="font-mono text-[11px] font-bold tracking-widest uppercase">
-            Server
-          </span>
+          <span className="font-mono text-[11px] font-bold tracking-widest uppercase">Server</span>
           <div className="flex flex-wrap gap-1">
             {(["nero", "yuki", "zuna", "loli", "sora"] as const).map((s) => (
               <button
@@ -455,6 +426,8 @@ function WatchPage() {
           {activeLang === "dub"
             ? "English dub requested. Try different servers if video is black or won't load."
             : "Japanese original audio with subtitles requested."}
+          <br />
+          Some streams may show ads. A browser ad-blocking extension may help reduce them.
           <button
             onClick={() => window.open(src, "_blank")}
             className="ml-2 text-accent underline underline-offset-4 hover:text-accent/80 inline-flex items-center gap-1"
@@ -604,7 +577,7 @@ function WatchPage() {
           const allEpisodes = totalFromList
             ? episodes.data!.map((ep, i) => ({
                 n: i + 1,
-                label: ep.title || `Episode ${i + 1}`,
+                label: ep.title?.trim() || `Episode ${ep.mal_id}`,
                 jpTitle: ep.title_japanese,
                 aired: ep.aired,
                 filler: ep.filler,
@@ -646,11 +619,9 @@ function WatchPage() {
                           </span>
                         )}
                       </div>
-                      {opt.jpTitle && (
-                        <p className="truncate font-mono text-[10px] opacity-60 mt-0.5">
-                          {opt.jpTitle}
-                        </p>
-                      )}
+                      <p className="truncate font-mono text-[10px] opacity-60 mt-0.5">
+                        {opt.jpTitle?.trim() || "Japanese title unavailable"}
+                      </p>
                     </div>
                     {opt.aired && (
                       <span className="shrink-0 font-mono text-[10px] opacity-70">
@@ -691,3 +662,4 @@ function WatchPage() {
     </div>
   );
 }
+

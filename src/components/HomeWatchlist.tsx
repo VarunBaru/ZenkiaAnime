@@ -75,7 +75,7 @@ function SavedAnimeCard({
 export function HomeWatchlist() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const list = useQuery({ ...watchlistQuery(), enabled: Boolean(user) });
+  const list = useQuery(watchlistQuery(user?.id));
 
   const removeMutation = useMutation({
     mutationFn: async (malId: number) => {
@@ -83,10 +83,11 @@ export function HomeWatchlist() {
       await removeFromWatchlist(user.id, malId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["watchlist"] });
+      queryClient.invalidateQueries({ queryKey: ["watchlist", user?.id] });
       toast.success("Removed from your watchlist");
     },
-    onError: () => toast.error("Couldn't remove that. Please try again."),
+    onError: (error) =>
+      toast.error(`Couldn't update your watchlist: ${error.message || "Please try again."}`),
   });
 
   if (!user) return null;
@@ -105,7 +106,10 @@ export function HomeWatchlist() {
       {list.isPending ? (
         <CardSkeletonRow count={4} />
       ) : list.isError ? (
-        <ErrorState message="Your watchlist couldn't be loaded." onRetry={() => list.refetch()} />
+        <ErrorState
+          message={`Your watchlist couldn't be loaded: ${list.error.message}`}
+          onRetry={() => list.refetch()}
+        />
       ) : list.data.length === 0 ? (
         <EmptyState
           title="Your watchlist is empty"
@@ -135,3 +139,4 @@ export function HomeWatchlist() {
     </section>
   );
 }
+

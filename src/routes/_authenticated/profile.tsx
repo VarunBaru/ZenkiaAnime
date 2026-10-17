@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { ensureProfile, historyQuery, profileQuery, watchlistQuery } from "@/lib/library";
+import { deleteAccount } from "@/lib/account.functions";
+import { historyQuery, profileQuery, updateProfile, watchlistQuery } from "@/lib/library";
+import { ThemeToggle } from "@/components/PreferenceControls";
+import { BookMarked, History } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { EmptyState, ErrorState, PanelSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -24,22 +28,40 @@ export const Route = createFileRoute("/_authenticated/profile")({
 function ProfilePage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const profile = useQuery(profileQuery(user?.id));
-  const list = useQuery(watchlistQuery());
-  const history = useQuery(historyQuery());
+  const list = useQuery(watchlistQuery(user?.id));
+  const history = useQuery(historyQuery(user?.id));
+  const metadataDisplayName = user?.user_metadata?.["display_name"] ?? null;
+  const metadataAvatarUrl = user?.user_metadata?.["avatar_url"] ?? null;
   const [name, setName] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
 
   useEffect(() => {
-    if (profile.data?.username) setName(profile.data.username);
-  }, [profile.data?.username]);
+    setName(metadataDisplayName ?? profile.data?.username ?? "");
+    setAvatarUrl(metadataAvatarUrl ?? profile.data?.avatar_url ?? "");
+  }, [metadataDisplayName, metadataAvatarUrl, profile.data]);
 
   const save = useMutation({
-    mutationFn: () => ensureProfile(user!.id, name.trim()),
+    mutationFn: () =>
+      updateProfile(user!.id, { username: name.trim(), avatar_url: avatarUrl.trim() || null }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
-      toast.success("Profile saved");
+      toast.success("Profile updated");
     },
     onError: () => toast.error("Couldn't save your profile. Please try again."),
+  });
+
+  const deleteProfile = useMutation({
+    mutationFn: () => deleteAccount(),
+    onSuccess: async () => {
+      await supabase.auth.signOut({ scope: "local" });
+      queryClient.clear();
+      toast.success("Your account and its data were permanently deleted");
+      await navigate({ to: "/", replace: true });
+    },
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Couldn't delete your account."),
   });
 
   const counts = {
@@ -59,28 +81,102 @@ function ProfilePage() {
         </p>
         <p className="mt-1 font-display text-base break-all">{user?.email}</p>
 
+        <div className="mt-5 flex items-center gap-4">
+          <div className="grid size-16 shrink-0 place-items-center overflow-hidden border-2 border-border bg-muted font-display text-xl">
+            {avatarUrl.trim() ? (
+              <img
+                src={avatarUrl}
+                alt="Profile avatar preview"
+                className="size-full object-cover"
+              />
+            ) : (
+              (name.trim()[0] ?? user?.email?.[0] ?? "?").toUpperCase()
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <label
+              htmlFor="displayName"
+              className="block font-mono text-[10px] font-bold tracking-widest uppercase"
+            >
+              Display name
+            </label>
+            <input
+              id="displayName"
+              maxLength={40}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name"
+              className="ink-panel-sm mt-1.5 w-full bg-card px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+        </div>
+
         <label
-          htmlFor="displayName"
+          htmlFor="avatarUrl"
           className="mt-5 block font-mono text-[10px] font-bold tracking-widest uppercase"
         >
-          Display name
+          Avatar image URL
         </label>
         <div className="mt-1.5 flex flex-col gap-2 sm:flex-row">
           <input
-            id="displayName"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Your name"
+            id="avatarUrl"
+            type="url"
+            value={avatarUrl}
+            onChange={(e) => setAvatarUrl(e.target.value)}
+            placeholder="https://example.com/avatar.jpg"
             className="ink-panel-sm w-full bg-card px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
           />
           <button
             onClick={() => save.mutate()}
-            disabled={save.isPending}
+            disabled={save.isPending || !name.trim()}
             className="ink-panel-sm ink-press shrink-0 bg-accent px-5 py-2.5 font-mono text-xs font-bold tracking-widest text-accent-foreground uppercase"
           >
-            Save
+            {save.isPending ? "Saving…" : "Save profile"}
           </button>
         </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Use an image URL to customize your avatar. Leave it blank to use your initial.
+        </p>
+      </section>
+
+      <section className="ink-panel mt-6 p-5">
+        <div>
+          <h2 className="font-display text-lg">Website theme</h2>
+          <p className="mb-3 mt-1 text-xs text-muted-foreground">
+            Choose light, dark, or match your device setting.
+          </p>
+          <ThemeToggle showText />
+        </div>
+      </section>
+
+      <section className="mt-6 grid gap-3 sm:grid-cols-2" aria-label="Your library">
+        <Link
+          to="/watchlist"
+          className="ink-panel-sm ink-press flex items-center gap-4 bg-card p-4"
+        >
+          <BookMarked className="size-6 shrink-0 text-accent" strokeWidth={2.5} />
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-lg">My watchlist</span>
+            <span className="mt-1 block font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+              {list.data?.length ?? 0} saved titles · Manage list
+            </span>
+          </span>
+          <span aria-hidden="true" className="font-display text-xl">
+            →
+          </span>
+        </Link>
+        <Link to="/history" className="ink-panel-sm ink-press flex items-center gap-4 bg-card p-4">
+          <History className="size-6 shrink-0 text-accent" strokeWidth={2.5} />
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-lg">Watch history</span>
+            <span className="mt-1 block font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+              {history.data?.length ?? 0} episode records · View history
+            </span>
+          </span>
+          <span aria-hidden="true" className="font-display text-xl">
+            →
+          </span>
+        </Link>
       </section>
 
       <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -151,6 +247,30 @@ function ProfilePage() {
             ))}
           </div>
         )}
+      </section>
+
+      <section className="ink-panel mt-10 border-destructive p-5">
+        <h2 className="font-display text-lg text-destructive">Delete account</h2>
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+          This permanently deletes your sign-in account, profile, watchlist, and watch history. You
+          must have signed in within the last 15 minutes. You cannot undo this.
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            if (
+              window.confirm(
+                "Permanently delete your account and all profile, watchlist, and history data? This cannot be undone.",
+              )
+            ) {
+              deleteProfile.mutate();
+            }
+          }}
+          disabled={deleteProfile.isPending}
+          className="ink-panel-sm ink-press mt-4 bg-destructive px-4 py-2.5 font-mono text-xs font-bold tracking-widest text-destructive-foreground uppercase disabled:opacity-50"
+        >
+          {deleteProfile.isPending ? "Deleting…" : "Delete my account"}
+        </button>
       </section>
     </div>
   );

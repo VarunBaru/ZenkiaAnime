@@ -26,9 +26,9 @@ export const Route = createFileRoute("/_authenticated/history")({
 });
 
 function HistoryPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
-  const history = useQuery(historyQuery());
+  const history = useQuery(historyQuery(user?.id));
   const [confirmClear, setConfirmClear] = useState(false);
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["history"] });
@@ -91,7 +91,7 @@ function HistoryPage() {
       )}
 
       <div className="mt-6">
-        {history.isPending ? (
+        {authLoading || history.isPending ? (
           <div className="grid gap-3 sm:grid-cols-2">
             {Array.from({ length: 4 }).map((_, i) => (
               <PanelSkeleton key={i} className="h-32 w-full" />
@@ -99,7 +99,7 @@ function HistoryPage() {
           </div>
         ) : history.isError ? (
           <ErrorState
-            message="Your watch history couldn't be loaded."
+            message={`Your watch history couldn't be loaded: ${history.error.message}`}
             onRetry={() => history.refetch()}
           />
         ) : history.data.length === 0 ? (
@@ -143,3 +143,4 @@ function HistoryPage() {
     </div>
   );
 }
+

@@ -57,7 +57,7 @@ export function WatchlistButton({ anime, compact = false }: { anime: Anime; comp
   const queryClient = useQueryClient();
   const [prompt, setPrompt] = useState(false);
 
-  const { data: list } = useQuery({ ...watchlistQuery(), enabled: Boolean(user) });
+  const { data: list } = useQuery(watchlistQuery(user?.id));
   const saved = Boolean(list?.some((row) => row.mal_id === anime.mal_id));
 
   const mutation = useMutation({
@@ -67,7 +67,7 @@ export function WatchlistButton({ anime, compact = false }: { anime: Anime; comp
       else await addToWatchlist(user.id, anime);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["watchlist"] });
+      queryClient.invalidateQueries({ queryKey: ["watchlist", user?.id] });
       toast.success(saved ? "Removed from your watchlist" : "Added to your watchlist");
     },
     onError: () => toast.error("Could not update your watchlist. Please try again."),

@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { BookMarked, History, LogOut, Menu, Search, User as UserIcon, X } from "lucide-react";
+import { LogOut, Menu, Search, User as UserIcon, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { LanguageToggle, MobileSettings, ThemeToggle } from "@/components/PreferenceControls";
+import { LanguageToggle, MobileSettings } from "@/components/PreferenceControls";
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -39,10 +39,17 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 border-b-[3px] border-border bg-background/95 backdrop-blur-sm">
       <div className="mx-auto grid max-w-[1500px] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-6 lg:flex lg:gap-5">
         <Link to="/" className="flex min-w-0 items-center gap-2">
-          <img src="/brand-logo.webp" alt="Zenkia Anime Logo" className="h-9 w-9 object-cover rounded border-[2px] border-border" />
-          <span className="truncate font-display text-xl leading-none tracking-tight sm:text-2xl">
-            ZENKIA
-          </span>
+          <img src="/brand-icon.webp" alt="Zenkia Anime" className="size-9 sm:hidden" />
+          <img
+            src="/brand-logo-light.webp"
+            alt="Zenkia Anime"
+            className="hidden h-10 w-auto max-w-[150px] object-contain dark:hidden sm:block"
+          />
+          <img
+            src="/brand-logo-dark.webp"
+            alt="Zenkia Anime"
+            className="hidden h-10 w-auto max-w-[150px] object-contain dark:sm:block"
+          />
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
@@ -81,23 +88,8 @@ export function SiteHeader() {
 
         <div className="hidden shrink-0 items-center gap-2 lg:flex">
           <LanguageToggle />
-          <ThemeToggle />
           {user ? (
             <>
-              <Link
-                to="/watchlist"
-                className="ink-panel-sm ink-press bg-card p-2"
-                aria-label="My watchlist"
-              >
-                <BookMarked className="size-4" strokeWidth={2.5} />
-              </Link>
-              <Link
-                to="/history"
-                className="ink-panel-sm ink-press bg-card p-2"
-                aria-label="Watch history"
-              >
-                <History className="size-4" strokeWidth={2.5} />
-              </Link>
               <Link
                 to="/profile"
                 className="ink-panel-sm ink-press bg-card p-2"
@@ -163,20 +155,6 @@ export function SiteHeader() {
             ))}
             {user ? (
               <>
-                <Link
-                  to="/watchlist"
-                  onClick={() => setOpen(false)}
-                  className="ink-panel-sm bg-background px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase"
-                >
-                  Watchlist
-                </Link>
-                <Link
-                  to="/history"
-                  onClick={() => setOpen(false)}
-                  className="ink-panel-sm bg-background px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase"
-                >
-                  History
-                </Link>
                 <Link
                   to="/profile"
                   onClick={() => setOpen(false)}

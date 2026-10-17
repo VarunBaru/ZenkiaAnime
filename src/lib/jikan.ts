@@ -399,7 +399,51 @@ export const jikan = {
         .filter((ep) => (seen.has(ep.mal_id) ? false : (seen.add(ep.mal_id), true)))
         .sort((a, b) => a.mal_id - b.mal_id);
 
-      if (items.length > 0) return items;
+      if (items.length > 0) {
+        // Jikan's One Piece episode feed stops including Japanese titles after
+        // episode 743. Fill only missing titles from Kitsu; keep Jikan's episode
+        // list and English titles authoritative, and leave unknown titles empty.
+        if (
+          id === 21 &&
+          items.some(
+            (ep) =>
+              ep.mal_id >= 744 &&
+              (!ep.title_japanese?.trim() ||
+                !ep.title.trim() ||
+                /^episode\s+\d+$/i.test(ep.title.trim())),
+          )
+        ) {
+          try {
+            const { kitsuEpisodesByMalId } = await import("./kitsu");
+            const fallback = await kitsuEpisodesByMalId(21, 744);
+            const fallbackByNumber = new Map(fallback.map((ep) => [ep.mal_id, ep]));
+            const mergedItems = items.map((ep) => {
+              const fallbackEpisode = fallbackByNumber.get(ep.mal_id);
+              const titleJapanese =
+                ep.title_japanese?.trim() || fallbackEpisode?.title_japanese?.trim();
+              const titleIsGeneric = !ep.title.trim() || /^episode\s+\d+$/i.test(ep.title.trim());
+              const fallbackTitle = fallbackEpisode?.title?.trim();
+              const title =
+                titleIsGeneric && fallbackTitle && !/^episode\s+\d+$/i.test(fallbackTitle)
+                  ? fallbackTitle
+                  : ep.title;
+              return {
+                ...ep,
+                ...(titleJapanese ? { title_japanese: titleJapanese } : {}),
+                title,
+              };
+            });
+            const existingNumbers = new Set(items.map((ep) => ep.mal_id));
+            const supplementalEpisodes = fallback.filter(
+              (ep) => ep.mal_id >= 744 && !existingNumbers.has(ep.mal_id),
+            );
+            return [...mergedItems, ...supplementalEpisodes].sort((a, b) => a.mal_id - b.mal_id);
+          } catch {
+            // The primary Jikan episode data remains usable without the fallback.
+          }
+        }
+        return items;
+      }
     } catch {
       // Fall through to Kitsu
     }
@@ -417,17 +461,14 @@ export const jikan = {
         const knownCount = anime?.episodes ?? null;
         if (knownCount && knownCount > kitsuEpisodes.length) {
           const startNum = kitsuEpisodes.length + 1;
-          const remaining = Array.from(
-            { length: knownCount - kitsuEpisodes.length },
-            (_, i) => ({
-              mal_id: startNum + i,
-              title: `Episode ${startNum + i}`,
-              title_japanese: null,
-              aired: null,
-              filler: false,
-              recap: false,
-            }),
-          );
+          const remaining = Array.from({ length: knownCount - kitsuEpisodes.length }, (_, i) => ({
+            mal_id: startNum + i,
+            title: `Episode ${startNum + i}`,
+            title_japanese: null,
+            aired: null,
+            filler: false,
+            recap: false,
+          }));
           return [...kitsuEpisodes, ...remaining];
         }
         return kitsuEpisodes;
@@ -442,11 +483,8 @@ export const jikan = {
       const anime = await this.detail(id);
       const episodeCount = anime?.episodes;
 
-      const targetCount = episodeCount && episodeCount > 0
-        ? episodeCount
-        : anime?.type === "MOVIE"
-          ? 1
-          : 100;
+      const targetCount =
+        episodeCount && episodeCount > 0 ? episodeCount : anime?.type === "MOVIE" ? 1 : 100;
 
       console.log(`[jikan] generating ${targetCount} episodes for MAL ID ${id}`);
       return Array.from({ length: targetCount }, (_, i) => ({

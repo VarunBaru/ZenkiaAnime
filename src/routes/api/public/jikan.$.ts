@@ -29,7 +29,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 async function enqueue<T>(job: () => Promise<T>): Promise<T> {
   // Reserve evenly spaced start slots and honor Jikan's rolling per-minute
   // quota, without serializing response waiting between independent sections.
-  let now = Date.now();
+  const now = Date.now();
   while (true) {
     const oldestStart = upstreamStartTimes[0];
     if (oldestStart === undefined || oldestStart > now - 60_000) break;
