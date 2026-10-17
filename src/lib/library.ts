@@ -248,6 +248,17 @@ export async function updateProfile(
   if (error) throw new Error(error.message);
 }
 
+export async function deleteProfileData(userId: string) {
+  const history = await supabase.from("watch_history").delete().eq("user_id", userId);
+  if (history.error) throw new Error(history.error.message);
+
+  const watchlist = await supabase.from("watchlist").delete().eq("user_id", userId);
+  if (watchlist.error) throw new Error(watchlist.error.message);
+
+  const profile = await supabase.from("profiles").delete().eq("id", userId);
+  if (profile.error) throw new Error(profile.error.message);
+}
+
 export async function deleteHistoryEntry(userId: string, id: string) {
   const { error } = await supabase
     .from("watch_history")
