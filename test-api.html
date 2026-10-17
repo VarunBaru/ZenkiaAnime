@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+  <head>
+    <title>API Test</title>
+    <style>
+      body {
+        font-family: monospace;
+        padding: 20px;
+        background: #1a1a1a;
+        color: #fff;
+      }
+      .test {
+        margin: 10px 0;
+        padding: 10px;
+        background: #2a2a2a;
+        border-left: 3px solid #4a4a4a;
+      }
+      .success {
+        border-left-color: #0f0;
+      }
+      .error {
+        border-left-color: #f00;
+      }
+      button {
+        padding: 10px 20px;
+        background: #0066cc;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #0052a3;
+      }
+      pre {
+        background: #000;
+        padding: 10px;
+        overflow-x: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>AnimeHub API Test</h1>
+    <button onclick="runTests()">Run Tests</button>
+    <div id="results"></div>
+
+    <script>
+      async function runTests() {
+        const results = document.getElementById("results");
+        results.innerHTML = "<p>Running tests...</p>";
+
+        // Test 1: Kitsu API directly
+        await testAPI(
+          "Kitsu API (Direct)",
+          "https://kitsu.app/api/edge/anime?page[limit]=5&sort=-userCount",
+        );
+
+        // Test 2: Jikan API directly
+        await testAPI("Jikan API (Direct)", "https://api.jikan.moe/v4/top/anime?limit=5");
+
+        // Test 3: Local Kitsu proxy
+        await testAPI("Local Kitsu Proxy", "/api/public/kitsu/anime?page[limit]=5&sort=-userCount");
+
+        // Test 4: Local Jikan proxy
+        await testAPI("Local Jikan Proxy", "/api/public/jikan/top/anime?limit=5");
+      }
+
+      async function testAPI(name, url) {
+        const results = document.getElementById("results");
+        const testDiv = document.createElement("div");
+        testDiv.className = "test";
+        testDiv.innerHTML = `<strong>${name}</strong><br>Testing ${url}...<br>`;
+        results.appendChild(testDiv);
+
+        try {
+          const start = Date.now();
+          const response = await fetch(url, {
+            signal: AbortSignal.timeout(10000),
+          });
+          const duration = Date.now() - start;
+          const data = await response.json();
+
+          if (response.ok) {
+            testDiv.className = "test success";
+            const items = data.data?.length || data.items?.length || "unknown";
+            testDiv.innerHTML += `✓ SUCCESS (${duration}ms, ${items} items)<br>`;
+            testDiv.innerHTML += `<pre>${JSON.stringify(data, null, 2).slice(0, 500)}...</pre>`;
+          } else {
+            testDiv.className = "test error";
+            testDiv.innerHTML += `✗ HTTP ${response.status}<br>`;
+            testDiv.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+          }
+        } catch (error) {
+          testDiv.className = "test error";
+          testDiv.innerHTML += `✗ ERROR: ${error.message}<br>`;
+        }
+      }
+    </script>
+  </body>
+</html>

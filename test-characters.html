@@ -1,0 +1,142 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Kitsu Character & Episode Test</title>
+    <style>
+      body {
+        font-family: monospace;
+        padding: 20px;
+        background: #1a1a1a;
+        color: #fff;
+      }
+      .test {
+        margin: 10px 0;
+        padding: 10px;
+        background: #2a2a2a;
+        border-left: 3px solid #4a4a4a;
+      }
+      .success {
+        border-left-color: #0f0;
+      }
+      .error {
+        border-left-color: #f00;
+      }
+      button {
+        padding: 10px 20px;
+        background: #0066cc;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #0052a3;
+      }
+      pre {
+        background: #000;
+        padding: 10px;
+        overflow-x: auto;
+        max-height: 200px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .card {
+        background: #333;
+        padding: 5px;
+        text-align: center;
+      }
+      .card img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Kitsu Character & Episode Test (My Hero Academia - MAL 31964)</h1>
+    <button onclick="runTest()">Run Test</button>
+    <div id="results"></div>
+
+    <script>
+      async function runTest() {
+        const results = document.getElementById("results");
+        results.innerHTML = "<p>Testing...</p>";
+
+        const malId = 31964; // My Hero Academia
+        const BASE = "https://kitsu.app/api/edge";
+
+        try {
+          // Step 1: Find Kitsu ID
+          log("Step 1: Finding Kitsu ID from MAL mapping...");
+          const mappingRes = await fetch(
+            `${BASE}/mappings?filter[externalSite]=myanimelist/anime&filter[externalId]=${malId}&include=item`,
+          );
+          const mappingJson = await mappingRes.json();
+
+          const kitsuId = mappingJson.data?.[0]?.relationships?.item?.data?.id;
+          log(`✓ Found Kitsu ID: ${kitsuId}`, "success");
+
+          if (!kitsuId) {
+            log("✗ Could not find Kitsu ID", "error");
+            return;
+          }
+
+          // Step 2: Fetch Characters
+          log("Step 2: Fetching characters...");
+          const charRes = await fetch(
+            `${BASE}/anime/${kitsuId}/anime-characters?include=character&page[limit]=20`,
+          );
+          const charJson = await charRes.json();
+
+          const characters = (charJson.included ?? []).filter((c) => c.type === "characters");
+          log(`✓ Found ${characters.length} characters`, "success");
+
+          // Display characters
+          let charHtml = '<div class="grid">';
+          for (const c of characters.slice(0, 10)) {
+            const name = c.attributes?.canonicalName || c.attributes?.name || "Unknown";
+            const img = c.attributes?.image?.original || "";
+            charHtml += `<div class="card">
+                        ${img ? `<img src="${img}">` : '<div style="height:120px;background:#555">No image</div>'}
+                        <div style="font-size:10px;margin-top:5px;">${name}</div>
+                    </div>`;
+          }
+          charHtml += "</div>";
+          results.innerHTML += charHtml;
+
+          // Step 3: Fetch Episodes
+          log("Step 3: Fetching episodes...");
+          const epRes = await fetch(`${BASE}/anime/${kitsuId}/episodes?page[limit]=50&sort=number`);
+          const epJson = await epRes.json();
+
+          const episodes = (epJson.data ?? []).filter((ep) => ep.type === "episodes");
+          log(`✓ Found ${episodes.length} episodes`, "success");
+
+          // Display first 5 episodes
+          let epHtml = "<ul>";
+          for (const ep of episodes.slice(0, 5)) {
+            const num = ep.attributes?.number;
+            const title =
+              ep.attributes?.titles?.en || ep.attributes?.canonicalTitle || `Episode ${num}`;
+            epHtml += `<li>Ep ${num}: ${title}</li>`;
+          }
+          epHtml += "</ul>";
+          results.innerHTML += epHtml;
+        } catch (error) {
+          log(`✗ Error: ${error.message}`, "error");
+        }
+      }
+
+      function log(msg, type = "") {
+        const results = document.getElementById("results");
+        const div = document.createElement("div");
+        div.className = `test ${type}`;
+        div.textContent = msg;
+        results.appendChild(div);
+      }
+    </script>
+  </body>
+</html>
