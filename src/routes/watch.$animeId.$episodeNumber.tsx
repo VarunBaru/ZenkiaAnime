@@ -119,7 +119,7 @@ function WatchPage() {
   const anime = useQuery(animeQuery(id));
   const anilist = useQuery(anilistQuery(id));
   const episodes = useQuery({ ...episodesQuery(id), enabled: anime.isSuccess });
-  const history = useQuery({ ...historyQuery(), enabled: Boolean(user) });
+  const history = useQuery({ ...historyQuery(user?.id), enabled: Boolean(user) });
 
   const title = anime.data ? anime.data.title_english || anime.data.title : null;
 
