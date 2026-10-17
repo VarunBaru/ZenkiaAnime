@@ -3,7 +3,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { ensureProfile, historyQuery, profileQuery, watchlistQuery } from "@/lib/library";
+import { historyQuery, profileQuery, updateProfile, watchlistQuery } from "@/lib/library";
+import { LanguageToggle, ThemeToggle } from "@/components/PreferenceControls";
 import { EmptyState, ErrorState, PanelSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -28,16 +29,20 @@ function ProfilePage() {
   const list = useQuery(watchlistQuery());
   const history = useQuery(historyQuery(user?.id));
   const [name, setName] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
 
   useEffect(() => {
-    if (profile.data?.username) setName(profile.data.username);
-  }, [profile.data?.username]);
+    if (profile.data) {
+      setName(profile.data.username ?? "");
+      setAvatarUrl(profile.data.avatar_url ?? "");
+    }
+  }, [profile.data?.username, profile.data?.avatar_url]);
 
   const save = useMutation({
-    mutationFn: () => ensureProfile(user!.id, name.trim()),
+    mutationFn: () => updateProfile(user!.id, { username: name.trim(), avatar_url: avatarUrl.trim() || null }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
-      toast.success("Profile saved");
+      toast.success("Profile updated");
     },
     onError: () => toast.error("Couldn't save your profile. Please try again."),
   });
@@ -59,27 +64,74 @@ function ProfilePage() {
         </p>
         <p className="mt-1 font-display text-base break-all">{user?.email}</p>
 
+        <div className="mt-5 flex items-center gap-4">
+          <div className="grid size-16 shrink-0 place-items-center overflow-hidden border-2 border-border bg-muted font-display text-xl">
+            {avatarUrl.trim() ? (
+              <img src={avatarUrl} alt="Profile avatar preview" className="size-full object-cover" />
+            ) : (
+              (name.trim()[0] ?? user?.email?.[0] ?? "?").toUpperCase()
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <label
+              htmlFor="displayName"
+              className="block font-mono text-[10px] font-bold tracking-widest uppercase"
+            >
+              Display name
+            </label>
+            <input
+              id="displayName"
+              maxLength={40}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name"
+              className="ink-panel-sm mt-1.5 w-full bg-card px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+        </div>
+
         <label
-          htmlFor="displayName"
+          htmlFor="avatarUrl"
           className="mt-5 block font-mono text-[10px] font-bold tracking-widest uppercase"
         >
-          Display name
+          Avatar image URL
         </label>
         <div className="mt-1.5 flex flex-col gap-2 sm:flex-row">
           <input
-            id="displayName"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Your name"
+            id="avatarUrl"
+            type="url"
+            value={avatarUrl}
+            onChange={(e) => setAvatarUrl(e.target.value)}
+            placeholder="https://example.com/avatar.jpg"
             className="ink-panel-sm w-full bg-card px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
           />
           <button
             onClick={() => save.mutate()}
-            disabled={save.isPending}
+            disabled={save.isPending || !name.trim()}
             className="ink-panel-sm ink-press shrink-0 bg-accent px-5 py-2.5 font-mono text-xs font-bold tracking-widest text-accent-foreground uppercase"
           >
-            Save
+            {save.isPending ? "Saving…" : "Save profile"}
           </button>
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Use an image URL to customize your avatar. Leave it blank to use your initial.
+        </p>
+      </section>
+
+      <section className="ink-panel mt-6 grid gap-6 p-5 sm:grid-cols-2">
+        <div>
+          <h2 className="font-display text-lg">Anime language</h2>
+          <p className="mb-3 mt-1 text-xs text-muted-foreground">
+            Keep EN or JP selected for anime playback, just like before.
+          </p>
+          <LanguageToggle />
+        </div>
+        <div>
+          <h2 className="font-display text-lg">Website theme</h2>
+          <p className="mb-3 mt-1 text-xs text-muted-foreground">
+            Choose light, dark, or match your device setting.
+          </p>
+          <ThemeToggle showText />
         </div>
       </section>
 
@@ -155,3 +207,4 @@ function ProfilePage() {
     </div>
   );
 }
+
