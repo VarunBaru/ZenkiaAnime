@@ -410,21 +410,21 @@ export const jikan = {
               ep.mal_id >= 744 &&
               (!ep.title_japanese?.trim() ||
                 !ep.title.trim() ||
-                /^episode\\s+\\d+$/i.test(ep.title.trim())),
+                /^episode\s+\d+$/i.test(ep.title.trim())),
           )
         ) {
           try {
             const { kitsuEpisodesByMalId } = await import("./kitsu");
             const fallback = await kitsuEpisodesByMalId(21, 744);
             const fallbackByNumber = new Map(fallback.map((ep) => [ep.mal_id, ep]));
-            return items.map((ep) => {
+            const mergedItems = items.map((ep) => {
               const fallbackEpisode = fallbackByNumber.get(ep.mal_id);
               const titleJapanese =
                 ep.title_japanese?.trim() || fallbackEpisode?.title_japanese?.trim();
-              const titleIsGeneric = !ep.title.trim() || /^episode\\s+\\d+$/i.test(ep.title.trim());
+              const titleIsGeneric = !ep.title.trim() || /^episode\s+\d+$/i.test(ep.title.trim());
               const fallbackTitle = fallbackEpisode?.title?.trim();
               const title =
-                titleIsGeneric && fallbackTitle && !/^episode\\s+\\d+$/i.test(fallbackTitle)
+                titleIsGeneric && fallbackTitle && !/^episode\s+\d+$/i.test(fallbackTitle)
                   ? fallbackTitle
                   : ep.title;
               return {
@@ -433,6 +433,11 @@ export const jikan = {
                 title,
               };
             });
+            const existingNumbers = new Set(items.map((ep) => ep.mal_id));
+            const supplementalEpisodes = fallback.filter(
+              (ep) => ep.mal_id >= 744 && !existingNumbers.has(ep.mal_id),
+            );
+            return [...mergedItems, ...supplementalEpisodes].sort((a, b) => a.mal_id - b.mal_id);
           } catch {
             // The primary Jikan episode data remains usable without the fallback.
           }
