@@ -166,4 +166,3 @@ export function AuthForm({ initialMode = "signin" }: { initialMode?: "signin" | 
     </div>
   );
 }
-

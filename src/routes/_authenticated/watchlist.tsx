@@ -40,11 +40,11 @@ const FILTERS: { key: "all" | WatchStatus; label: string }[] = [
 function WatchlistPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const list = useQuery(watchlistQuery());
+  const list = useQuery(watchlistQuery(user?.id));
   const [filter, setFilter] = useState<"all" | WatchStatus>("all");
   const rows = (list.data ?? []).filter((r) => filter === "all" || r.status === filter);
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["watchlist"] });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["watchlist", user?.id] });
 
   const statusMutation = useMutation({
     mutationFn: ({ malId, status }: { malId: number; status: WatchStatus }) =>

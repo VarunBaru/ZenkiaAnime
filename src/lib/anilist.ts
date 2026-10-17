@@ -58,7 +58,12 @@ export const anilistQuery = (malId: number) =>
 
 /** Authorised embed source for this project. */
 /** AniEmbed documents `?lang=sub|dub` and `?s=server` on its embed endpoint. */
-export function embedUrl(anilistId: number, episode: number, lang?: "sub" | "dub", server?: string) {
+export function embedUrl(
+  anilistId: number,
+  episode: number,
+  lang?: "sub" | "dub",
+  server?: string,
+) {
   const base = `https://aniembed.se/e/${anilistId}/${episode}`;
   const params = new URLSearchParams();
   if (lang) params.set("lang", lang);

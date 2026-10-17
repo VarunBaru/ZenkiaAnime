@@ -3,13 +3,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  deleteProfileData,
-  historyQuery,
-  profileQuery,
-  updateProfile,
-  watchlistQuery,
-} from "@/lib/library";
+import { deleteAccount } from "@/lib/account.functions";
+import { historyQuery, profileQuery, updateProfile, watchlistQuery } from "@/lib/library";
 import { ThemeToggle } from "@/components/PreferenceControls";
 import { BookMarked, History } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,20 +30,21 @@ function ProfilePage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const profile = useQuery(profileQuery(user?.id));
-  const list = useQuery(watchlistQuery());
+  const list = useQuery(watchlistQuery(user?.id));
   const history = useQuery(historyQuery(user?.id));
+  const metadataDisplayName = user?.user_metadata?.["display_name"] ?? null;
+  const metadataAvatarUrl = user?.user_metadata?.["avatar_url"] ?? null;
   const [name, setName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
 
   useEffect(() => {
-    if (profile.data) {
-      setName(profile.data.username ?? "");
-      setAvatarUrl(profile.data.avatar_url ?? "");
-    }
-  }, [profile.data?.username, profile.data?.avatar_url]);
+    setName(metadataDisplayName ?? profile.data?.username ?? "");
+    setAvatarUrl(metadataAvatarUrl ?? profile.data?.avatar_url ?? "");
+  }, [metadataDisplayName, metadataAvatarUrl, profile.data]);
 
   const save = useMutation({
-    mutationFn: () => updateProfile(user!.id, { username: name.trim(), avatar_url: avatarUrl.trim() || null }),
+    mutationFn: () =>
+      updateProfile(user!.id, { username: name.trim(), avatar_url: avatarUrl.trim() || null }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       toast.success("Profile updated");
@@ -57,14 +53,15 @@ function ProfilePage() {
   });
 
   const deleteProfile = useMutation({
-    mutationFn: () => deleteProfileData(user!.id),
+    mutationFn: () => deleteAccount(),
     onSuccess: async () => {
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: "local" });
       queryClient.clear();
-      toast.success("Your profile and library data were deleted");
+      toast.success("Your account and its data were permanently deleted");
       await navigate({ to: "/", replace: true });
     },
-    onError: () => toast.error("Couldn't delete your profile. Please try again."),
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Couldn't delete your account."),
   });
 
   const counts = {
@@ -87,7 +84,11 @@ function ProfilePage() {
         <div className="mt-5 flex items-center gap-4">
           <div className="grid size-16 shrink-0 place-items-center overflow-hidden border-2 border-border bg-muted font-display text-xl">
             {avatarUrl.trim() ? (
-              <img src={avatarUrl} alt="Profile avatar preview" className="size-full object-cover" />
+              <img
+                src={avatarUrl}
+                alt="Profile avatar preview"
+                className="size-full object-cover"
+              />
             ) : (
               (name.trim()[0] ?? user?.email?.[0] ?? "?").toUpperCase()
             )}
@@ -160,12 +161,11 @@ function ProfilePage() {
               {list.data?.length ?? 0} saved titles · Manage list
             </span>
           </span>
-          <span aria-hidden="true" className="font-display text-xl">→</span>
+          <span aria-hidden="true" className="font-display text-xl">
+            →
+          </span>
         </Link>
-        <Link
-          to="/history"
-          className="ink-panel-sm ink-press flex items-center gap-4 bg-card p-4"
-        >
+        <Link to="/history" className="ink-panel-sm ink-press flex items-center gap-4 bg-card p-4">
           <History className="size-6 shrink-0 text-accent" strokeWidth={2.5} />
           <span className="min-w-0 flex-1">
             <span className="block font-display text-lg">Watch history</span>
@@ -173,7 +173,9 @@ function ProfilePage() {
               {history.data?.length ?? 0} episode records · View history
             </span>
           </span>
-          <span aria-hidden="true" className="font-display text-xl">→</span>
+          <span aria-hidden="true" className="font-display text-xl">
+            →
+          </span>
         </Link>
       </section>
 
@@ -248,16 +250,17 @@ function ProfilePage() {
       </section>
 
       <section className="ink-panel mt-10 border-destructive p-5">
-        <h2 className="font-display text-lg text-destructive">Delete profile</h2>
+        <h2 className="font-display text-lg text-destructive">Delete account</h2>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          This removes your profile, watchlist, and watch history, then signs you out. Your sign-in account will remain.
+          This permanently deletes your sign-in account, profile, watchlist, and watch history. You
+          must have signed in within the last 15 minutes. You cannot undo this.
         </p>
         <button
           type="button"
           onClick={() => {
             if (
               window.confirm(
-                "Delete your profile, watchlist, and watch history? Your sign-in account will remain. This cannot be undone.",
+                "Permanently delete your account and all profile, watchlist, and history data? This cannot be undone.",
               )
             ) {
               deleteProfile.mutate();
@@ -266,10 +269,9 @@ function ProfilePage() {
           disabled={deleteProfile.isPending}
           className="ink-panel-sm ink-press mt-4 bg-destructive px-4 py-2.5 font-mono text-xs font-bold tracking-widest text-destructive-foreground uppercase disabled:opacity-50"
         >
-          {deleteProfile.isPending ? "Deleting…" : "Delete profile data"}
+          {deleteProfile.isPending ? "Deleting…" : "Delete my account"}
         </button>
       </section>
     </div>
   );
 }
-

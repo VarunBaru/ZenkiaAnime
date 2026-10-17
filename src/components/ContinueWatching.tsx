@@ -94,7 +94,7 @@ export function HistoryCard({
 export function ContinueWatching() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const history = useQuery({ ...historyQuery(user?.id), enabled: Boolean(user) });
+  const history = useQuery(historyQuery(user?.id));
 
   const removeMutation = useMutation({
     mutationFn: async (id: string) => {

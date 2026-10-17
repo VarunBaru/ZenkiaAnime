@@ -31,7 +31,7 @@ export function OnboardingGate({ children }: { children: ReactNode }) {
   const [doneForUser, setDoneForUser] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user || profile.isPending || profile.isError) return;
+    if (!user || (profile.isPending && !user.user_metadata?.["display_name"])) return;
     if (doneForUser === user.id) return;
 
     try {
@@ -44,7 +44,8 @@ export function OnboardingGate({ children }: { children: ReactNode }) {
       // Continue with an in-memory completion state when storage is unavailable.
     }
 
-    const name = profile.data?.username?.trim() ?? "";
+    const name =
+      user.user_metadata?.["display_name"]?.trim() || profile.data?.username?.trim() || "";
     const emailName = user.email?.split("@")[0]?.trim().toLocaleLowerCase();
     const isEmailPlaceholder = Boolean(emailName && name.toLocaleLowerCase() === emailName);
     setDisplayName(isEmailPlaceholder ? "" : name);
@@ -62,7 +63,9 @@ export function OnboardingGate({ children }: { children: ReactNode }) {
       setTourPage(0);
       setStep("tour");
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : "Couldn't save your name. Please try again.");
+      setSaveError(
+        error instanceof Error ? error.message : "Couldn't save your name. Please try again.",
+      );
     } finally {
       setSaving(false);
     }
@@ -120,7 +123,11 @@ export function OnboardingGate({ children }: { children: ReactNode }) {
                     className="ink-panel-sm mt-1.5 w-full bg-card px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-ring"
                     placeholder="Your name"
                   />
-                  {saveError && <p role="alert" className="mt-2 text-sm text-destructive">{saveError}</p>}
+                  {saveError && (
+                    <p role="alert" className="mt-2 text-sm text-destructive">
+                      {saveError}
+                    </p>
+                  )}
                   <button
                     type="submit"
                     disabled={saving || !displayName.trim()}
@@ -167,4 +174,3 @@ export function OnboardingGate({ children }: { children: ReactNode }) {
     </>
   );
 }
-

@@ -400,9 +400,9 @@ export const jikan = {
         .sort((a, b) => a.mal_id - b.mal_id);
 
       if (items.length > 0) {
-        // Jikan can omit episode titles for later One Piece episodes. Fill only
-        // missing Japanese titles and generic English labels from Kitsu by episode
-        // number; leave unavailable source data empty for the UI's fallback label.
+        // Jikan's One Piece episode feed stops including Japanese titles after
+        // episode 743. Fill only missing titles from Kitsu; keep Jikan's episode
+        // list and English titles authoritative, and leave unknown titles empty.
         if (
           id === 21 &&
           items.some(
@@ -461,17 +461,14 @@ export const jikan = {
         const knownCount = anime?.episodes ?? null;
         if (knownCount && knownCount > kitsuEpisodes.length) {
           const startNum = kitsuEpisodes.length + 1;
-          const remaining = Array.from(
-            { length: knownCount - kitsuEpisodes.length },
-            (_, i) => ({
-              mal_id: startNum + i,
-              title: `Episode ${startNum + i}`,
-              title_japanese: null,
-              aired: null,
-              filler: false,
-              recap: false,
-            }),
-          );
+          const remaining = Array.from({ length: knownCount - kitsuEpisodes.length }, (_, i) => ({
+            mal_id: startNum + i,
+            title: `Episode ${startNum + i}`,
+            title_japanese: null,
+            aired: null,
+            filler: false,
+            recap: false,
+          }));
           return [...kitsuEpisodes, ...remaining];
         }
         return kitsuEpisodes;
@@ -486,11 +483,8 @@ export const jikan = {
       const anime = await this.detail(id);
       const episodeCount = anime?.episodes;
 
-      const targetCount = episodeCount && episodeCount > 0
-        ? episodeCount
-        : anime?.type === "MOVIE"
-          ? 1
-          : 100;
+      const targetCount =
+        episodeCount && episodeCount > 0 ? episodeCount : anime?.type === "MOVIE" ? 1 : 100;
 
       console.log(`[jikan] generating ${targetCount} episodes for MAL ID ${id}`);
       return Array.from({ length: targetCount }, (_, i) => ({

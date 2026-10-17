@@ -1,15 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Info,
-  Grid3x3,
-  List,
-  Cast,
-  ExternalLink,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, Grid3x3, List, Cast, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { animeQuery, episodesQuery } from "@/lib/jikan";
 import { anilistQuery, embedUrl } from "@/lib/anilist";
@@ -23,6 +15,15 @@ import {
   saveEpisodeProgress,
   type PlaybackProgress,
 } from "@/lib/library";
+
+type PresentationRequestConstructor = new (urls: string | string[]) => {
+  start: () => Promise<unknown>;
+};
+
+function presentationRequestConstructor() {
+  return (window as Window & { PresentationRequest?: PresentationRequestConstructor })
+    .PresentationRequest;
+}
 
 /**
  * AniEmbed documents a postMessage API (see aniembed.se → API Docs):
@@ -113,13 +114,13 @@ function WatchPage() {
   const [castSupported, setCastSupported] = useState(false);
 
   useEffect(() => {
-    setCastSupported(typeof PresentationRequest !== "undefined");
+    setCastSupported(typeof window !== "undefined" && Boolean(presentationRequestConstructor()));
   }, []);
 
   const anime = useQuery(animeQuery(id));
   const anilist = useQuery(anilistQuery(id));
   const episodes = useQuery({ ...episodesQuery(id), enabled: anime.isSuccess });
-  const history = useQuery({ ...historyQuery(user?.id), enabled: Boolean(user) });
+  const history = useQuery(historyQuery(user?.id));
 
   const title = anime.data ? anime.data.title_english || anime.data.title : null;
 
@@ -296,7 +297,8 @@ function WatchPage() {
   const currentEpisode = episodes.data?.[episode - 1];
 
   const handleCastToTv = async () => {
-    if (typeof PresentationRequest === "undefined") {
+    const PresentationRequest = presentationRequestConstructor();
+    if (!PresentationRequest) {
       toast.error("Direct TV casting is not supported in this browser.");
       return;
     }
@@ -397,9 +399,7 @@ function WatchPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="font-mono text-[11px] font-bold tracking-widest uppercase">
-            Server
-          </span>
+          <span className="font-mono text-[11px] font-bold tracking-widest uppercase">Server</span>
           <div className="flex flex-wrap gap-1">
             {(["nero", "yuki", "zuna", "loli", "sora"] as const).map((s) => (
               <button

@@ -75,7 +75,7 @@ function SavedAnimeCard({
 export function HomeWatchlist() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const list = useQuery({ ...watchlistQuery(), enabled: Boolean(user) });
+  const list = useQuery(watchlistQuery(user?.id));
 
   const removeMutation = useMutation({
     mutationFn: async (malId: number) => {
@@ -83,7 +83,7 @@ export function HomeWatchlist() {
       await removeFromWatchlist(user.id, malId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["watchlist"] });
+      queryClient.invalidateQueries({ queryKey: ["watchlist", user?.id] });
       toast.success("Removed from your watchlist");
     },
     onError: () => toast.error("Couldn't remove that. Please try again."),

@@ -43,13 +43,15 @@ export type HistoryRow = {
   last_watched_at: string;
 };
 
-export const watchlistQuery = () =>
+export const watchlistQuery = (userId: string | undefined) =>
   queryOptions({
-    queryKey: ["watchlist"],
+    queryKey: ["watchlist", userId],
+    enabled: Boolean(userId),
     queryFn: async (): Promise<WatchlistRow[]> => {
       const { data, error } = await supabase
         .from("watchlist")
         .select("*")
+        .eq("user_id", userId!)
         .order("updated_at", { ascending: false });
       if (error) throw new Error(error.message);
       return (data ?? []) as WatchlistRow[];
@@ -230,33 +232,56 @@ export function formatClock(seconds: number) {
 }
 
 export async function ensureProfile(userId: string, username?: string | null) {
+  if (username?.trim()) {
+    const displayName = username.trim();
+    if (displayName.length > 40) throw new Error("Display name must be 40 characters or fewer.");
+    const { error: authError } = await supabase.auth.updateUser({
+      data: { display_name: displayName, full_name: displayName },
+    });
+    if (authError) throw new Error(authError.message);
+  }
+
   const profile: { id: string; username?: string | null } = { id: userId };
   if (username !== undefined) profile.username = username;
-  const { error } = await supabase
-    .from("profiles")
-    .upsert(profile, { onConflict: "id" });
-  if (error) throw new Error(error.message);
+  const { error } = await supabase.from("profiles").upsert(profile, { onConflict: "id" });
+  // Auth metadata is the canonical display name; profile sync is best-effort
+  // so a missing/out-of-date profile table cannot block account onboarding.
+  if (error) console.warn("Profile row sync failed");
 }
 
 export async function updateProfile(
   userId: string,
   profile: { username: string; avatar_url: string | null },
 ) {
+  const displayName = profile.username.trim();
+  if (!displayName || displayName.length > 40) {
+    throw new Error("Display name must be between 1 and 40 characters.");
+  }
+  const avatarUrl = profile.avatar_url?.trim() || null;
+  if (avatarUrl) {
+    let parsedAvatarUrl: URL;
+    try {
+      parsedAvatarUrl = new URL(avatarUrl);
+    } catch {
+      throw new Error("Enter a valid avatar URL.");
+    }
+    if (parsedAvatarUrl.protocol !== "https:" || avatarUrl.length > 2048) {
+      throw new Error("Avatar URLs must use HTTPS and be 2,048 characters or fewer.");
+    }
+  }
+  const { error: authError } = await supabase.auth.updateUser({
+    data: {
+      display_name: displayName,
+      full_name: displayName,
+      avatar_url: avatarUrl,
+    },
+  });
+  if (authError) throw new Error(authError.message);
+
   const { error } = await supabase
     .from("profiles")
-    .upsert({ id: userId, ...profile }, { onConflict: "id" });
-  if (error) throw new Error(error.message);
-}
-
-export async function deleteProfileData(userId: string) {
-  const history = await supabase.from("watch_history").delete().eq("user_id", userId);
-  if (history.error) throw new Error(history.error.message);
-
-  const watchlist = await supabase.from("watchlist").delete().eq("user_id", userId);
-  if (watchlist.error) throw new Error(watchlist.error.message);
-
-  const profile = await supabase.from("profiles").delete().eq("id", userId);
-  if (profile.error) throw new Error(profile.error.message);
+    .upsert({ id: userId, username: displayName, avatar_url: avatarUrl }, { onConflict: "id" });
+  if (error) console.warn("Profile row sync failed");
 }
 
 export async function deleteHistoryEntry(userId: string, id: string) {
@@ -283,4 +308,3 @@ export function formatWatchedAt(iso: string) {
     minute: "2-digit",
   });
 }
-

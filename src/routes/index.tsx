@@ -206,19 +206,24 @@ function HomePage() {
   const usingFallback = airing.length === 0 && featuredList.length > 0;
   const [index, setIndex] = useState(0);
   const featured = featuredList.length ? featuredList[index % featuredList.length] : undefined;
+  const featuredCount = featuredList.length;
   const step = (d: number) => setIndex((i) => (i + d + featuredList.length) % featuredList.length);
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-  const name = profile.data?.username?.trim() || user?.user_metadata?.full_name || "there";
+  const name =
+    user?.user_metadata?.["display_name"]?.trim() ||
+    profile.data?.username?.trim() ||
+    user?.user_metadata?.["full_name"] ||
+    "there";
 
   // Auto-slide effect
   useEffect(() => {
-    if (!featuredList || featuredList.length <= 1) return;
+    if (featuredCount <= 1) return;
     const interval = setInterval(() => {
-      setIndex((i) => (i + 1) % featuredList.length);
+      setIndex((i) => (i + 1) % featuredCount);
     }, 6000);
     return () => clearInterval(interval);
-  }, [featuredList?.length]);
+  }, [featuredCount]);
 
   const nav =
     featuredList.length > 1 ? (
@@ -248,17 +253,19 @@ function HomePage() {
       {!authLoading && !user && (
         <div className="border-b-[3px] border-border bg-secondary/40">
           <div className="mx-auto max-w-[1500px] px-4 py-3 sm:px-6">
-            <p className="mb-2 text-center font-display text-lg">New to ZenkiaAnime? Create your account to get started.</p>
+            <p className="mb-2 text-center font-display text-lg">
+              New to ZenkiaAnime? Create your account to get started.
+            </p>
             <AuthForm initialMode="signup" />
           </div>
         </div>
       )}
       {user && (
         <div className="mx-auto max-w-[1500px] px-4 pt-6 sm:px-6">
-          <p className="font-display text-2xl leading-tight sm:text-3xl" aria-live="polite">
+          <p className="font-display text-3xl leading-tight sm:text-4xl" aria-live="polite">
             {greeting},
           </p>
-          <p className="mt-1 font-display text-4xl leading-tight sm:text-5xl">{name}</p>
+          <p className="mt-1 font-display text-2xl leading-tight sm:text-3xl">{name}</p>
         </div>
       )}
       <section className="speed-lines border-b-[3px] border-border">
@@ -341,4 +348,3 @@ function HomePage() {
     </div>
   );
 }
-
