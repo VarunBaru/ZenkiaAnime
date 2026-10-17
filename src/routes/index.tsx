@@ -16,6 +16,9 @@ import { WatchlistButton } from "@/components/WatchlistButton";
 import { CardSkeletonRow, EmptyState, ErrorState, PanelSkeleton } from "@/components/states";
 import { ContinueWatching } from "@/components/ContinueWatching";
 import { HomeWatchlist } from "@/components/HomeWatchlist";
+import { AuthForm } from "@/components/AuthForm";
+import { useAuth } from "@/hooks/useAuth";
+import { profileQuery } from "@/lib/library";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -187,6 +190,8 @@ function Hero({
 }
 
 function HomePage() {
+  const { user, loading: authLoading } = useAuth();
+  const profile = useQuery(profileQuery(user?.id));
   const trending = useQuery(trendingQuery());
   const popular = useQuery(popularQuery());
   const season = useQuery(seasonQuery());
@@ -202,6 +207,9 @@ function HomePage() {
   const [index, setIndex] = useState(0);
   const featured = featuredList.length ? featuredList[index % featuredList.length] : undefined;
   const step = (d: number) => setIndex((i) => (i + d + featuredList.length) % featuredList.length);
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const name = profile.data?.username?.trim() || user?.user_metadata?.full_name || "there";
 
   // Auto-slide effect
   useEffect(() => {
@@ -237,6 +245,21 @@ function HomePage() {
 
   return (
     <div>
+      {!authLoading && !user && (
+        <div className="border-b-[3px] border-border bg-secondary/40">
+          <div className="mx-auto max-w-[1500px] px-4 py-3 sm:px-6">
+            <p className="mb-2 text-center font-display text-lg">New to ZenkiaAnime? Create your account to get started.</p>
+            <AuthForm initialMode="signup" />
+          </div>
+        </div>
+      )}
+      {user && (
+        <div className="mx-auto max-w-[1500px] px-4 pt-6 sm:px-6">
+          <p className="font-display text-xl sm:text-2xl" aria-live="polite">
+            {greeting}, {name}!
+          </p>
+        </div>
+      )}
       <section className="speed-lines border-b-[3px] border-border">
         {trending.isPending && !featured ? (
           <div className="mx-auto grid max-w-[1500px] gap-8 px-4 py-10 sm:px-6 lg:grid-cols-12">
@@ -317,3 +340,4 @@ function HomePage() {
     </div>
   );
 }
+
