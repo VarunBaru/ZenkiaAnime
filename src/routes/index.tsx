@@ -255,9 +255,10 @@ function HomePage() {
       )}
       {user && (
         <div className="mx-auto max-w-[1500px] px-4 pt-6 sm:px-6">
-          <p className="font-display text-xl sm:text-2xl" aria-live="polite">
-            {greeting}, {name}!
+          <p className="font-display text-2xl leading-tight sm:text-3xl" aria-live="polite">
+            {greeting},
           </p>
+          <p className="mt-1 font-display text-4xl leading-tight sm:text-5xl">{name}</p>
         </div>
       )}
       <section className="speed-lines border-b-[3px] border-border">
