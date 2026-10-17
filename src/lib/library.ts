@@ -230,9 +230,21 @@ export function formatClock(seconds: number) {
 }
 
 export async function ensureProfile(userId: string, username?: string | null) {
+  const profile: { id: string; username?: string | null } = { id: userId };
+  if (username !== undefined) profile.username = username;
   const { error } = await supabase
     .from("profiles")
-    .upsert({ id: userId, username: username ?? null }, { onConflict: "id" });
+    .upsert(profile, { onConflict: "id" });
+  if (error) throw new Error(error.message);
+}
+
+export async function updateProfile(
+  userId: string,
+  profile: { username: string; avatar_url: string | null },
+) {
+  const { error } = await supabase
+    .from("profiles")
+    .upsert({ id: userId, ...profile }, { onConflict: "id" });
   if (error) throw new Error(error.message);
 }
 
@@ -260,3 +272,4 @@ export function formatWatchedAt(iso: string) {
     minute: "2-digit",
   });
 }
+
