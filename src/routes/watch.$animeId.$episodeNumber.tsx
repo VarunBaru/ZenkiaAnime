@@ -612,11 +612,9 @@ function WatchPage() {
                           </span>
                         )}
                       </div>
-                      {opt.jpTitle && (
-                        <p className="truncate font-mono text-[10px] opacity-60 mt-0.5">
-                          {opt.jpTitle}
-                        </p>
-                      )}
+                      <p className="truncate font-mono text-[10px] opacity-60 mt-0.5">
+                        {opt.jpTitle?.trim() || "Japanese title unavailable"}
+                      </p>
                     </div>
                     {opt.aired && (
                       <span className="shrink-0 font-mono text-[10px] opacity-70">
