@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { BookMarked, History, LogOut, Menu, Search, User as UserIcon, X } from "lucide-react";
+import { LogOut, Menu, Search, User as UserIcon, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { LanguageToggle, MobileSettings } from "@/components/PreferenceControls";
@@ -91,20 +91,6 @@ export function SiteHeader() {
           {user ? (
             <>
               <Link
-                to="/watchlist"
-                className="ink-panel-sm ink-press bg-card p-2"
-                aria-label="My watchlist"
-              >
-                <BookMarked className="size-4" strokeWidth={2.5} />
-              </Link>
-              <Link
-                to="/history"
-                className="ink-panel-sm ink-press bg-card p-2"
-                aria-label="Watch history"
-              >
-                <History className="size-4" strokeWidth={2.5} />
-              </Link>
-              <Link
                 to="/profile"
                 className="ink-panel-sm ink-press bg-card p-2"
                 aria-label="Profile"
@@ -169,20 +155,6 @@ export function SiteHeader() {
             ))}
             {user ? (
               <>
-                <Link
-                  to="/watchlist"
-                  onClick={() => setOpen(false)}
-                  className="ink-panel-sm bg-background px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase"
-                >
-                  Watchlist
-                </Link>
-                <Link
-                  to="/history"
-                  onClick={() => setOpen(false)}
-                  className="ink-panel-sm bg-background px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase"
-                >
-                  History
-                </Link>
                 <Link
                   to="/profile"
                   onClick={() => setOpen(false)}
