@@ -4,7 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { historyQuery, profileQuery, updateProfile, watchlistQuery } from "@/lib/library";
-import { LanguageToggle, ThemeToggle } from "@/components/PreferenceControls";
+import { ThemeToggle } from "@/components/PreferenceControls";
+import { BookMarked, History } from "lucide-react";
 import { EmptyState, ErrorState, PanelSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -118,14 +119,7 @@ function ProfilePage() {
         </p>
       </section>
 
-      <section className="ink-panel mt-6 grid gap-6 p-5 sm:grid-cols-2">
-        <div>
-          <h2 className="font-display text-lg">Anime language</h2>
-          <p className="mb-3 mt-1 text-xs text-muted-foreground">
-            Keep EN or JP selected for anime playback, just like before.
-          </p>
-          <LanguageToggle />
-        </div>
+      <section className="ink-panel mt-6 p-5">
         <div>
           <h2 className="font-display text-lg">Website theme</h2>
           <p className="mb-3 mt-1 text-xs text-muted-foreground">
@@ -133,6 +127,35 @@ function ProfilePage() {
           </p>
           <ThemeToggle showText />
         </div>
+      </section>
+
+      <section className="mt-6 grid gap-3 sm:grid-cols-2" aria-label="Your library">
+        <Link
+          to="/watchlist"
+          className="ink-panel-sm ink-press flex items-center gap-4 bg-card p-4"
+        >
+          <BookMarked className="size-6 shrink-0 text-accent" strokeWidth={2.5} />
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-lg">My watchlist</span>
+            <span className="mt-1 block font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+              {list.data?.length ?? 0} saved titles · Manage list
+            </span>
+          </span>
+          <span aria-hidden="true" className="font-display text-xl">→</span>
+        </Link>
+        <Link
+          to="/history"
+          className="ink-panel-sm ink-press flex items-center gap-4 bg-card p-4"
+        >
+          <History className="size-6 shrink-0 text-accent" strokeWidth={2.5} />
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-lg">Watch history</span>
+            <span className="mt-1 block font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+              {history.data?.length ?? 0} episode records · View history
+            </span>
+          </span>
+          <span aria-hidden="true" className="font-display text-xl">→</span>
+        </Link>
       </section>
 
       <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
