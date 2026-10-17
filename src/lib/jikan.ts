@@ -400,21 +400,38 @@ export const jikan = {
         .sort((a, b) => a.mal_id - b.mal_id);
 
       if (items.length > 0) {
-        // Jikan's One Piece episode feed stops including Japanese titles after
-        // episode 743. Fill only missing titles from Kitsu; keep Jikan's episode
-        // list and English titles authoritative, and leave unknown titles empty.
-        if (id === 21 && items.some((ep) => ep.mal_id >= 744 && !ep.title_japanese)) {
+        // Jikan can omit episode titles for later One Piece episodes. Fill only
+        // missing Japanese titles and generic English labels from Kitsu by episode
+        // number; leave unavailable source data empty for the UI's fallback label.
+        if (
+          id === 21 &&
+          items.some(
+            (ep) =>
+              ep.mal_id >= 744 &&
+              (!ep.title_japanese?.trim() ||
+                !ep.title.trim() ||
+                /^episode\\s+\\d+$/i.test(ep.title.trim())),
+          )
+        ) {
           try {
             const { kitsuEpisodesByMalId } = await import("./kitsu");
             const fallback = await kitsuEpisodesByMalId(21, 744);
-            const japaneseTitles = new Map(
-              fallback
-                .filter((ep) => ep.title_japanese?.trim())
-                .map((ep) => [ep.mal_id, ep.title_japanese!.trim()]),
-            );
+            const fallbackByNumber = new Map(fallback.map((ep) => [ep.mal_id, ep]));
             return items.map((ep) => {
-              const titleJapanese = ep.title_japanese?.trim() || japaneseTitles.get(ep.mal_id);
-              return titleJapanese ? { ...ep, title_japanese: titleJapanese } : ep;
+              const fallbackEpisode = fallbackByNumber.get(ep.mal_id);
+              const titleJapanese =
+                ep.title_japanese?.trim() || fallbackEpisode?.title_japanese?.trim();
+              const titleIsGeneric = !ep.title.trim() || /^episode\\s+\\d+$/i.test(ep.title.trim());
+              const fallbackTitle = fallbackEpisode?.title?.trim();
+              const title =
+                titleIsGeneric && fallbackTitle && !/^episode\\s+\\d+$/i.test(fallbackTitle)
+                  ? fallbackTitle
+                  : ep.title;
+              return {
+                ...ep,
+                ...(titleJapanese ? { title_japanese: titleJapanese } : {}),
+                title,
+              };
             });
           } catch {
             // The primary Jikan episode data remains usable without the fallback.

@@ -570,7 +570,7 @@ function WatchPage() {
           const allEpisodes = totalFromList
             ? episodes.data!.map((ep, i) => ({
                 n: i + 1,
-                label: ep.title || `Episode ${i + 1}`,
+                label: ep.title?.trim() || `Episode ${ep.mal_id}`,
                 jpTitle: ep.title_japanese,
                 aired: ep.aired,
                 filler: ep.filler,
