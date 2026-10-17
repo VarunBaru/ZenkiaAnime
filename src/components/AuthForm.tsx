@@ -7,11 +7,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { ensureProfile } from "@/lib/library";
 
 const SAKURA_PETALS = [
-  { left: "8%", top: "12%", delay: "-3s", duration: "13s" },
-  { left: "28%", top: "4%", delay: "-9s", duration: "15s" },
-  { left: "53%", top: "16%", delay: "-6s", duration: "12s" },
-  { left: "74%", top: "6%", delay: "-11s", duration: "16s" },
-  { left: "91%", top: "24%", delay: "-1s", duration: "14s" },
+  { left: "6%", top: "10%", delay: "-3s", duration: "10s" },
+  { left: "19%", top: "2%", delay: "-9s", duration: "12s" },
+  { left: "32%", top: "16%", delay: "-6s", duration: "9s" },
+  { left: "46%", top: "5%", delay: "-11s", duration: "13s" },
+  { left: "61%", top: "18%", delay: "-1s", duration: "10s" },
+  { left: "73%", top: "4%", delay: "-8s", duration: "12s" },
+  { left: "85%", top: "14%", delay: "-4s", duration: "9s" },
+  { left: "96%", top: "0%", delay: "-12s", duration: "13s" },
 ] as const;
 
 function friendly(message: string) {
