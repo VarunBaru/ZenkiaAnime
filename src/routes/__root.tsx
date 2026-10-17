@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
   type ErrorComponentProps,
@@ -11,6 +12,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -134,18 +136,47 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <PreferencesProvider>
         <AuthSync />
-        <div className="flex min-h-screen flex-col">
-          <SiteHeader />
-          <main className="flex-1">
-            {/* Required: nested routes render here. */}
-            <Outlet />
-          </main>
-          <SiteFooter />
-        </div>
+        <AuthGate>
+          <div className="flex min-h-screen flex-col">
+            <SiteHeader />
+            <main className="flex-1">
+              {/* Required: nested routes render here. */}
+              <Outlet />
+            </main>
+            <SiteFooter />
+          </div>
+        </AuthGate>
         <Toaster />
       </PreferencesProvider>
     </QueryClientProvider>
   );
+}
+
+const PUBLIC_AUTH_PATHS = new Set(["/auth", "/login", "/signup", "/signin", "/sign-in"]);
+
+function AuthGate({ children }: { children: ReactNode }) {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const isAuthPage = PUBLIC_AUTH_PATHS.has(pathname);
+
+  useEffect(() => {
+    if (!loading && !user && !isAuthPage) {
+      void router.navigate({ to: "/signup", replace: true });
+    }
+  }, [loading, user, isAuthPage, router]);
+
+  if (!isAuthPage && (loading || !user)) {
+    return (
+      <div className="grid min-h-screen place-items-center px-4" role="status" aria-live="polite">
+        <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
+          Checking your account…
+        </p>
+      </div>
+    );
+  }
+
+  return children;
 }
 
 function AuthSync() {

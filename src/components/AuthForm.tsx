@@ -6,6 +6,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ensureProfile } from "@/lib/library";
 
+const SAKURA_PETALS = [
+  { left: "6%", top: "10%", delay: "-3s", duration: "10s" },
+  { left: "19%", top: "2%", delay: "-9s", duration: "12s" },
+  { left: "32%", top: "16%", delay: "-6s", duration: "9s" },
+  { left: "46%", top: "5%", delay: "-11s", duration: "13s" },
+  { left: "61%", top: "18%", delay: "-1s", duration: "10s" },
+  { left: "73%", top: "4%", delay: "-8s", duration: "12s" },
+  { left: "85%", top: "14%", delay: "-4s", duration: "9s" },
+  { left: "96%", top: "0%", delay: "-12s", duration: "13s" },
+] as const;
+
 function friendly(message: string) {
   const m = message.toLowerCase();
   if (m.includes("invalid login")) return "Wrong email or password — try again.";
@@ -80,8 +91,82 @@ export function AuthForm({ initialMode = "signin" }: { initialMode?: "signin" | 
   };
 
   return (
-    <div className="mx-auto flex max-w-[520px] flex-col px-4 py-12 sm:px-6">
-      <div className="ink-panel halftone p-6 sm:p-8">
+    <div className="relative isolate overflow-hidden bg-background px-4 py-10 sm:px-6 sm:py-14">
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 460 340"
+        fill="none"
+        className="sakura-branch-motion pointer-events-none absolute -top-8 -right-20 z-0 h-64 w-80 text-accent/35 sm:h-80 sm:w-[460px]"
+      >
+        <path
+          d="M452 16C362 56 360 117 292 143c-71 27-101 7-151 54C98 236 65 288 13 322M348 105c-9-42-3-65 19-90m-89 137c-40-8-61-25-76-57m25 71c-5 39-25 62-58 81m153-101c28-1 49-13 70-39"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
+        <g fill="currentColor">
+          <ellipse cx="359" cy="37" rx="10" ry="6" transform="rotate(-46 359 37)" />
+          <ellipse cx="373" cy="40" rx="10" ry="6" transform="rotate(26 373 40)" />
+          <ellipse cx="365" cy="53" rx="10" ry="6" transform="rotate(82 365 53)" />
+          <ellipse cx="350" cy="50" rx="10" ry="6" transform="rotate(138 350 50)" />
+          <ellipse cx="347" cy="36" rx="10" ry="6" transform="rotate(195 347 36)" />
+          <circle cx="360" cy="43" r="4" fill="#ffd166" />
+          <ellipse cx="183" cy="100" rx="9" ry="5" transform="rotate(-30 183 100)" />
+          <ellipse cx="194" cy="105" rx="9" ry="5" transform="rotate(42 194 105)" />
+          <ellipse cx="187" cy="117" rx="9" ry="5" transform="rotate(100 187 117)" />
+          <ellipse cx="174" cy="111" rx="9" ry="5" transform="rotate(160 174 111)" />
+          <ellipse cx="174" cy="98" rx="9" ry="5" transform="rotate(220 174 98)" />
+          <circle cx="184" cy="105" r="3.5" fill="#ffd166" />
+          <ellipse cx="293" cy="143" rx="9" ry="5" transform="rotate(-25 293 143)" />
+          <ellipse cx="304" cy="149" rx="9" ry="5" transform="rotate(45 304 149)" />
+          <ellipse cx="297" cy="160" rx="9" ry="5" transform="rotate(100 297 160)" />
+          <ellipse cx="284" cy="154" rx="9" ry="5" transform="rotate(160 284 154)" />
+          <ellipse cx="284" cy="141" rx="9" ry="5" transform="rotate(220 284 141)" />
+          <circle cx="294" cy="148" r="3.5" fill="#ffd166" />
+        </g>
+        <path d="M64 93c13 9 16 17 12 28m221 151c14-4 23-2 31 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        {SAKURA_PETALS.map((petal, index) => (
+          <span
+            key={index}
+            className="sakura-petal-motion absolute"
+            style={{
+              left: petal.left,
+              top: petal.top,
+              animationDelay: petal.delay,
+              animationDuration: petal.duration,
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-8 lg:grid-cols-[1fr_minmax(0,0.95fr)] lg:gap-14">
+        <section className="relative">
+          <div className="mb-8 flex items-center">
+            <img src="/brand-logo-light.webp" alt="Zenkia Anime" className="h-14 w-auto max-w-[230px] object-contain dark:hidden" />
+            <img src="/brand-logo-dark.webp" alt="Zenkia Anime" className="hidden h-14 w-auto max-w-[230px] object-contain dark:block" />
+          </div>
+          <p className="mb-3 font-mono text-[11px] font-bold tracking-[0.24em] text-accent uppercase">
+            {mode === "signup" ? "Your anime chapter starts here" : "Welcome back, anime fan"}
+          </p>
+          <h2 className="max-w-xl font-display text-4xl leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
+            {mode === "signup" ? "Build your anime world." : "Pick up where you left off."}
+          </h2>
+          <p className="mt-5 max-w-lg text-base leading-7 text-muted-foreground sm:text-lg">
+            Discover new favorites, save your watchlist, and keep track of every episode — all in one place.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-2 font-mono text-[10px] font-bold tracking-widest uppercase">
+            {["Discover", "Watchlist", "Episode history"].map((label, index) => (
+              <span key={label} className="ink-panel-sm bg-card px-3 py-2">
+                <span className="mr-2 text-accent">0{index + 1}</span>{label}
+              </span>
+            ))}
+          </div>
+        </section>
+
+        <div className="ink-panel halftone p-6 sm:p-8">
         <h1 className="font-display text-2xl sm:text-3xl">
           {mode === "signin" ? "Welcome back" : "Join AnimeHub"}
         </h1>
@@ -162,6 +247,7 @@ export function AuthForm({ initialMode = "signin" }: { initialMode?: "signin" | 
             {mode === "signin" ? "Create one" : "Sign in"}
           </button>
         </p>
+        </div>
       </div>
     </div>
   );

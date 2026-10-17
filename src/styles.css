@@ -199,3 +199,57 @@
 @utility ink-rise {
   animation: ink-rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
+
+
+@keyframes sakura-petal-drift {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -18px, 0) rotate(-24deg);
+  }
+  14% {
+    opacity: 0.72;
+  }
+  86% {
+    opacity: 0.68;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(118px, 430px, 0) rotate(340deg);
+  }
+}
+
+@keyframes sakura-branch-sway {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
+.sakura-petal-motion {
+  animation: sakura-petal-drift 9s ease-in-out infinite;
+  border-radius: 100% 0 100% 0;
+  background-color: var(--accent);
+  height: 16px;
+  width: 11px;
+  will-change: transform, opacity;
+}
+
+.sakura-branch-motion {
+  animation: sakura-branch-sway 8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: 100% 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sakura-petal-motion {
+    animation: none;
+    opacity: 0.3;
+  }
+
+  .sakura-branch-motion {
+    animation: none;
+  }
+}

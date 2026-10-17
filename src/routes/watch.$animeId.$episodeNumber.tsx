@@ -355,6 +355,14 @@ function WatchPage() {
               referrerPolicy="origin"
               onError={() => setFrameFailed(true)}
             />
+            <div aria-hidden="true" className="pointer-events-none absolute top-4 left-4 z-[5] select-none">
+              <img
+                src="/brand-wordmark.webp"
+                alt=""
+                draggable={false}
+                className="w-20 opacity-55 drop-shadow-[0_2px_5px_rgba(0,0,0,0.9)] sm:w-28"
+              />
+            </div>
             {/* Directly choose an available TV with the browser Presentation API. */}
             <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
               <button
