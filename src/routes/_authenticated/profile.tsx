@@ -8,6 +8,7 @@ import { historyQuery, profileQuery, updateProfile, watchlistQuery } from "@/lib
 import { ThemeToggle } from "@/components/PreferenceControls";
 import { BookMarked, History } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { usePreferences } from "@/lib/preferences";
 import { EmptyState, ErrorState, PanelSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -32,6 +33,12 @@ function ProfilePage() {
   const profile = useQuery(profileQuery(user?.id));
   const list = useQuery(watchlistQuery(user?.id));
   const history = useQuery(historyQuery(user?.id));
+  const {
+    showHomeHistory,
+    setShowHomeHistory,
+    showHomeWatchlist,
+    setShowHomeWatchlist,
+  } = usePreferences();
   const metadataDisplayName = user?.user_metadata?.["display_name"] ?? null;
   const metadataAvatarUrl = user?.user_metadata?.["avatar_url"] ?? null;
   const [name, setName] = useState("");
@@ -146,6 +153,33 @@ function ProfilePage() {
             Choose light, dark, or match your device setting.
           </p>
           <ThemeToggle showText />
+        </div>
+      </section>
+
+      <section className="ink-panel mt-6 p-5">
+        <h2 className="font-display text-lg">Home screen</h2>
+        <p className="mb-4 mt-1 text-xs text-muted-foreground">
+          Choose which personal library sections appear on your home screen.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="flex cursor-pointer items-center gap-3 font-mono text-xs tracking-wide">
+            <input
+              type="checkbox"
+              checked={showHomeWatchlist}
+              onChange={(event) => setShowHomeWatchlist(event.target.checked)}
+              className="size-4 accent-[var(--accent)]"
+            />
+            Show watchlist on home
+          </label>
+          <label className="flex cursor-pointer items-center gap-3 font-mono text-xs tracking-wide">
+            <input
+              type="checkbox"
+              checked={showHomeHistory}
+              onChange={(event) => setShowHomeHistory(event.target.checked)}
+              className="size-4 accent-[var(--accent)]"
+            />
+            Show watch history on home
+          </label>
         </div>
       </section>
 
