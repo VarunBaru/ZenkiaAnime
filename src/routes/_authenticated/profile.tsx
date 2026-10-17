@@ -1,11 +1,18 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { historyQuery, profileQuery, updateProfile, watchlistQuery } from "@/lib/library";
+import {
+  deleteProfileData,
+  historyQuery,
+  profileQuery,
+  updateProfile,
+  watchlistQuery,
+} from "@/lib/library";
 import { ThemeToggle } from "@/components/PreferenceControls";
 import { BookMarked, History } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { EmptyState, ErrorState, PanelSkeleton } from "@/components/states";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -26,6 +33,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
 function ProfilePage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const profile = useQuery(profileQuery(user?.id));
   const list = useQuery(watchlistQuery());
   const history = useQuery(historyQuery(user?.id));
@@ -46,6 +54,17 @@ function ProfilePage() {
       toast.success("Profile updated");
     },
     onError: () => toast.error("Couldn't save your profile. Please try again."),
+  });
+
+  const deleteProfile = useMutation({
+    mutationFn: () => deleteProfileData(user!.id),
+    onSuccess: async () => {
+      await supabase.auth.signOut();
+      queryClient.clear();
+      toast.success("Your profile and library data were deleted");
+      await navigate({ to: "/", replace: true });
+    },
+    onError: () => toast.error("Couldn't delete your profile. Please try again."),
   });
 
   const counts = {
@@ -226,6 +245,29 @@ function ProfilePage() {
             ))}
           </div>
         )}
+      </section>
+
+      <section className="ink-panel mt-10 border-destructive p-5">
+        <h2 className="font-display text-lg text-destructive">Delete profile</h2>
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+          This removes your profile, watchlist, and watch history, then signs you out. Your sign-in account will remain.
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            if (
+              window.confirm(
+                "Delete your profile, watchlist, and watch history? Your sign-in account will remain. This cannot be undone.",
+              )
+            ) {
+              deleteProfile.mutate();
+            }
+          }}
+          disabled={deleteProfile.isPending}
+          className="ink-panel-sm ink-press mt-4 bg-destructive px-4 py-2.5 font-mono text-xs font-bold tracking-widest text-destructive-foreground uppercase disabled:opacity-50"
+        >
+          {deleteProfile.isPending ? "Deleting…" : "Delete profile data"}
+        </button>
       </section>
     </div>
   );
