@@ -426,6 +426,8 @@ function WatchPage() {
           {activeLang === "dub"
             ? "English dub requested. Try different servers if video is black or won't load."
             : "Japanese original audio with subtitles requested."}
+          <br />
+          Some streams may show ads. A browser ad-blocking extension may help reduce them.
           <button
             onClick={() => window.open(src, "_blank")}
             className="ml-2 text-accent underline underline-offset-4 hover:text-accent/80 inline-flex items-center gap-1"
