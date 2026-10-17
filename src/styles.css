@@ -207,14 +207,14 @@
     transform: translate3d(0, -18px, 0) rotate(-24deg);
   }
   14% {
-    opacity: 0.55;
+    opacity: 0.72;
   }
   86% {
-    opacity: 0.5;
+    opacity: 0.68;
   }
   100% {
     opacity: 0;
-    transform: translate3d(72px, 320px, 0) rotate(170deg);
+    transform: translate3d(118px, 430px, 0) rotate(340deg);
   }
 }
 
@@ -224,16 +224,16 @@
     transform: rotate(0deg);
   }
   50% {
-    transform: rotate(1.5deg);
+    transform: rotate(2deg);
   }
 }
 
 .sakura-petal-motion {
-  animation: sakura-petal-drift 12s ease-in-out infinite;
+  animation: sakura-petal-drift 9s ease-in-out infinite;
   border-radius: 100% 0 100% 0;
   background-color: var(--accent);
-  height: 12px;
-  width: 8px;
+  height: 16px;
+  width: 11px;
   will-change: transform, opacity;
 }
 
