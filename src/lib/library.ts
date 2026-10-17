@@ -56,13 +56,15 @@ export const watchlistQuery = () =>
     },
   });
 
-export const historyQuery = () =>
+export const historyQuery = (userId: string | undefined) =>
   queryOptions({
-    queryKey: ["history"],
+    queryKey: ["history", userId],
+    enabled: Boolean(userId),
     queryFn: async (): Promise<HistoryRow[]> => {
       const { data, error } = await supabase
         .from("watch_history")
         .select("*")
+        .eq("user_id", userId!)
         .order("last_watched_at", { ascending: false })
         .abortSignal(AbortSignal.timeout(10_000));
       if (error) throw new Error(error.message);
