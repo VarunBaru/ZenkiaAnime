@@ -157,7 +157,7 @@ function RootComponent() {
   );
 }
 
-const PUBLIC_AUTH_PATHS = new Set(["/auth", "/login", "/signup", "/signin", "/sign-in"]);
+const PUBLIC_AUTH_PATHS = new Set(["/auth", "/login", "/signup", "/signin", "/sign-in", "/install"]);
 
 function AuthGate({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();

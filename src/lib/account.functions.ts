@@ -11,6 +11,12 @@ export const deleteAccount = createServerFn({ method: "POST" })
       throw new Error("For security, sign out and back in before deleting your account.");
     }
 
+    if (!process.env["SUPABASE_SERVICE_ROLE_KEY_PRODUCTION"]) {
+      throw new Error(
+        "Account deletion is not configured yet. The site owner must add SUPABASE_SERVICE_ROLE_KEY_PRODUCTION to the Vercel project environment variables, then redeploy.",
+      );
+    }
+
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { error } = await supabaseAdmin.auth.admin.deleteUser(context.userId);
