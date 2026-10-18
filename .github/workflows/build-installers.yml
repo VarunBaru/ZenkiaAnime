@@ -8,6 +8,16 @@ on:
       - "desktop/**"
       - "src/components/AuthForm.tsx"
       - "src/routes/__root.tsx"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/build-installers.yml"
+      - "android/**"
+      - "desktop/**"
+      - "public/brand-app-icon-512.svg"
+      - "public/favicon.ico"
+      - "src/components/AuthForm.tsx"
+      - "src/routes/__root.tsx"
   workflow_dispatch:
 
 permissions:
@@ -47,7 +57,7 @@ jobs:
           PY
       - name: Build APK
         working-directory: android
-        run: gradle --no-daemon :app:assembleDebug
+        run: gradle --no-daemon -PVERSION_CODE=${{ github.run_number }} -PVERSION_NAME=1.0.${{ github.run_number }} :app:assembleDebug
       - uses: actions/upload-artifact@v4
         with:
           name: ZenkiaAnime-Android-APK
@@ -73,3 +83,46 @@ jobs:
           path: desktop/dist/*.exe
           if-no-files-found: error
           retention-days: 30
+
+  publish-release:
+    name: Publish permanent package downloads
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [android-apk, windows-installer]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Android APK
+        uses: actions/download-artifact@v4
+        with:
+          name: ZenkiaAnime-Android-APK
+          path: release/android
+      - name: Download Windows installer
+        uses: actions/download-artifact@v4
+        with:
+          name: ZenkiaAnime-Windows-Setup
+          path: release/windows
+      - name: Prepare stable asset names
+        run: |
+          cp release/android/app-debug.apk release/ZenkiaAnime-Android.apk
+          exe="$(find release/windows -maxdepth 1 -type f -name '*.exe' -print -quit)"
+          test -n "$exe"
+          cp "$exe" release/ZenkiaAnime-Windows-Setup.exe
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="v1.0.${GITHUB_RUN_NUMBER}"
+          cat > release-notes.md <<'EOF'
+          Install these packages from the Zenkia Anime installation page.
+
+          The Android APK is a debug-signed test build. Because the signing key is not persisted on the build runner, installing a future APK update may require uninstalling the previous APK first. The Windows installer is unsigned, so Windows SmartScreen may show a warning.
+          EOF
+          gh release create "$tag" \
+            release/ZenkiaAnime-Android.apk \
+            release/ZenkiaAnime-Windows-Setup.exe \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Zenkia Anime $tag" \
+            --notes-file release-notes.md \
+            --latest
