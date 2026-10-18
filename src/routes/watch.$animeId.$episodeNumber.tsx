@@ -312,8 +312,15 @@ function WatchPage() {
       await new PresentationRequest(src).start();
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
+
+      const noReceiver =
+        error instanceof DOMException &&
+        (error.name === "NotFoundError" || error.name === "NotSupportedError");
       toast.error(
-        "Couldn't connect to a TV. Check that a compatible TV is available on your network.",
+        noReceiver
+          ? "No compatible TV receiver was found. Check that your TV and computer are on the same Wi-Fi. For this embedded player, use Chrome ⋮ → Cast, save, and share → Cast tab."
+          : "This embedded player couldn't start a direct TV presentation. Try Chrome ⋮ → Cast, save, and share → Cast tab, with your TV and computer on the same Wi-Fi.",
+        { duration: 9000 },
       );
     }
   };
