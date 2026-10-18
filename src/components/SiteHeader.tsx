@@ -10,6 +10,7 @@ const NAV = [
   { to: "/", label: "Home" },
   { to: "/browse", label: "Browse" },
   { to: "/search", label: "Search" },
+  { to: "/install", label: "Install" },
 ] as const;
 
 export function SiteHeader() {
