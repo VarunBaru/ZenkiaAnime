@@ -1,0 +1,21 @@
+{
+  "id": "/",
+  "name": "Zenkia Anime",
+  "short_name": "Zenkia",
+  "description": "Discover anime, manage your watchlist, and track episodes.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#101113",
+  "theme_color": "#101113",
+  "categories": ["entertainment"],
+  "icons": [
+    {
+      "src": "/brand-favicon.png",
+      "sizes": "132x132",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
