@@ -79,6 +79,25 @@ export function AuthForm({ initialMode = "signin" }: { initialMode?: "signin" | 
   const google = async () => {
     setBusy(true);
     try {
+      const desktop = (window as Window & {
+        zenkiaDesktop?: { openAuthUrl: (url: string) => Promise<void> };
+      }).zenkiaDesktop;
+
+      if (desktop) {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: "zenkia-anime://auth/callback",
+            skipBrowserRedirect: true,
+          },
+        });
+        if (error) throw error;
+        if (!data.url) throw new Error("Google sign-in could not be started.");
+        await desktop.openAuthUrl(data.url);
+        setBusy(false);
+        return;
+      }
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo: window.location.origin },
