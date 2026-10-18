@@ -1,0 +1,48 @@
+{
+  "name": "zenkia-anime-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Windows desktop app for Zenkia Anime",
+  "main": "main.cjs",
+  "scripts": {
+    "build:win": "electron-builder --win nsis --x64"
+  },
+  "devDependencies": {
+    "electron": "^38.2.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.zenkia.anime",
+    "productName": "Zenkia Anime",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "package.json"
+    ],
+    "win": {
+      "icon": "../public/favicon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "ZenkiaAnime-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "protocols": [
+      {
+        "name": "Zenkia Anime sign-in",
+        "schemes": ["zenkia-anime"]
+      }
+    ]
+  }
+}

@@ -11,6 +11,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -204,7 +205,37 @@ function AuthSync() {
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
     });
-    return () => sub.subscription.unsubscribe();
+    const desktop = (window as Window & {
+      zenkiaDesktop?: {
+        onAuthCallback: (callback: (payload: { code?: string; error?: string }) => void) => () => void;
+      };
+    }).zenkiaDesktop;
+    const unsubscribeDesktop = desktop?.onAuthCallback(({ code, error }) => {
+      if (error) {
+        toast.error(error);
+        return;
+      }
+      if (!code) {
+        toast.error("Google sign-in did not return an authorization code.");
+        return;
+      }
+
+      void supabase.auth.exchangeCodeForSession(code).then(({ error: exchangeError }) => {
+        if (exchangeError) {
+          toast.error(exchangeError.message);
+          return;
+        }
+        router.invalidate();
+        void queryClient.invalidateQueries();
+      }).catch((error: unknown) => {
+        toast.error(error instanceof Error ? error.message : "Google sign-in could not be completed.");
+      });
+    });
+
+    return () => {
+      sub.subscription.unsubscribe();
+      unsubscribeDesktop?.();
+    };
   }, [router, queryClient]);
 
   return null;
