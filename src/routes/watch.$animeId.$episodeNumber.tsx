@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Info, Grid3x3, List, Cast, ExternalLink } from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, Grid3x3, List, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { animeQuery, episodesQuery } from "@/lib/jikan";
 import { anilistQuery, embedUrl } from "@/lib/anilist";
@@ -15,15 +15,6 @@ import {
   saveEpisodeProgress,
   type PlaybackProgress,
 } from "@/lib/library";
-
-type PresentationRequestConstructor = new (urls: string | string[]) => {
-  start: () => Promise<unknown>;
-};
-
-function presentationRequestConstructor() {
-  return (window as Window & { PresentationRequest?: PresentationRequestConstructor })
-    .PresentationRequest;
-}
 
 /**
  * AniEmbed documents a postMessage API (see aniembed.se → API Docs):
@@ -110,13 +101,6 @@ function WatchPage() {
   const [episodeRange, setEpisodeRange] = useState(0);
   // Episode view mode: grid or list
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  // Screen cast support
-  const [castSupported, setCastSupported] = useState(false);
-
-  useEffect(() => {
-    setCastSupported(typeof window !== "undefined" && Boolean(presentationRequestConstructor()));
-  }, []);
-
   const anime = useQuery(animeQuery(id));
   const anilist = useQuery(anilistQuery(id));
   const episodes = useQuery({ ...episodesQuery(id), enabled: anime.isSuccess });
@@ -301,30 +285,6 @@ function WatchPage() {
   const src = embedUrl(anilist.data.id, episode, activeLang, streamServer);
   const currentEpisode = episodes.data?.[episode - 1];
 
-  const handleCastToTv = async () => {
-    const PresentationRequest = presentationRequestConstructor();
-    if (!PresentationRequest) {
-      toast.error("Direct TV casting is not supported in this browser.");
-      return;
-    }
-
-    try {
-      await new PresentationRequest(src).start();
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") return;
-
-      const noReceiver =
-        error instanceof DOMException &&
-        (error.name === "NotFoundError" || error.name === "NotSupportedError");
-      toast.error(
-        noReceiver
-          ? "No compatible TV receiver was found. Check that your TV and computer are on the same Wi-Fi. For this embedded player, use Chrome ⋮ → Cast, save, and share → Cast tab."
-          : "This embedded player couldn't start a direct TV presentation. Try Chrome ⋮ → Cast, save, and share → Cast tab, with your TV and computer on the same Wi-Fi.",
-        { duration: 9000 },
-      );
-    }
-  };
-
   return (
     <div className="mx-auto max-w-[1200px] space-y-6 px-4 py-6 sm:px-6 sm:py-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -369,21 +329,6 @@ function WatchPage() {
                 draggable={false}
                 className="w-20 opacity-55 drop-shadow-[0_2px_5px_rgba(0,0,0,0.9)] sm:w-28"
               />
-            </div>
-            {/* Directly choose an available TV with the browser Presentation API. */}
-            <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
-              <button
-                onClick={handleCastToTv}
-                title={
-                  castSupported
-                    ? "Cast this episode to a TV"
-                    : "TV casting is unavailable in this browser"
-                }
-                className="ink-panel-sm ink-press bg-accent hover:bg-accent/90 text-accent-foreground px-3 py-2 opacity-90 hover:opacity-100 backdrop-blur transition-opacity flex items-center gap-1.5 font-mono text-[10px] font-bold tracking-widest uppercase border border-white/20 shadow-md"
-              >
-                <Cast className="size-3.5" />
-                <span>Cast to TV</span>
-              </button>
             </div>
           </div>
         )}
