@@ -106,6 +106,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Bungee&family=Space+Mono:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap",
       },
       { rel: "icon", href: "/brand-favicon.png", type: "image/png" },
+      { rel: "apple-touch-icon", href: "/brand-favicon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { name: "theme-color", content: "#101113" },
     ],
   }),
   shellComponent: RootShell,
@@ -136,6 +139,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <PreferencesProvider>
         <AuthSync />
+        <ServiceWorkerRegistration />
         <AuthGate>
           <div className="flex min-h-screen flex-col">
             <SiteHeader />
@@ -177,6 +181,17 @@ function AuthGate({ children }: { children: ReactNode }) {
   }
 
   return children;
+}
+
+function ServiceWorkerRegistration() {
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+    void navigator.serviceWorker.register("/sw.js").catch((error: unknown) => {
+      console.warn("[pwa] service worker registration failed", error);
+    });
+  }, []);
+
+  return null;
 }
 
 function AuthSync() {
