@@ -205,7 +205,6 @@ function AuthSync() {
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
     });
-
     const desktop = (window as Window & {
       zenkiaDesktop?: {
         onAuthCallback: (callback: (payload: { code?: string; error?: string }) => void) => () => void;
@@ -228,6 +227,8 @@ function AuthSync() {
         }
         router.invalidate();
         void queryClient.invalidateQueries();
+      }).catch((error: unknown) => {
+        toast.error(error instanceof Error ? error.message : "Google sign-in could not be completed.");
       });
     });
 
