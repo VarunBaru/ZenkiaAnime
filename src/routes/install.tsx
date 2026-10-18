@@ -109,20 +109,37 @@ function InstallPage() {
       </section>
 
       <section className="ink-panel p-5 sm:p-6">
-        <h2 className="font-display text-xl">Android APK and Windows installer</h2>
+        <h2 className="font-display text-xl">Permanent app downloads</h2>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-          The dedicated APK and Setup.exe are built in GitHub Actions. Open the latest successful
-          “Build installable apps” run, then download the APK or Windows artifact. These build
-          downloads are temporary and expire after 30 days.
+          Download the latest Android APK or Windows Setup.exe. These links point to GitHub Releases
+          and remain available after the build completes.
         </p>
-        <a
-          href="https://github.com/VarunBaru/ZenkiaAnime/actions/workflows/build-installers.yml"
-          target="_blank"
-          rel="noreferrer"
-          className="ink-panel-sm ink-press mt-5 inline-flex items-center gap-2 bg-card px-4 py-2.5 font-mono text-[10px] font-bold tracking-widest uppercase"
-        >
-          <Download className="size-4" /> Open app downloads <ExternalLink className="size-3.5" />
-        </a>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <a
+            href="https://github.com/VarunBaru/ZenkiaAnime/releases/latest/download/ZenkiaAnime-Android.apk"
+            className="ink-panel-sm ink-press inline-flex items-center gap-2 bg-accent px-4 py-2.5 font-mono text-[10px] font-bold tracking-widest text-accent-foreground uppercase"
+          >
+            <Download className="size-4" /> Android APK
+          </a>
+          <a
+            href="https://github.com/VarunBaru/ZenkiaAnime/releases/latest/download/ZenkiaAnime-Windows-Setup.exe"
+            className="ink-panel-sm ink-press inline-flex items-center gap-2 bg-accent px-4 py-2.5 font-mono text-[10px] font-bold tracking-widest text-accent-foreground uppercase"
+          >
+            <Download className="size-4" /> Windows Setup.exe
+          </a>
+          <a
+            href="https://github.com/VarunBaru/ZenkiaAnime/releases"
+            target="_blank"
+            rel="noreferrer"
+            className="ink-panel-sm ink-press inline-flex items-center gap-2 bg-card px-4 py-2.5 font-mono text-[10px] font-bold tracking-widest uppercase"
+          >
+            All releases <ExternalLink className="size-3.5" />
+          </a>
+        </div>
+        <p className="mt-4 text-xs leading-5 text-muted-foreground">
+          The APK is debug-signed, so replacing it with a future build may require uninstalling the
+          old APK first. Windows may show a SmartScreen warning because its installer is unsigned.
+        </p>
       </section>
     </main>
   );
