@@ -455,22 +455,9 @@ export const jikan = {
       const kitsuEpisodes = await kitsuEpisodesByMalId(id);
       if (kitsuEpisodes.length > 0) {
         // Kitsu now returns the full episode list (up to 1410 for One Piece).
-        // Only pad with numbered entries if Kitsu returned a partial list and
-        // the anime's known episode count is larger.
-        const anime = await this.detail(id).catch(() => null);
-        const knownCount = anime?.episodes ?? null;
-        if (knownCount && knownCount > kitsuEpisodes.length) {
-          const startNum = kitsuEpisodes.length + 1;
-          const remaining = Array.from({ length: knownCount - kitsuEpisodes.length }, (_, i) => ({
-            mal_id: startNum + i,
-            title: `Episode ${startNum + i}`,
-            title_japanese: null,
-            aired: null,
-            filler: false,
-            recap: false,
-          }));
-          return [...kitsuEpisodes, ...remaining];
-        }
+        // We avoid calling this.detail(id) here: it would trigger another
+        // slow Jikan -> Kitsu round-trip just to pad missing episodes, and
+        // the component already holds the resolved anime detail elsewhere.
         return kitsuEpisodes;
       }
     } catch {
@@ -479,34 +466,19 @@ export const jikan = {
 
     // Final fallback: ALWAYS generate episodes for any anime
     console.warn(`[jikan] episodes(${id}) generating fallback episode list`);
-    try {
-      const anime = await this.detail(id);
-      const episodeCount = anime?.episodes;
-
-      const targetCount =
-        episodeCount && episodeCount > 0 ? episodeCount : anime?.type === "MOVIE" ? 1 : 100;
-
-      console.log(`[jikan] generating ${targetCount} episodes for MAL ID ${id}`);
-      return Array.from({ length: targetCount }, (_, i) => ({
-        mal_id: i + 1,
-        title: `Episode ${i + 1}`,
-        title_japanese: null,
-        aired: null,
-        filler: false,
-        recap: false,
-      }));
-    } catch (err) {
-      console.error(`[jikan] episode generation failed for MAL ID ${id}:`, err);
-      // Absolute last resort: at least give 100 episodes
-      return Array.from({ length: 100 }, (_, i) => ({
-        mal_id: i + 1,
-        title: `Episode ${i + 1}`,
-        title_japanese: null,
-        aired: null,
-        filler: false,
-        recap: false,
-      }));
-    }
+    // Avoid calling this.detail(id) in the final fallback: Jikan is down, so
+    // it would only fall back to a slow Kitsu detail call. Default to a
+    // sensible episode count instead.
+    const targetCount = 100;
+    console.log(`[jikan] generating ${targetCount} episodes for MAL ID ${id}`);
+    return Array.from({ length: targetCount }, (_, i) => ({
+      mal_id: i + 1,
+      title: `Episode ${i + 1}`,
+      title_japanese: null,
+      aired: null,
+      filler: false,
+      recap: false,
+    }));
   },
   async recommendations(id: number) {
     try {
