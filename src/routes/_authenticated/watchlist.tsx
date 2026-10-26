@@ -16,7 +16,7 @@ import { CardSkeletonGrid, EmptyState, ErrorState } from "@/components/states";
 export const Route = createFileRoute("/_authenticated/watchlist")({
   head: () => ({
     meta: [
-      { title: "My watchlist — AnimeHub" },
+      { title: "My watchlist — Zenkia Anime" },
       {
         name: "description",
         content: "Every anime you've saved, grouped by whether you're planning, watching or done.",

@@ -35,8 +35,8 @@ export function SiteFooter() {
           </Link>
         </nav>
         <p className="max-w-[36ch] text-center font-mono text-[11px] text-muted-foreground lg:text-right">
-          AnimeHub is an anime discovery and viewing platform. Metadata is provided by
-          Jikan/MyAnimeList. External official platforms are listed where available. AnimeHub
+          Zenkia Anime is an anime discovery and viewing platform. Metadata is provided by
+          Jikan/MyAnimeList. External official platforms are listed where available. Zenkia Anime
           playback is provided through authorized embedded sources.
         </p>
       </div>

@@ -10,12 +10,12 @@ import { EmptyState, ErrorState, PanelSkeleton } from "@/components/states";
 export const Route = createFileRoute("/_authenticated/history")({
   head: () => ({
     meta: [
-      { title: "Watch history — AnimeHub" },
+      { title: "Watch history — Zenkia Anime" },
       {
         name: "description",
-        content: "Every episode you have opened on AnimeHub, ready to continue where you left off.",
+        content: "Every episode you have opened on Zenkia Anime, ready to continue where you left off.",
       },
-      { property: "og:title", content: "Watch history — AnimeHub" },
+      { property: "og:title", content: "Watch history — Zenkia Anime" },
       {
         property: "og:description",
         content: "Your recently watched anime episodes with quick resume links.",
