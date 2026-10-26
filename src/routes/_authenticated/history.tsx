@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { clearHistory, deleteHistoryEntry, historyQuery } from "@/lib/library";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { HistoryCard } from "@/components/ContinueWatching";
 import { EmptyState, ErrorState, PanelSkeleton } from "@/components/states";
 
@@ -51,6 +52,19 @@ function HistoryPage() {
     },
     onError: () => toast.error("Couldn't clear your history. Please try again."),
   });
+
+  // Group history by anime title
+  const groupedHistory = useMemo(() => {
+    if (!history.data) return {};
+    return history.data.reduce(
+      (acc, row) => {
+        if (!acc[row.title]) acc[row.title] = [];
+        acc[row.title].push(row);
+        return acc;
+      },
+      {} as Record<string, typeof history.data>,
+    );
+  }, [history.data]);
 
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6">
@@ -117,27 +131,36 @@ function HistoryPage() {
             }
           />
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {history.data.map((row) => (
-              <HistoryCard
-                key={row.id}
-                row={row}
-                actions={
-                  <button
-                    onClick={() => {
-                      if (window.confirm(`Remove "${row.title}" from your history?`)) {
-                        removeOne.mutate(row.id);
+          <Accordion type="multiple" className="space-y-3">
+            {Object.entries(groupedHistory).map(([title, rows]) => (
+              <AccordionItem key={title} value={title} className="ink-panel-sm border-none bg-card">
+                <AccordionTrigger className="px-4 font-display text-lg hover:no-underline">
+                  {title}
+                </AccordionTrigger>
+                <AccordionContent className="grid gap-3 px-4 pb-4 sm:grid-cols-2">
+                  {rows.map((row) => (
+                    <HistoryCard
+                      key={row.id}
+                      row={row}
+                      actions={
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Remove "${row.title}" episode ${row.episode_number} from your history?`)) {
+                              removeOne.mutate(row.id);
+                            }
+                          }}
+                          disabled={removeOne.isPending}
+                          className="ink-panel-sm ink-press bg-card px-3 py-1.5 font-mono text-[10px] font-bold tracking-widest uppercase"
+                        >
+                          Remove
+                        </button>
                       }
-                    }}
-                    disabled={removeOne.isPending}
-                    className="ink-panel-sm ink-press bg-card px-3 py-1.5 font-mono text-[10px] font-bold tracking-widest uppercase"
-                  >
-                    Remove
-                  </button>
-                }
-              />
+                    />
+                  ))}
+                </AccordionContent>
+              </AccordionItem>
             ))}
-          </div>
+          </Accordion>
         )}
       </div>
     </div>
