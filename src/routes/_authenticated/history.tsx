@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -53,17 +53,30 @@ function HistoryPage() {
     onError: () => toast.error("Couldn't clear your history. Please try again."),
   });
 
-  // Group history by anime title
+  // Group history by anime ID
   const groupedHistory = useMemo(() => {
-    if (!history.data) return {};
-    return history.data.reduce(
+    if (!history.data) return [];
+    const groups = history.data.reduce(
       (acc, row) => {
-        if (!acc[row.title]) acc[row.title] = [];
-        acc[row.title].push(row);
+        const id = row.mal_id;
+        if (!acc[id]) {
+          acc[id] = {
+            mal_id: id,
+            title: row.title,
+            image_url: row.image_url,
+            episodes: [],
+            last_watched: row.last_watched_at,
+          };
+        }
+        acc[id].episodes.push(row);
+        if (new Date(row.last_watched_at) > new Date(acc[id].last_watched)) {
+          acc[id].last_watched = row.last_watched_at;
+        }
         return acc;
       },
-      {} as Record<string, typeof history.data>,
+      {} as Record<number, { mal_id: number; title: string; image_url: string | null; episodes: typeof history.data; last_watched: string }>,
     );
+    return Object.values(groups).sort((a, b) => new Date(b.last_watched).getTime() - new Date(a.last_watched).getTime());
   }, [history.data]);
 
   return (
@@ -131,21 +144,42 @@ function HistoryPage() {
             }
           />
         ) : (
-          <Accordion type="multiple" className="space-y-3">
-            {Object.entries(groupedHistory).map(([title, rows]) => (
-              <AccordionItem key={title} value={title} className="ink-panel-sm border-none bg-card">
-                <AccordionTrigger className="px-4 font-display text-lg hover:no-underline">
-                  {title}
-                </AccordionTrigger>
-                <AccordionContent className="grid gap-3 px-4 pb-4 sm:grid-cols-2">
-                  {rows.map((row) => (
+          <div className="space-y-6">
+            {groupedHistory.map((group) => (
+              <div key={group.mal_id} className="ink-panel overflow-hidden">
+                <div className="flex items-center gap-4 bg-secondary/50 p-4">
+                  {group.image_url ? (
+                    <img
+                      src={group.image_url}
+                      alt={group.title}
+                      className="aspect-2/3 w-16 border-2 border-border object-cover"
+                    />
+                  ) : (
+                    <div className="aspect-2/3 w-16 border-2 border-border bg-muted" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <h2 className="truncate font-display text-xl">{group.title}</h2>
+                    <p className="mt-1 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+                      {group.episodes.length} episode{group.episodes.length === 1 ? "" : "s"} in history
+                    </p>
+                  </div>
+                  <Link
+                    to="/anime/$animeId"
+                    params={{ animeId: String(group.mal_id) }}
+                    className="ink-panel-sm ink-press bg-accent px-4 py-2 font-mono text-[10px] font-bold tracking-widest text-accent-foreground uppercase"
+                  >
+                    View Anime
+                  </Link>
+                </div>
+                <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {group.episodes.map((row) => (
                     <HistoryCard
                       key={row.id}
                       row={row}
                       actions={
                         <button
                           onClick={() => {
-                            if (window.confirm(`Remove "${row.title}" episode ${row.episode_number} from your history?`)) {
+                            if (window.confirm(`Remove episode ${row.episode_number} from your history?`)) {
                               removeOne.mutate(row.id);
                             }
                           }}
@@ -157,10 +191,10 @@ function HistoryPage() {
                       }
                     />
                   ))}
-                </AccordionContent>
-              </AccordionItem>
+                </div>
+              </div>
             ))}
-          </Accordion>
+          </div>
         )}
       </div>
     </div>

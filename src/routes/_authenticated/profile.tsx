@@ -253,32 +253,90 @@ function ProfilePage() {
             }
           />
         ) : (
-          <div className="ink-panel divide-y-2 divide-border">
-            {history.data.map((row) => (
-              <Link
-                key={row.id}
-                to="/anime/$animeId"
-                params={{ animeId: String(row.mal_id) }}
-                className="flex items-center gap-3 p-3 hover:bg-secondary"
-              >
-                {row.image_url ? (
-                  <img
-                    src={row.image_url}
-                    alt={row.title}
-                    loading="lazy"
-                    className="aspect-2/3 w-12 shrink-0 border-2 border-border object-cover"
-                  />
-                ) : (
-                  <div className="aspect-2/3 w-12 shrink-0 border-2 border-border bg-muted" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-display text-sm">{row.title}</p>
-                  <p className="mt-1 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
-                    {row.episodes_watched} / {row.total_episodes ?? "?"} episodes
-                  </p>
+          <div className="space-y-6">
+            {Object.values(
+              history.data.reduce(
+                (acc, row) => {
+                  const id = row.mal_id;
+                  if (!acc[id]) {
+                    acc[id] = {
+                      mal_id: id,
+                      title: row.title,
+                      image_url: row.image_url,
+                      episodes: [],
+                      last_watched: row.last_watched_at,
+                    };
+                  }
+                  acc[id].episodes.push(row);
+                  if (new Date(row.last_watched_at) > new Date(acc[id].last_watched)) {
+                    acc[id].last_watched = row.last_watched_at;
+                  }
+                  return acc;
+                },
+                {} as Record<
+                  number,
+                  {
+                    mal_id: number;
+                    title: string;
+                    image_url: string | null;
+                    episodes: typeof history.data;
+                    last_watched: string;
+                  }
+                >,
+              ),
+            )
+              .sort(
+                (a, b) =>
+                  new Date(b.last_watched).getTime() - new Date(a.last_watched).getTime(),
+              )
+              .map((group) => (
+                <div key={group.mal_id} className="ink-panel overflow-hidden">
+                  <div className="flex items-center gap-4 bg-secondary/50 p-4">
+                    {group.image_url ? (
+                      <img
+                        src={group.image_url}
+                        alt={group.title}
+                        className="aspect-2/3 w-14 border-2 border-border object-cover"
+                      />
+                    ) : (
+                      <div className="aspect-2/3 w-14 border-2 border-border bg-muted" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate font-display text-lg">{group.title}</h3>
+                      <p className="mt-1 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+                        {group.episodes.length} episode{group.episodes.length === 1 ? "" : "s"} watched
+                      </p>
+                    </div>
+                    <Link
+                      to="/anime/$animeId"
+                      params={{ animeId: String(group.mal_id) }}
+                      className="ink-panel-sm ink-press bg-accent px-4 py-2 font-mono text-[10px] font-bold tracking-widest text-accent-foreground uppercase"
+                    >
+                      View
+                    </Link>
+                  </div>
+                  <div className="grid gap-2 p-3 sm:grid-cols-2">
+                    {group.episodes.map((row) => (
+                      <Link
+                        key={row.id}
+                        to="/watch/$animeId/$episodeNumber"
+                        params={{
+                          animeId: String(row.mal_id),
+                          episodeNumber: String(row.episode_number ?? row.episodes_watched ?? 1),
+                        }}
+                        className="ink-panel-sm flex items-center justify-between gap-3 bg-card p-2.5 hover:bg-secondary"
+                      >
+                        <span className="font-mono text-xs font-bold">
+                          Episode {row.episode_number ?? row.episodes_watched}
+                        </span>
+                        <span className="font-mono text-[10px] text-muted-foreground">
+                          {row.completed ? "Completed" : "In progress"}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </Link>
-            ))}
+              ))}
           </div>
         )}
       </section>
