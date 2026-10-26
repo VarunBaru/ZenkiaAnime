@@ -1,7 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Info, Grid3x3, List, ExternalLink } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Info,
+  Grid3x3,
+  List,
+  Cast,
+  Maximize,
+  ExternalLink,
+  Check,
+  Play,
+} from "lucide-react";
 import { toast } from "sonner";
 import { animeQuery, episodesQuery } from "@/lib/jikan";
 import { anilistQuery, embedUrl } from "@/lib/anilist";
@@ -101,6 +112,16 @@ function WatchPage() {
   const [episodeRange, setEpisodeRange] = useState(0);
   // Episode view mode: grid or list
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  // Auto-play next episode when the current one finishes.
+  const [autoPlay, setAutoPlay] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("zenkia:auto-play-next") !== "false";
+    } catch {
+      return true;
+    }
+  });
+  const [nextCountdown, setNextCountdown] = useState<number | null>(null);
+  const nextCountdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const anime = useQuery(animeQuery(id));
   const anilist = useQuery(anilistQuery(id));
   const episodes = useQuery({ ...episodesQuery(id), enabled: anime.isSuccess });
@@ -109,7 +130,7 @@ function WatchPage() {
   const title = anime.data ? anime.data.title_english || anime.data.title : null;
 
   useEffect(() => {
-    if (title) document.title = `${title} — Episode ${episode} — AnimeHub`;
+    if (title) document.title = `${title} — Episode ${episode} — Zenkia Anime`;
   }, [title, episode]);
 
   // Sync range tab to current episode automatically when episode changes
@@ -216,9 +237,40 @@ function WatchPage() {
       setLive({ t: latest.currentTime, d: d.duration });
       if (msg.name === "progress") save(false);
       else if (msg.name === "pause" || ended) save(true);
+
+      if (ended && hasNext) {
+        if (nextCountdownRef.current) {
+          clearInterval(nextCountdownRef.current);
+          nextCountdownRef.current = null;
+        }
+        if (autoPlay) {
+          let remaining = 5;
+          setNextCountdown(remaining);
+          nextCountdownRef.current = setInterval(() => {
+            remaining -= 1;
+            if (remaining <= 0) {
+              if (nextCountdownRef.current) {
+                clearInterval(nextCountdownRef.current);
+                nextCountdownRef.current = null;
+              }
+              setNextCountdown(null);
+              void navigateEpisode(ep + 1);
+            } else {
+              setNextCountdown(remaining);
+            }
+          }, 1000);
+        }
+      }
     };
 
-    const onHide = () => save(true);
+    const onHide = () => {
+      save(true);
+      if (nextCountdownRef.current) {
+        clearInterval(nextCountdownRef.current);
+        nextCountdownRef.current = null;
+        setNextCountdown(null);
+      }
+    };
     window.addEventListener("message", onMessage);
     window.addEventListener("pagehide", onHide);
     return () => {
@@ -361,7 +413,45 @@ function WatchPage() {
               </button>
             ))}
           </div>
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              aria-pressed={autoPlay}
+              onClick={() => {
+                const next = !autoPlay;
+                setAutoPlay(next);
+                try {
+                  localStorage.setItem("zenkia:auto-play-next", next ? "true" : "false");
+                } catch {
+                  /* storage unavailable */
+                }
+              }}
+              title="Auto-play next episode when this one ends"
+              className="inline-flex items-center gap-1.5 border-2 border-border bg-background px-3 py-1.5 font-mono text-[11px] font-bold tracking-widest uppercase hover:bg-muted"
+            >
+              {autoPlay ? <Check className="size-3.5" /> : <Play className="size-3.5" />}
+              Auto next
+            </button>
+          </div>
         </div>
+
+        {nextCountdown != null && (
+          <div className="basis-full animate-in fade-in zoom-in-95 border-t border-border/50 pt-3 mt-1 text-center">
+            <p className="font-display text-sm">
+              Next episode in <span className="text-accent">{nextCountdown}s</span>
+            </p>
+            <button
+              onClick={() => {
+                if (nextCountdownRef.current) clearInterval(nextCountdownRef.current);
+                setNextCountdown(null);
+                void navigateEpisode(ep + 1);
+              }}
+              className="mt-2 ink-panel-sm ink-press bg-accent px-4 py-1.5 font-mono text-[10px] font-bold tracking-widest text-accent-foreground uppercase"
+            >
+              Play next now
+            </button>
+          </div>
+        )}
 
         <div className="flex items-center gap-3">
           <span className="font-mono text-[11px] font-bold tracking-widest uppercase">Server</span>
