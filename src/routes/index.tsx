@@ -24,13 +24,13 @@ import { usePreferences } from "@/lib/preferences";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AnimeHub — Discover, track and watch anime legally" },
+      { title: "Zenkia Anime — Discover, track and watch anime legally" },
       {
         name: "description",
         content:
-          "A manga-styled anime catalogue: trending and popular series, seasonal releases, genre browsing, watchlists and episode tracking.",
+          "Zenkia Anime: A Japanese-inspired anime catalogue featuring trending series, seasonal releases, genre browsing, watchlists, and episode tracking.",
       },
-      { property: "og:title", content: "AnimeHub — Discover and track anime" },
+      { property: "og:title", content: "Zenkia Anime — Discover and track anime" },
       {
         property: "og:description",
         content: "Trending, popular and seasonal anime with watchlists and official viewing links.",

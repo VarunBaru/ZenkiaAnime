@@ -109,7 +109,36 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/brand-favicon.png", type: "image/png" },
       { rel: "apple-touch-icon", href: "/brand-favicon.png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "canonical", href: "https://zenkiaanime.pages.dev" },
       { name: "theme-color", content: "#101113" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Zenkia Anime",
+          url: "https://zenkiaanime.pages.dev",
+          description:
+            "Zenkia Anime: Discover anime, browse genres, track your watchlist and episode progress, and jump to official licensed streaming sources.",
+          inLanguage: "en",
+          publisher: {
+            "@type": "Organization",
+            name: "Zenkia Anime",
+            logo: {
+              "@type": "ImageObject",
+              url: "https://zenkiaanime.pages.dev/brand-favicon.png",
+            },
+          },
+          potentiallyTarget: {
+            "@type": "SearchAction",
+            target:
+              "https://zenkiaanime.pages.dev/search?q={search_term_string}",
+            "query-input": "required name=search_term_string",
+          },
+        }),
+      },
     ],
   }),
   shellComponent: RootShell,

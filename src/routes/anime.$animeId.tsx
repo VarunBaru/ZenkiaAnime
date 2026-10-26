@@ -20,12 +20,12 @@ import { recordProgress } from "@/lib/library";
 export const Route = createFileRoute("/anime/$animeId")({
   head: () => {
     const description =
-      "Synopsis, cast, studios, characters, episodes and official viewing links for this anime.";
+      "Synopsis, cast, studios, characters, episodes and official viewing links for this anime on Zenkia Anime.";
     return {
       meta: [
-        { title: "Anime details — AnimeHub" },
+        { title: "Anime details — Zenkia Anime" },
         { name: "description", content: description },
-        { property: "og:title", content: "Anime details — AnimeHub" },
+        { property: "og:title", content: "Anime details — Zenkia Anime" },
         { property: "og:description", content: description },
         { property: "og:type", content: "video.tv_show" },
         { name: "twitter:card", content: "summary_large_image" },

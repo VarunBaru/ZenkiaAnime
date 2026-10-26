@@ -35,12 +35,12 @@ type PlayerMessage = {
 
 export const Route = createFileRoute("/watch/$animeId/$episodeNumber")({
   head: () => {
-    const description = "Watch this episode on AnimeHub with an authorised embedded player.";
+    const description = "Watch this episode on Zenkia Anime with an authorised embedded player.";
     return {
       meta: [
-        { title: "Watch — AnimeHub" },
+        { title: "Watch — Zenkia Anime" },
         { name: "description", content: description },
-        { property: "og:title", content: "Watch — AnimeHub" },
+        { property: "og:title", content: "Watch — Zenkia Anime" },
         { property: "og:description", content: description },
         { property: "og:type", content: "video.episode" },
         { name: "twitter:card", content: "summary_large_image" },
