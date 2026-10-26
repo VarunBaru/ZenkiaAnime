@@ -6,7 +6,10 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export const deleteAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const authenticatedAt = context.claims["auth_time"];
+    // Supabase JWTs do not always carry the `auth_time` claim, so fall back to
+    // the standard `iat` (issued-at) claim, which is always present on a fresh
+    // session token and is the most reliable indicator of a recent sign-in.
+    const authenticatedAt = context.claims["auth_time"] ?? context.claims["iat"];
     if (typeof authenticatedAt !== "number" || Date.now() / 1000 - authenticatedAt > 15 * 60) {
       throw new Error("For security, sign out and back in before deleting your account.");
     }

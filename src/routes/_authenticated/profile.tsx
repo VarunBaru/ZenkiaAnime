@@ -14,12 +14,12 @@ import { EmptyState, ErrorState, PanelSkeleton } from "@/components/states";
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
     meta: [
-      { title: "My profile — AnimeHub" },
+      { title: "My profile — Zenkia Anime" },
       {
         name: "description",
-        content: "Your AnimeHub profile, watch statistics and recent episode progress.",
+        content: "Your Zenkia Anime profile, watch statistics and recent episode progress.",
       },
-      { property: "og:title", content: "My profile — AnimeHub" },
+      { property: "og:title", content: "My profile — Zenkia Anime" },
       { property: "og:description", content: "Your display name, stats and viewing history." },
     ],
   }),
