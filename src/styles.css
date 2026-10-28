@@ -1111,3 +1111,108 @@
     padding: 1.25rem;
   }
 }
+
+
+/* Subtle Liquid Glass motion. */
+.theme-glass .glass-feature {
+  animation: liquid-glass-arrive 900ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.theme-glass .glass-feature-details {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  animation: liquid-glass-float 8s ease-in-out 900ms infinite;
+}
+
+.theme-glass .glass-feature-details > * {
+  position: relative;
+  z-index: 1;
+}
+
+.theme-glass .glass-feature-details::after {
+  position: absolute;
+  z-index: 0;
+  top: -35%;
+  bottom: -35%;
+  left: -70%;
+  width: 44%;
+  content: "";
+  pointer-events: none;
+  transform: skewX(-18deg);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.12), transparent);
+  animation: liquid-glass-sheen 9s ease-in-out 1.2s infinite;
+}
+
+.theme-glass .site-header {
+  transition:
+    background-color 350ms ease,
+    border-color 350ms ease,
+    box-shadow 350ms ease,
+    backdrop-filter 350ms ease;
+}
+
+.theme-glass .site-header:hover {
+  border-color: rgb(255 255 255 / 0.5);
+  background-color: rgb(255 255 255 / 0.16);
+  box-shadow: 0 18px 52px rgb(0 0 0 / 0.24), inset 0 1px rgb(255 255 255 / 0.26);
+}
+
+.theme-glass .ink-panel,
+.theme-glass .ink-panel-sm {
+  transition:
+    background-color 300ms ease,
+    border-color 300ms ease,
+    box-shadow 300ms ease,
+    transform 300ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+@keyframes liquid-glass-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.985);
+    backdrop-filter: blur(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    backdrop-filter: blur(28px);
+  }
+}
+
+@keyframes liquid-glass-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes liquid-glass-sheen {
+  0%, 18% {
+    left: -70%;
+    opacity: 0;
+  }
+  28% {
+    opacity: 1;
+  }
+  48%, 100% {
+    left: 125%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-glass .glass-feature,
+  .theme-glass .glass-feature-details,
+  .theme-glass .glass-feature-details::after {
+    animation: none;
+  }
+
+  .theme-glass .site-header,
+  .theme-glass .ink-panel,
+  .theme-glass .ink-panel-sm {
+    transition: none;
+  }
+}
