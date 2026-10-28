@@ -497,3 +497,280 @@
     margin-left: 15rem;
   }
 }
+
+/* Full Netflix-inspired skin, scoped so Manga and Liquid Glass remain unchanged. */
+.theme-netflix {
+  color-scheme: dark;
+  --background: oklch(0.075 0.004 260);
+  --foreground: oklch(0.96 0.003 95);
+  --card: oklch(0.145 0.004 260);
+  --card-foreground: oklch(0.96 0.003 95);
+  --popover: oklch(0.13 0.004 260);
+  --popover-foreground: oklch(0.96 0.003 95);
+  --secondary: oklch(0.22 0.004 260);
+  --secondary-foreground: oklch(0.96 0.003 95);
+  --muted: oklch(0.2 0.004 260);
+  --muted-foreground: oklch(0.7 0.005 95);
+  --accent: oklch(0.58 0.24 28);
+  --accent-foreground: oklch(0.99 0 0);
+  --border: oklch(0.3 0.005 260);
+  --input: oklch(0.32 0.005 260);
+  --ring: oklch(0.58 0.24 28);
+}
+
+.theme-netflix body {
+  background-color: var(--background);
+  background-image: none;
+  font-family: Arial, Helvetica, ui-sans-serif, system-ui, sans-serif;
+}
+
+.theme-netflix h1,
+.theme-netflix h2,
+.theme-netflix h3,
+.theme-netflix .font-display,
+.theme-netflix .font-mono {
+  font-family: Arial, Helvetica, ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: normal;
+}
+
+.theme-netflix h1,
+.theme-netflix h2,
+.theme-netflix h3 {
+  font-weight: 700;
+}
+
+.theme-netflix .ink-panel,
+.theme-netflix .ink-panel-sm {
+  border: 1px solid var(--border);
+  border-radius: 0.55rem;
+  background-color: var(--card);
+  box-shadow: none;
+}
+
+.theme-netflix .halftone,
+.theme-netflix .speed-lines {
+  background-image: none;
+}
+
+.theme-netflix .speech-bubble {
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background-color: var(--card);
+}
+
+.theme-netflix :where(button, a, input, select, textarea) {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    opacity 160ms ease,
+    transform 180ms ease;
+}
+
+.theme-netflix :where(button, input, select, textarea) {
+  border-radius: 0.45rem;
+}
+
+.theme-netflix :where(input, select, textarea) {
+  border: 1px solid var(--border);
+  background-color: oklch(0.13 0.004 260);
+  color: var(--foreground);
+}
+
+.theme-netflix :where(button):hover:not(:disabled) {
+  border-color: color-mix(in oklab, var(--foreground) 38%, transparent);
+}
+
+.theme-netflix .ink-press:hover {
+  transform: translateY(-2px);
+  box-shadow: none;
+}
+
+.theme-netflix .anime-card {
+  transition: transform 180ms ease;
+}
+
+.theme-netflix .anime-card:hover {
+  transform: scale(1.035);
+  z-index: 2;
+}
+
+.theme-netflix .anime-card img {
+  filter: none;
+  transition: transform 250ms ease;
+}
+
+.theme-netflix .anime-card:hover img {
+  transform: scale(1.045);
+}
+
+.theme-netflix .anime-card .ink-panel-sm {
+  overflow: hidden;
+  border: 1px solid oklch(1 0 0 / 0.08);
+  border-radius: 0.7rem;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.24);
+}
+
+.theme-netflix .anime-card .netflix-card-copy {
+  display: block;
+}
+
+.theme-netflix .anime-card > div:last-child > div:first-child {
+  display: none;
+}
+
+.theme-netflix .anime-card > div:last-child {
+  justify-content: flex-end;
+  margin-top: 0.45rem;
+}
+
+.theme-netflix .netflix-home-rail {
+  gap: 1rem;
+  scroll-snap-type: x proximity;
+}
+
+.theme-netflix .netflix-rail-card {
+  width: 10.5rem;
+  scroll-snap-align: start;
+}
+
+.theme-netflix .netflix-hero {
+  min-height: min(74vh, 780px);
+  background-color: #080808;
+}
+
+.theme-netflix .netflix-hero h1 {
+  max-width: 12ch;
+  text-wrap: balance;
+  font-size: clamp(2.5rem, 5.4vw, 5rem);
+  font-weight: 800;
+}
+
+.theme-netflix .netflix-hero p {
+  text-shadow: 0 1px 5px rgb(0 0 0 / 0.65);
+}
+
+.theme-netflix [role="tablist"] {
+  border-radius: 0.55rem;
+}
+
+.theme-netflix [role="tab"],
+.theme-netflix [role="radio"] {
+  border-radius: 0.4rem;
+}
+
+.theme-netflix :focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (min-width: 640px) {
+  .theme-netflix .netflix-rail-card {
+    width: 13rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .theme-netflix header {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 50;
+    width: 15rem;
+    height: 100dvh;
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+    border-bottom: 0;
+    background: oklch(0.1 0.005 260 / 0.98);
+    backdrop-filter: blur(16px);
+  }
+
+  .theme-netflix header > div:first-child {
+    display: flex;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.5rem;
+    margin: 0;
+    padding: 2rem 1rem;
+  }
+
+  .theme-netflix header nav {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+  }
+
+  .theme-netflix header nav a {
+    border: 0;
+    border-radius: 0.4rem;
+    padding: 0.7rem 0.8rem;
+    color: var(--muted-foreground);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 0;
+  }
+
+  .theme-netflix header nav a:hover,
+  .theme-netflix header nav a.bg-accent {
+    background: var(--secondary);
+    color: var(--foreground);
+  }
+
+  .theme-netflix header form {
+    display: flex;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .theme-netflix header form input {
+    min-width: 0;
+    border-radius: 0.4rem;
+  }
+
+  .theme-netflix header > div:first-child > div {
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    margin-top: auto;
+  }
+
+  .theme-netflix header > div:first-child > button,
+  .theme-netflix #mobile-site-menu {
+    display: none !important;
+  }
+
+  .theme-netflix main,
+  .theme-netflix footer {
+    width: calc(100% - 15rem);
+    margin-left: 15rem;
+  }
+}
+
+@media (max-width: 639px) {
+  .theme-netflix .netflix-hero {
+    min-height: 66svh;
+  }
+
+  .theme-netflix .netflix-hero h1 {
+    font-size: clamp(2.3rem, 11vw, 3.5rem);
+  }
+
+  .theme-netflix .netflix-rail-card {
+    width: 9.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-netflix *,
+  .theme-netflix *::before,
+  .theme-netflix *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
