@@ -29,6 +29,7 @@ import { AnimeLibraryGrid, type LibrarySection } from "@/components/AnimeLibrary
 import { EmptyState, ErrorState, PanelSkeleton } from "@/components/states";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Play, Settings, Trash2 } from "lucide-react";
+import { ThemeToggle } from "@/components/PreferenceControls";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [{ title: "My profile — Zenkia Anime" }] }),
@@ -108,6 +109,15 @@ function ProfilePage() {
       />
 
       <ProfileFinder />
+      <section className="ink-panel p-4 sm:p-5">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <SectionTitle title="Appearance" />
+            <p className="text-sm text-muted-foreground">Choose how Zenkia Anime looks on your devices.</p>
+          </div>
+          <ThemeToggle showText />
+        </div>
+      </section>
 
       <section>
         <SectionTitle title="Your anime stats" />
