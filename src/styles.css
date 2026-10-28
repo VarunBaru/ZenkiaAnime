@@ -1005,18 +1005,18 @@
 }
 
 .theme-glass .glass-feature > img {
-  filter: blur(24px) saturate(1.22);
-  opacity: 0.48;
+  filter: blur(8px) saturate(1.35) contrast(1.06);
+  opacity: 0.78;
   animation: glass-feature-backdrop-in 900ms ease both;
 }
 
 @keyframes glass-feature-backdrop-in {
   from {
-    opacity: 0.12;
-    transform: scale(1.16);
+    opacity: 0.24;
+    transform: scale(1.12);
   }
   to {
-    opacity: 0.48;
+    opacity: 0.78;
     transform: scale(1.1);
   }
 }
