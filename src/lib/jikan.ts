@@ -327,10 +327,29 @@ export const jikan = {
         if (trailer.youtube_id && /^[A-Za-z0-9_-]{11}$/.test(trailer.youtube_id)) {
           return trailer.youtube_id;
         }
-        const videoId = (trailer.embed_url || trailer.url)?.match(
-          /(?:youtube\\.com\\/(?:embed\\/|watch\\?(?:.*&)?v=)|youtu\\.be\\/)([A-Za-z0-9_-]{11})/,
-        )?.[1];
-        if (videoId) return videoId;
+        const videoUrl = trailer.embed_url || trailer.url;
+        if (videoUrl) {
+          try {
+            const parsed = new URL(videoUrl);
+            const candidate = parsed.hostname.endsWith("youtu.be")
+              ? parsed.pathname.slice(1, 12)
+              : trailer.youtube_id ||
+                parsed.searchParams.get("v") ||
+                parsed.pathname.split("/embed/")[1]?.slice(0, 11);
+            if (
+              candidate &&
+              candidate.length === 11 &&
+              [...candidate].every((character) =>
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-".includes(character),
+              )
+            ) {
+              return candidate;
+            }
+          } catch {
+            // Ignore malformed links and continue to the next promo.
+          }
+        }
+      }
       }
     } catch {
       // A missing trailer is normal; the hero keeps its poster fallback.
