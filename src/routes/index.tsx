@@ -143,9 +143,9 @@ function Hero({
             className="absolute inset-0 size-full object-cover object-[center_20%] opacity-60"
           />
         ) : null}
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/10" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/15 to-black/10" />
-        <div className="relative mx-auto w-full max-w-[1500px] px-4 pb-12 pt-24 sm:px-6 lg:pb-16">
+        <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-black/90 via-black/45 to-black/10" />
+        <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black via-black/15 to-black/10" />
+        <div className="relative z-10 mx-auto w-full max-w-[1500px] px-4 pb-12 pt-24 sm:px-6 lg:pb-16">
           <p className="font-mono text-xs font-bold tracking-[0.24em] text-red-500 uppercase">
             {label}
           </p>
