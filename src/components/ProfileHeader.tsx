@@ -87,7 +87,7 @@ export function ProfileHeader({
             <span
               aria-label={isPublic ? "Public profile" : "Private profile"}
               title={isPublic ? "Public profile" : "Private profile"}
-              className={`absolute -top-1 -left-1 inline-flex size-7 items-center justify-center ${
+              className={`absolute -top-5 left-0 inline-flex size-7 items-center justify-center ${
                 isPublic
                   ? "text-emerald-400"
                   : "text-muted-foreground"
