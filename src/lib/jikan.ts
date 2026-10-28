@@ -350,7 +350,6 @@ export const jikan = {
           }
         }
       }
-      }
     } catch {
       // A missing trailer is normal; the hero keeps its poster fallback.
     }
