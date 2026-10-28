@@ -1005,8 +1005,26 @@
 }
 
 .theme-glass .glass-feature > img {
-  filter: grayscale(1) blur(28px);
-  opacity: 0.22;
+  filter: blur(24px) saturate(1.22);
+  opacity: 0.48;
+  animation: glass-feature-backdrop-in 900ms ease both;
+}
+
+@keyframes glass-feature-backdrop-in {
+  from {
+    opacity: 0.12;
+    transform: scale(1.16);
+  }
+  to {
+    opacity: 0.48;
+    transform: scale(1.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-glass .glass-feature > img {
+    animation: none;
+  }
 }
 
 .theme-glass .glass-feature-details {
