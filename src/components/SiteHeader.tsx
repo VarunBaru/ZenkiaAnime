@@ -66,7 +66,7 @@ export function SiteHeader() {
           ))}
           {theme === "netflix" && user && (
             <>
-              <p className="netflix-library-label">My Library</p>
+              <Link to="/profile" onClick={() => setOpen(false)}>My Library</Link>
               <Link to="/watchlist">My List</Link>
               <Link to="/history">Continue Watching</Link>
             </>
@@ -163,7 +163,7 @@ export function SiteHeader() {
             ))}
             {theme === "netflix" && user && (
               <>
-                <p className="netflix-library-label">My Library</p>
+                <Link to="/profile" onClick={() => setOpen(false)}>My Library</Link>
                 <Link to="/watchlist" onClick={() => setOpen(false)}>My List</Link>
                 <Link to="/history" onClick={() => setOpen(false)}>Continue watching</Link>
               </>
