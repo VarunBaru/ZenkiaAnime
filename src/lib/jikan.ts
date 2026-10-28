@@ -308,6 +308,35 @@ export const jikan = {
       ];
     }
   },
+  async videoTrailer(id: number): Promise<string | null> {
+    try {
+      const response = await request<{
+        data?: {
+          promo?: {
+            trailer?: {
+              youtube_id?: string | null;
+              url?: string | null;
+              embed_url?: string | null;
+            } | null;
+          }[];
+        };
+      }>(`/anime/${id}/videos`);
+      for (const video of response.data?.promo ?? []) {
+        const trailer = video.trailer;
+        if (!trailer) continue;
+        if (trailer.youtube_id && /^[A-Za-z0-9_-]{11}$/.test(trailer.youtube_id)) {
+          return trailer.youtube_id;
+        }
+        const videoId = (trailer.embed_url || trailer.url)?.match(
+          /(?:youtube\\.com\\/(?:embed\\/|watch\\?(?:.*&)?v=)|youtu\\.be\\/)([A-Za-z0-9_-]{11})/,
+        )?.[1];
+        if (videoId) return videoId;
+      }
+    } catch {
+      // A missing trailer is normal; the hero keeps its poster fallback.
+    }
+    return null;
+  },
   async detail(id: number) {
     try {
       const data = await request<{ data: Anime }>(`/anime/${id}/full`);
@@ -556,6 +585,14 @@ export const animeQuery = (id: number) =>
     staleTime: DAY,
     retry: 2,
     retryDelay: 1000,
+  });
+
+export const animeVideoTrailerQuery = (id: number) =>
+  queryOptions({
+    queryKey: ["jikan", "anime-video-trailer", id],
+    queryFn: () => jikan.videoTrailer(id),
+    staleTime: HALF_HOUR,
+    retry: false,
   });
 
 export const charactersQuery = (id: number) =>
