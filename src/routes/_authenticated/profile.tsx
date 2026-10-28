@@ -21,6 +21,7 @@ import {
 } from "@/lib/library";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileHeader } from "@/components/ProfileHeader";
+import { ProfileFinder } from "@/components/ProfileFinder";
 import { EditProfileModal } from "@/components/EditProfileModal";
 import { StatsDashboard } from "@/components/StatsDashboard";
 import { AchievementsBadges } from "@/components/AchievementsBadges";
@@ -106,6 +107,8 @@ function ProfilePage() {
         profile={profile.data ?? null}
       />
 
+      <ProfileFinder />
+
       <section>
         <SectionTitle title="Your anime stats" />
         {hasError ? (
@@ -123,7 +126,7 @@ function ProfilePage() {
       <section>
         <SectionTitle title="My anime library" />
         <Tabs value={section} onValueChange={(value) => setSection(value as LibrarySection)}>
-          <TabsList className="mb-4 flex h-auto flex-wrap justify-start gap-1 bg-transparent p-0">
+          <TabsList className="mb-4 flex h-auto flex-wrap justify-start gap-2 bg-transparent p-0 sm:gap-3">
             {(
               [
                 "watching",
@@ -137,7 +140,7 @@ function ProfilePage() {
               <TabsTrigger
                 key={item}
                 value={item}
-                className="ink-panel-sm rounded-none border border-border bg-card px-3 py-2 font-mono text-[10px] uppercase data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
+                className="ink-panel-sm rounded-none border border-border bg-card px-3 py-2 font-mono text-[10px] uppercase data-[state=active]:bg-accent data-[state=active]:text-accent-foreground data-[state=active]:shadow-none"
               >
                 {item === "on_hold"
                   ? "On hold"
