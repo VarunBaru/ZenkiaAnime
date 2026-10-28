@@ -1292,3 +1292,77 @@
     animation: none;
   }
 }
+
+
+/* Smooth, low-contrast loading shimmer. */
+.skeleton-surface {
+  background-color: var(--color-muted);
+  background-image: linear-gradient(
+    105deg,
+    color-mix(in srgb, var(--color-muted) 90%, transparent) 20%,
+    color-mix(in srgb, var(--color-foreground) 10%, var(--color-muted)) 48%,
+    color-mix(in srgb, var(--color-muted) 90%, transparent) 76%
+  );
+  background-size: 220% 100%;
+  animation: zenkia-skeleton-shimmer 1.9s ease-in-out infinite;
+}
+
+.theme-netflix .skeleton-surface,
+.theme-netflix .animate-pulse {
+  background-color: #171717;
+  background-image: linear-gradient(105deg, #171717 18%, #242424 42%, #171717 68%);
+  background-size: 240% 100%;
+  animation: zenkia-skeleton-shimmer 2s ease-in-out infinite;
+}
+
+@keyframes zenkia-skeleton-shimmer {
+  0% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -120% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-surface,
+  .theme-netflix .animate-pulse {
+    animation: none;
+    background-position: 50% 0;
+  }
+}
+
+/* Keep phone layouts inside the viewport while preserving sideways-scrolling rails. */
+@media (max-width: 639px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  main,
+  main > *,
+  main > * > *,
+  .grid > *,
+  .flex > * {
+    min-width: 0;
+  }
+
+  main > * {
+    max-width: 100%;
+  }
+
+  .netflix-home-rail {
+    gap: 0.75rem;
+    scroll-padding-inline: 1rem;
+  }
+
+  .netflix-hero {
+    min-height: 66svh;
+  }
+
+  :where(button, [role="button"], a.ink-panel-sm) {
+    touch-action: manipulation;
+  }
+}
