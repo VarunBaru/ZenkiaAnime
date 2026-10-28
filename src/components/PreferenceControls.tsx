@@ -78,6 +78,27 @@ export function ThemeToggle({ showText }: { showText?: boolean }) {
   );
 }
 
+export function ThemeSelect() {
+  const { theme, setTheme } = usePreferences();
+
+  return (
+    <label className="flex shrink-0 items-center gap-1.5">
+      <span className="font-mono text-[10px] font-bold tracking-widest uppercase">Theme</span>
+      <select
+        aria-label="Site theme"
+        title="Choose site theme"
+        value={theme}
+        onChange={(event) => setTheme(event.target.value as ThemePref)}
+        className="ink-panel-sm max-w-28 bg-card px-2 py-2 font-mono text-[10px] font-bold uppercase"
+      >
+        <option value="manga">Manga</option>
+        <option value="glass">Liquid Glass</option>
+        <option value="netflix">Netflix</option>
+      </select>
+    </label>
+  );
+}
+
 export function MobileSettings() {
   return (
     <div className="mt-4 space-y-3 border-t-2 border-border pt-4">
