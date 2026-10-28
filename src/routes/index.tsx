@@ -187,7 +187,6 @@ function Hero({
                 .map((item) => <span key={String(item)} className="rounded-full border border-white/35 bg-white/10 px-3 py-1.5 text-xs text-white/90 backdrop-blur-lg">{item}</span>)}
               {typeof anime.score === "number" && <span className="rounded-full border border-white/35 bg-white/10 px-3 py-1.5 text-xs text-white/90 backdrop-blur-lg">★ {anime.score.toFixed(1)}</span>}
             </div>
-            <p className="mt-6 max-w-[58ch] text-base leading-relaxed text-white/85 sm:text-lg">{anime.synopsis ?? "Discover the story, cast, and details for this featured anime."}</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/watch/$animeId/$episodeNumber" params={{ animeId: String(anime.mal_id), episodeNumber: "1" }} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-white/90"><Play className="size-4" fill="currentColor" /> Watch now</Link>
               <Link to="/anime/$animeId" params={{ animeId: String(anime.mal_id) }} className="inline-flex min-h-12 items-center gap-2 rounded-full border border-white/40 bg-white/15 px-6 py-3 text-sm font-semibold text-white backdrop-blur-xl transition hover:bg-white/25">Explore details</Link>
