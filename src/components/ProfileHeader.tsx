@@ -74,14 +74,27 @@ export function ProfileHeader({
 
       <div className="relative -mt-12 px-5 pb-5 sm:-mt-16 sm:px-6">
         <div className="flex flex-wrap items-end gap-4">
-          <div className="size-24 shrink-0 overflow-hidden border-4 border-card bg-muted sm:size-28">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt={username} className="size-full object-cover" />
-            ) : (
-              <div className="grid size-full place-items-center font-display text-3xl">
-                {username[0]?.toUpperCase() ?? "?"}
-              </div>
-            )}
+          <div className="relative size-24 shrink-0 sm:size-28">
+            <div className="size-full overflow-hidden border-4 border-card bg-muted">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={username} className="size-full object-cover" />
+              ) : (
+                <div className="grid size-full place-items-center font-display text-3xl">
+                  {username[0]?.toUpperCase() ?? "?"}
+                </div>
+              )}
+            </div>
+            <span
+              aria-label={isPublic ? "Public profile" : "Private profile"}
+              title={isPublic ? "Public profile" : "Private profile"}
+              className={`absolute -right-1 -bottom-1 inline-flex size-7 items-center justify-center border-2 border-card bg-card ${
+                isPublic
+                  ? "text-emerald-400"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {isPublic ? <Globe className="size-4" /> : <Lock className="size-4" />}
+            </span>
           </div>
           <div className="min-w-0 flex-1 pb-1">
             <h1 className="break-words font-display text-2xl sm:text-3xl [overflow-wrap:anywhere]">{username}</h1>
@@ -94,17 +107,6 @@ export function ProfileHeader({
         {bio && <p className="mt-3 max-w-3xl break-words text-sm text-muted-foreground">{bio}</p>}
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <span
-            aria-label={isPublic ? "Public profile" : "Private profile"}
-            title={isPublic ? "Public profile" : "Private profile"}
-            className={`inline-flex size-8 items-center justify-center border-2 ${
-              isPublic
-                ? "border-emerald-500/60 text-emerald-400"
-                : "border-border text-muted-foreground"
-            }`}
-          >
-            {isPublic ? <Globe className="size-4" /> : <Lock className="size-4" />}
-          </span>
           <button
             onClick={copyLink}
             className="ink-panel-sm ink-press inline-flex items-center gap-1.5 bg-card px-3 py-1.5 font-mono text-[10px] font-bold tracking-widest uppercase"
