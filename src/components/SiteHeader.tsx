@@ -5,6 +5,7 @@ import { Menu, Search, User as UserIcon, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { LanguageToggle, MobileSettings, ThemeSelect } from "@/components/PreferenceControls";
 import { profileQuery } from "@/lib/library";
+import { usePreferences } from "@/lib/preferences";
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -14,6 +15,7 @@ const NAV = [
 
 export function SiteHeader() {
   const { user } = useAuth();
+  const { theme } = usePreferences();
   const profile = useQuery(profileQuery(user?.id));
   const avatarUrl =
     profile.data?.avatar_url ||
@@ -62,6 +64,13 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
+          {theme === "netflix" && user && (
+            <>
+              <p className="netflix-library-label">My Library</p>
+              <Link to="/watchlist">My List</Link>
+              <Link to="/history">Continue Watching</Link>
+            </>
+          )}
         </nav>
 
         <form
@@ -152,6 +161,13 @@ export function SiteHeader() {
                 {item.label}
               </Link>
             ))}
+            {theme === "netflix" && user && (
+              <>
+                <p className="netflix-library-label">My Library</p>
+                <Link to="/watchlist" onClick={() => setOpen(false)}>My List</Link>
+                <Link to="/history" onClick={() => setOpen(false)}>Continue watching</Link>
+              </>
+            )}
             {user ? (
               <Link
                 to="/profile"
