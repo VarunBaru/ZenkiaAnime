@@ -9,7 +9,7 @@ export function AnimeCard({ anime, className = "" }: { anime: Anime; className?:
   const title = anime.title_english || anime.title;
 
   return (
-    <div className={`group min-w-0 ${className}`}>
+    <div className={`anime-card group min-w-0 ${className}`}>
       <Link
         to="/anime/$animeId"
         params={{ animeId: String(anime.mal_id) }}
