@@ -18,7 +18,6 @@ import { ContinueWatching } from "@/components/ContinueWatching";
 import { HomeWatchlist } from "@/components/HomeWatchlist";
 import { AuthForm } from "@/components/AuthForm";
 import { useAuth } from "@/hooks/useAuth";
-import { profileQuery } from "@/lib/library";
 import { usePreferences } from "@/lib/preferences";
 
 export const Route = createFileRoute("/")({
@@ -295,7 +294,6 @@ function Hero({
 function HomePage() {
   const { user, loading: authLoading } = useAuth();
   const { showHomeHistory, showHomeWatchlist, theme } = usePreferences();
-  const profile = useQuery(profileQuery(user?.id));
   const trending = useQuery(trendingQuery());
   const popular = useQuery(popularQuery());
   const season = useQuery(seasonQuery());
@@ -312,13 +310,6 @@ function HomePage() {
   const featured = featuredList.length ? featuredList[index % featuredList.length] : undefined;
   const featuredCount = featuredList.length;
   const step = (d: number) => setIndex((i) => (i + d + featuredList.length) % featuredList.length);
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-  const name =
-    user?.user_metadata?.["display_name"]?.trim() ||
-    profile.data?.username?.trim() ||
-    user?.user_metadata?.["full_name"] ||
-    "there";
 
   // Rotate the featured anime carousel every six seconds in every theme.
   useEffect(() => {
@@ -364,66 +355,6 @@ function HomePage() {
             <AuthForm initialMode="signup" />
           </div>
         </div>
-      )}
-      {user && (
-        <section
-          className="netflix-welcome relative isolate overflow-hidden border-b-[3px] border-border"
-          style={{
-            background:
-              "radial-gradient(ellipse at 86% 42%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 52%)",
-          }}
-        >
-          <svg
-            aria-hidden="true"
-            focusable="false"
-            viewBox="0 0 320 160"
-            className="pointer-events-none absolute right-0 top-0 h-full w-56 text-accent opacity-40 sm:right-8 sm:w-80"
-            fill="none"
-          >
-            <path
-              d="M330 152C260 124 211 101 153 62 111 34 69 31 18 8M221 107c-6-36-1-63 23-94M180 82c-42-2-72 13-103 43M265 128c9-34 25-57 54-75"
-              stroke="currentColor"
-              strokeWidth="3"
-              strokeLinecap="round"
-              opacity=".55"
-            />
-            {[
-              [40, 22],
-              [151, 62],
-              [240, 23],
-              [77, 124],
-              [302, 54],
-            ].map(([x, y]) => (
-              <g key={`${x}-${y}`} transform={`translate(${x} ${y})`} fill="currentColor">
-                <ellipse cy="-8" rx="4.5" ry="7" />
-                <ellipse cy="8" rx="4.5" ry="7" />
-                <ellipse cx="-8" rx="7" ry="4.5" />
-                <ellipse cx="8" rx="7" ry="4.5" />
-                <circle r="3" fill="var(--background)" />
-              </g>
-            ))}
-          </svg>
-          <span
-            aria-hidden="true"
-            className="sakura-petal-motion pointer-events-none absolute right-32 top-5 opacity-40"
-            style={{ animationDelay: "-2s" }}
-          />
-          <span
-            aria-hidden="true"
-            className="sakura-petal-motion pointer-events-none absolute right-16 top-3 opacity-30"
-            style={{ animationDelay: "-6s" }}
-          />
-          <div className="relative mx-auto max-w-[1500px] px-4 py-6 sm:px-6">
-            <div className="relative z-10" aria-live="polite">
-              <p className="font-display text-4xl leading-[0.95] break-words sm:text-5xl lg:text-6xl">
-                {greeting},
-              </p>
-              <p className="mt-1 font-display text-4xl leading-[0.95] break-words sm:text-5xl lg:text-6xl">
-                {name}
-              </p>
-            </div>
-          </div>
-        </section>
       )}
       <section className="speed-lines border-b-[3px] border-border">
         {trending.isPending && !featured ? (
