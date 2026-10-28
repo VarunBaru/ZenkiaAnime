@@ -865,3 +865,24 @@
     margin-left: 0;
   }
 }
+
+
+/* Keep all Netflix top-navigation links visually consistent. */
+@media (min-width: 1024px) {
+  .theme-netflix header nav a {
+    display: inline-flex;
+    height: 42px;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0.55rem 0.65rem;
+    font-family: Arial, Helvetica, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
+  }
+}
