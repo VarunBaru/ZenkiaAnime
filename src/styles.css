@@ -886,16 +886,3 @@
     white-space: nowrap;
   }
 }
-/* Crop the muted YouTube trailer to fill the cinematic featured hero. */
-.theme-netflix .netflix-hero-trailer {
-  position: absolute;
-  z-index: 0;
-  top: 50%;
-  left: 50%;
-  width: max(100vw, 177.78vh);
-  height: max(100vh, 56.25vw);
-  border: 0;
-  opacity: 0.78;
-  pointer-events: auto;
-  transform: translate(-50%, -50%);
-}
