@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, ExternalLink, Play, Star, Volume2, VolumeX } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
+  animeQuery,
   genresQuery,
   popularQuery,
   posterOf,
@@ -113,9 +114,13 @@ function Hero({
   const poster = posterOf(anime, true);
   const title = anime.title_english || anime.title;
   const sources = legalSources(anime);
-  const trailerId = trailerIdOf(anime);
   const [trailerMuted, setTrailerMuted] = useState(true);
   const { theme } = usePreferences();
+  const animeDetails = useQuery({
+    ...animeQuery(anime.mal_id),
+    enabled: theme === "netflix",
+  });
+  const trailerId = trailerIdOf(animeDetails.data) ?? trailerIdOf(anime);
 
   if (theme === "netflix") {
     return (
@@ -286,7 +291,7 @@ function Hero({
 
 function HomePage() {
   const { user, loading: authLoading } = useAuth();
-  const { showHomeHistory, showHomeWatchlist } = usePreferences();
+  const { showHomeHistory, showHomeWatchlist, theme } = usePreferences();
   const profile = useQuery(profileQuery(user?.id));
   const trending = useQuery(trendingQuery());
   const popular = useQuery(popularQuery());
@@ -302,7 +307,7 @@ function HomePage() {
   const usingFallback = airing.length === 0 && featuredList.length > 0;
   const [index, setIndex] = useState(0);
   const featured = featuredList.length ? featuredList[index % featuredList.length] : undefined;
-  const featuredTrailerId = trailerIdOf(featured);
+  
   const featuredCount = featuredList.length;
   const step = (d: number) => setIndex((i) => (i + d + featuredList.length) % featuredList.length);
   const hour = new Date().getHours();
@@ -315,12 +320,12 @@ function HomePage() {
 
   // Auto-slide effect
   useEffect(() => {
-    if (featuredCount <= 1 || featuredTrailerId) return;
+    if (featuredCount <= 1 || theme === "netflix") return;
     const interval = setInterval(() => {
       setIndex((i) => (i + 1) % featuredCount);
     }, 6000);
     return () => clearInterval(interval);
-  }, [featuredCount, featuredTrailerId]);
+  }, [featuredCount, theme]);
 
   const nav =
     featuredList.length > 1 ? (
