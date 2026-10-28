@@ -36,7 +36,7 @@ export function SiteHeader() {
 
 
   return (
-    <header className="sticky top-0 z-50 border-b-[3px] border-border bg-background/95 backdrop-blur-sm">
+    <header className="site-header sticky top-0 z-50 border-b-[3px] border-border bg-background/95 backdrop-blur-sm">
       <div className="mx-auto grid max-w-[1500px] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-6 lg:flex lg:gap-5">
         <Link to="/" className="flex min-w-0 items-center gap-2">
           <img src="/brand-icon.webp" alt="Zenkia Anime" className="size-9 sm:hidden" />
