@@ -888,41 +888,67 @@
 }
 
 
-/* Liquid Glass visual system inspired by the supplied reference. */
+/* Liquid Glass: monochrome floating surfaces and ribbed stage, based on the supplied reference. */
 .theme-glass {
-  --background: oklch(0.22 0.055 232);
-  --foreground: oklch(0.98 0.012 220);
-  --card: oklch(0.92 0.045 215 / 0.14);
-  --card-foreground: oklch(0.98 0.012 220);
-  --popover: oklch(0.25 0.055 235 / 0.9);
-  --popover-foreground: oklch(0.98 0.012 220);
-  --primary: oklch(0.96 0.018 220);
-  --primary-foreground: oklch(0.22 0.055 232);
-  --secondary: oklch(0.88 0.04 210 / 0.18);
-  --secondary-foreground: oklch(0.98 0.012 220);
-  --muted: oklch(0.88 0.04 210 / 0.12);
-  --muted-foreground: oklch(0.88 0.025 220 / 0.82);
-  --accent: oklch(0.78 0.16 160);
-  --accent-foreground: oklch(0.19 0.045 230);
-  --border: oklch(0.98 0.02 220 / 0.34);
-  --input: oklch(0.98 0.02 220 / 0.24);
-  --ring: oklch(0.78 0.16 160);
+  --background: oklch(0.25 0 0);
+  --foreground: oklch(0.96 0 0);
+  --card: oklch(0.3 0 0 / 0.52);
+  --card-foreground: oklch(0.96 0 0);
+  --popover: oklch(0.22 0 0 / 0.94);
+  --popover-foreground: oklch(0.96 0 0);
+  --primary: oklch(0.96 0 0);
+  --primary-foreground: oklch(0.17 0 0);
+  --secondary: oklch(0.5 0 0 / 0.28);
+  --secondary-foreground: oklch(0.96 0 0);
+  --muted: oklch(0.52 0 0 / 0.22);
+  --muted-foreground: oklch(0.78 0 0 / 0.78);
+  --accent: oklch(0.7 0.13 250);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.64 0.2 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.98 0 0 / 0.26);
+  --input: oklch(0.98 0 0 / 0.24);
+  --ring: oklch(0.7 0.13 250);
   --font-display: Inter, "Segoe UI", ui-sans-serif, system-ui, sans-serif;
   --font-body: Inter, "Segoe UI", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
-  --radius: 1.1rem;
+  --radius: 1.25rem;
 }
 
 .theme-glass body {
+  position: relative;
+  isolation: isolate;
   min-height: 100vh;
-  background-color: oklch(0.2 0.06 235);
+  background-color: #363636;
   background-image:
-    radial-gradient(ellipse at 12% 8%, oklch(0.72 0.12 215 / 0.7), transparent 42%),
-    radial-gradient(ellipse at 86% 16%, oklch(0.67 0.11 165 / 0.48), transparent 38%),
-    radial-gradient(ellipse at 52% 78%, oklch(0.57 0.13 155 / 0.4), transparent 42%),
-    linear-gradient(155deg, oklch(0.36 0.09 220), oklch(0.2 0.055 245) 52%, oklch(0.24 0.08 175));
+    radial-gradient(ellipse at 50% 28%, #737373 0%, #5b5b5b 42%, transparent 72%),
+    linear-gradient(180deg, #696969 0%, #454545 45%, #1a1a1a 63%, #090909 100%);
   background-attachment: fixed;
   background-size: cover;
+}
+
+.theme-glass body::before {
+  position: fixed;
+  z-index: -1;
+  right: -18vw;
+  bottom: -31vh;
+  left: -18vw;
+  height: 68vh;
+  content: "";
+  pointer-events: none;
+  transform: perspective(760px) rotateX(56deg) rotateZ(-2deg);
+  transform-origin: center top;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #080808 0 13px,
+      #292929 14px,
+      #a5a5a5 15px,
+      #161616 17px,
+      #050505 20px
+    );
+  mask-image: linear-gradient(to top, #000 20%, rgb(0 0 0 / 0.9) 56%, transparent 100%);
+  filter: drop-shadow(0 -18px 24px rgb(255 255 255 / 0.12));
 }
 
 .theme-glass .site-header {
@@ -932,17 +958,16 @@
   width: min(96%, 1500px);
   margin: 0.75rem auto;
   overflow: visible;
-  border: 1px solid oklch(0.98 0.02 220 / 0.42);
+  border: 1px solid rgb(255 255 255 / 0.36);
   border-radius: 999px;
-  background: oklch(0.88 0.04 220 / 0.18);
-  box-shadow: 0 12px 40px oklch(0.12 0.04 230 / 0.18), inset 0 1px oklch(1 0 0 / 0.22);
-  backdrop-filter: blur(24px) saturate(145%);
+  background: rgb(255 255 255 / 0.12);
+  box-shadow: 0 14px 42px rgb(0 0 0 / 0.18), inset 0 1px rgb(255 255 255 / 0.2);
+  backdrop-filter: blur(28px) saturate(120%);
 }
 
 .theme-glass .site-header > div:first-child {
   min-height: 4rem;
-  padding-top: 0.55rem;
-  padding-bottom: 0.55rem;
+  padding-block: 0.55rem;
 }
 
 .theme-glass .site-header nav a {
@@ -954,23 +979,40 @@
   font-weight: 550;
   letter-spacing: 0;
   text-transform: none;
-  color: oklch(0.98 0.012 220 / 0.88);
+  color: rgb(255 255 255 / 0.88);
 }
 
 .theme-glass .site-header nav a:hover,
 .theme-glass .site-header nav a[data-status="active"] {
-  border-color: oklch(0.98 0.02 220 / 0.28);
-  background: oklch(0.98 0.02 220 / 0.18);
+  border-color: rgb(255 255 255 / 0.28);
+  background: rgb(255 255 255 / 0.18);
   color: white;
 }
 
 .theme-glass .ink-panel,
 .theme-glass .ink-panel-sm {
-  border: 1px solid oklch(0.98 0.025 220 / 0.35);
-  border-radius: 1.15rem;
-  background: oklch(0.9 0.035 220 / 0.15);
-  box-shadow: 0 16px 48px oklch(0.1 0.04 230 / 0.2), inset 0 1px oklch(1 0 0 / 0.2);
-  backdrop-filter: blur(22px) saturate(140%);
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: 1.25rem;
+  background: rgb(255 255 255 / 0.12);
+  box-shadow: 0 16px 48px rgb(0 0 0 / 0.25), inset 0 1px rgb(255 255 255 / 0.2);
+  backdrop-filter: blur(24px) saturate(125%);
+}
+
+.theme-glass .glass-feature {
+  background: rgb(24 24 24 / 0.3);
+  box-shadow: 0 28px 90px rgb(0 0 0 / 0.3), inset 0 1px rgb(255 255 255 / 0.32);
+  backdrop-filter: blur(28px) saturate(110%);
+}
+
+.theme-glass .glass-feature > img {
+  filter: grayscale(1) blur(28px);
+  opacity: 0.22;
+}
+
+.theme-glass .glass-feature-details {
+  background: rgb(30 30 30 / 0.48);
+  border-color: rgb(255 255 255 / 0.34);
+  box-shadow: inset 0 1px rgb(255 255 255 / 0.24), 0 18px 56px rgb(0 0 0 / 0.3);
 }
 
 .theme-glass .halftone,
@@ -983,7 +1025,7 @@
 .theme-glass h2,
 .theme-glass h3 {
   font-family: var(--font-display);
-  letter-spacing: -0.035em;
+  letter-spacing: -0.04em;
   text-transform: none;
 }
 
@@ -995,11 +1037,11 @@
 .theme-glass input,
 .theme-glass select,
 .theme-glass textarea {
-  border: 1px solid oklch(0.98 0.02 220 / 0.35);
-  border-radius: 0.9rem;
-  background: oklch(0.12 0.04 230 / 0.22);
+  border: 1px solid rgb(255 255 255 / 0.28);
+  border-radius: 999px;
+  background: rgb(16 16 16 / 0.24);
   color: var(--foreground);
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(18px);
 }
 
 .theme-glass button,
@@ -1008,28 +1050,27 @@
 }
 
 .theme-glass .ink-press {
-  transition:
-    transform 180ms ease,
-    background-color 180ms ease,
-    box-shadow 180ms ease,
-    border-color 180ms ease;
+  transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 
 .theme-glass .ink-press:hover {
   transform: translateY(-2px);
-  border-color: oklch(0.98 0.02 220 / 0.55);
-  box-shadow: 0 18px 48px oklch(0.1 0.04 230 / 0.3), inset 0 1px oklch(1 0 0 / 0.24);
+  border-color: rgb(255 255 255 / 0.52);
+  box-shadow: 0 18px 48px rgb(0 0 0 / 0.32), inset 0 1px rgb(255 255 255 / 0.25);
 }
 
 .theme-glass .bg-accent {
-  background-image: linear-gradient(135deg, oklch(0.8 0.16 160), oklch(0.72 0.14 185));
-}
-
-.theme-glass .text-accent-foreground {
-  color: oklch(0.16 0.04 230);
+  background-image: linear-gradient(135deg, oklch(0.72 0.13 250), oklch(0.66 0.12 265));
 }
 
 @media (max-width: 639px) {
+  .theme-glass body::before {
+    right: -50vw;
+    left: -50vw;
+    height: 48vh;
+    bottom: -21vh;
+  }
+
   .theme-glass .site-header {
     top: 0;
     width: 100%;
@@ -1039,5 +1080,15 @@
 
   .theme-glass .site-header > div:first-child {
     border-radius: inherit;
+  }
+
+  .theme-glass .glass-feature {
+    min-height: auto;
+    margin: 0.75rem 0.5rem;
+  }
+
+  .theme-glass .glass-feature-layout {
+    min-height: auto;
+    padding: 1.25rem;
   }
 }
