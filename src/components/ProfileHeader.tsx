@@ -95,14 +95,15 @@ export function ProfileHeader({
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <span
-            className={`inline-flex items-center gap-1.5 border-2 px-2.5 py-1 font-mono text-[10px] font-bold tracking-widest uppercase ${
+            aria-label={isPublic ? "Public profile" : "Private profile"}
+            title={isPublic ? "Public profile" : "Private profile"}
+            className={`inline-flex size-8 items-center justify-center border-2 ${
               isPublic
                 ? "border-emerald-500/60 text-emerald-400"
                 : "border-border text-muted-foreground"
             }`}
           >
-            {isPublic ? <Globe className="size-3" /> : <Lock className="size-3" />}
-            {isPublic ? "Public" : "Private"}
+            {isPublic ? <Globe className="size-4" /> : <Lock className="size-4" />}
           </span>
           <button
             onClick={copyLink}
@@ -111,12 +112,12 @@ export function ProfileHeader({
             {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
             Copy profile link
           </button>
-          <Link
-            to="/profile"
+          <a
+            href="#my-anime-library"
             className="ink-panel-sm ink-press bg-accent px-4 py-1.5 font-mono text-[10px] font-bold tracking-widest text-accent-foreground uppercase"
           >
             <Heart className="mr-1 inline size-3" /> My library
-          </Link>
+          </a>
         </div>
       </div>
     </div>
