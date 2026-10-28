@@ -22,6 +22,7 @@ export function AnimeCard({ anime, className = "" }: { anime: Anime; className?:
               src={poster}
               alt={`${title} poster art`}
               loading="lazy"
+              decoding="async"
               className="netflix-poster aspect-2/3 w-full object-cover grayscale-[35%] transition-all duration-200 group-hover:grayscale-0"
             />
           ) : (
