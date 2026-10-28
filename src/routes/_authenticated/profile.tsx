@@ -123,7 +123,7 @@ function ProfilePage() {
         )}
       </section>
 
-      <section>
+      <section id="my-anime-library" className="scroll-mt-6">
         <SectionTitle title="My anime library" />
         <Tabs value={section} onValueChange={(value) => setSection(value as LibrarySection)}>
           <TabsList className="mb-4 grid h-auto w-full grid-cols-3 divide-x-2 divide-y-2 divide-border overflow-hidden rounded-none border-2 border-border bg-card p-0 sm:flex sm:flex-nowrap sm:divide-y-0">
