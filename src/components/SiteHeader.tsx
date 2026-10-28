@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LogOut, Menu, Search, User as UserIcon, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { LanguageToggle, MobileSettings } from "@/components/PreferenceControls";
+import { profileQuery } from "@/lib/library";
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -14,6 +15,12 @@ const NAV = [
 
 export function SiteHeader() {
   const { user } = useAuth();
+  const profile = useQuery(profileQuery(user?.id));
+  const avatarUrl =
+    profile.data?.avatar_url ||
+    user?.user_metadata?.["avatar_url"] ||
+    user?.user_metadata?.["picture"] ||
+    null;
   const navigate = useNavigate();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -92,10 +99,14 @@ export function SiteHeader() {
             <>
               <Link
                 to="/profile"
-                className="ink-panel-sm ink-press bg-card p-2"
+                className="ink-panel-sm ink-press grid size-10 shrink-0 place-items-center overflow-hidden bg-card p-0"
                 aria-label="Profile"
               >
-                <UserIcon className="size-4" strokeWidth={2.5} />
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="" className="size-full object-cover" />
+                ) : (
+                  <UserIcon className="size-4" strokeWidth={2.5} />
+                )}
               </Link>
               <button
                 onClick={signOut}
@@ -160,8 +171,15 @@ export function SiteHeader() {
                 <Link
                   to="/profile"
                   onClick={() => setOpen(false)}
-                  className="ink-panel-sm bg-background px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase"
+                  className="ink-panel-sm flex items-center gap-3 bg-background px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase"
                 >
+                  <span className="grid size-7 shrink-0 place-items-center overflow-hidden border-2 border-border bg-card">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="" className="size-full object-cover" />
+                    ) : (
+                      <UserIcon className="size-4" strokeWidth={2.5} />
+                    )}
+                  </span>
                   Profile
                 </Link>
                 <button
