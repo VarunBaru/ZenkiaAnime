@@ -129,10 +129,10 @@ function Hero({
           <iframe
             key={trailerId}
             title={`${title} trailer`}
-            src={`https://www.youtube-nocookie.com/embed/${trailerId}?autoplay=1&mute=${trailerMuted ? "1" : "0"}&controls=0&loop=1&playlist=${trailerId}&playsinline=1&rel=0&modestbranding=1`}
+            src={`https://www.youtube.com/embed/${trailerId}?autoplay=1&mute=${trailerMuted ? "1" : "0"}&controls=1&loop=1&playlist=${trailerId}&playsinline=1&rel=0&modestbranding=1`}
             className="netflix-hero-trailer"
             allow="autoplay; encrypted-media; picture-in-picture"
-            referrerPolicy="strict-origin-when-cross-origin"
+            referrerPolicy="origin"
             allowFullScreen
           />
         ) : poster ? (
@@ -176,6 +176,16 @@ function Hero({
               More info
             </Link>
             <WatchlistButton anime={anime} />
+            {!trailerId && (
+              <a
+                href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`${title} official trailer`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center gap-2 rounded-md bg-white/10 px-4 py-2.5 font-mono text-xs font-bold tracking-widest text-white uppercase backdrop-blur-sm"
+              >
+                Find trailer on YouTube <ExternalLink className="size-3.5" />
+              </a>
+            )}
             {trailerId && (
               <button
                 type="button"
