@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { LogOut, Menu, Search, User as UserIcon, X } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { Menu, Search, User as UserIcon, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { LanguageToggle, MobileSettings } from "@/components/PreferenceControls";
 import { profileQuery } from "@/lib/library";
@@ -22,8 +21,6 @@ export function SiteHeader() {
     user?.user_metadata?.["picture"] ||
     null;
   const navigate = useNavigate();
-  const router = useRouter();
-  const queryClient = useQueryClient();
   const [term, setTerm] = useState("");
   const [open, setOpen] = useState(false);
 
@@ -35,12 +32,6 @@ export function SiteHeader() {
     navigate({ to: "/search", search: { q, page: 1 } });
   };
 
-  const signOut = async () => {
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    await supabase.auth.signOut();
-    router.navigate({ to: "/auth", replace: true });
-  };
 
   return (
     <header className="sticky top-0 z-50 border-b-[3px] border-border bg-background/95 backdrop-blur-sm">
@@ -108,13 +99,7 @@ export function SiteHeader() {
                   <UserIcon className="size-4" strokeWidth={2.5} />
                 )}
               </Link>
-              <button
-                onClick={signOut}
-                className="ink-panel-sm ink-press bg-card p-2"
-                aria-label="Sign out"
-              >
-                <LogOut className="size-4" strokeWidth={2.5} />
-              </button>
+              
             </>
           ) : (
             <Link
@@ -182,15 +167,6 @@ export function SiteHeader() {
                   </span>
                   Profile
                 </Link>
-                <button
-                  onClick={() => {
-                    setOpen(false);
-                    void signOut();
-                  }}
-                  className="ink-panel-sm bg-background px-3 py-2 text-left font-mono text-xs font-bold tracking-widest uppercase"
-                >
-                  Sign out
-                </button>
               </>
             ) : (
               <Link
