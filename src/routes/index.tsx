@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, ExternalLink, Play, Star, Volume2, VolumeX } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
-  animeQuery,
+  animeVideoTrailerQuery,
   genresQuery,
   popularQuery,
   posterOf,
@@ -116,11 +116,11 @@ function Hero({
   const sources = legalSources(anime);
   const [trailerMuted, setTrailerMuted] = useState(true);
   const { theme } = usePreferences();
-  const animeDetails = useQuery({
-    ...animeQuery(anime.mal_id),
+  const trailerQuery = useQuery({
+    ...animeVideoTrailerQuery(anime.mal_id),
     enabled: theme === "netflix",
   });
-  const trailerId = trailerIdOf(animeDetails.data) ?? trailerIdOf(anime);
+  const trailerId = trailerQuery.data ?? trailerIdOf(anime);
 
   if (theme === "netflix") {
     return (
