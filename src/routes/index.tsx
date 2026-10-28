@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, ExternalLink, Play, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, ExternalLink, Play, Star, Volume2, VolumeX } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
   genresQuery,
@@ -93,6 +93,14 @@ function Rail({
   );
 }
 
+function trailerIdOf(anime: Anime | undefined) {
+  if (!anime?.trailer) return undefined;
+  const id = anime.trailer.youtube_id;
+  if (id && /^[A-Za-z0-9_-]{11}$/.test(id)) return id;
+  const url = anime.trailer.url;
+  return url?.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/)?.[1];
+}
+
 function Hero({
   anime,
   nav,
@@ -105,19 +113,31 @@ function Hero({
   const poster = posterOf(anime, true);
   const title = anime.title_english || anime.title;
   const sources = legalSources(anime);
+  const trailerId = trailerIdOf(anime);
+  const [trailerMuted, setTrailerMuted] = useState(true);
   const { theme } = usePreferences();
 
   if (theme === "netflix") {
     return (
       <section className="netflix-hero relative isolate flex min-h-[68vh] items-end overflow-hidden bg-black text-white">
-        {poster && (
+        {trailerId ? (
+          <iframe
+            key={trailerId}
+            title={`${title} trailer`}
+            src={`https://www.youtube-nocookie.com/embed/${trailerId}?autoplay=1&mute=${trailerMuted ? "1" : "0"}&controls=0&loop=1&playlist=${trailerId}&playsinline=1&rel=0&modestbranding=1`}
+            className="netflix-hero-trailer"
+            allow="autoplay; encrypted-media; picture-in-picture"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+        ) : poster ? (
           <img
             src={poster}
             alt=""
             aria-hidden="true"
             className="absolute inset-0 size-full object-cover object-[center_20%] opacity-60"
           />
-        )}
+        ) : null}
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/10" />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/15 to-black/10" />
         <div className="relative mx-auto w-full max-w-[1500px] px-4 pb-12 pt-24 sm:px-6 lg:pb-16">
@@ -151,6 +171,18 @@ function Hero({
               More info
             </Link>
             <WatchlistButton anime={anime} />
+            {trailerId && (
+              <button
+                type="button"
+                onClick={() => setTrailerMuted((muted) => !muted)}
+                aria-label={trailerMuted ? "Unmute featured trailer" : "Mute featured trailer"}
+                title={trailerMuted ? "Unmute trailer" : "Mute trailer"}
+                className="inline-flex min-h-11 items-center gap-2 rounded-md bg-white/10 px-3 py-2.5 font-mono text-xs font-bold tracking-widest text-white uppercase backdrop-blur-sm"
+              >
+                {trailerMuted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
+                {trailerMuted ? "Sound off" : "Sound on"}
+              </button>
+            )}
             {sources[0] && (
               <a
                 href={sources[0].url}
@@ -270,6 +302,7 @@ function HomePage() {
   const usingFallback = airing.length === 0 && featuredList.length > 0;
   const [index, setIndex] = useState(0);
   const featured = featuredList.length ? featuredList[index % featuredList.length] : undefined;
+  const featuredTrailerId = trailerIdOf(featured);
   const featuredCount = featuredList.length;
   const step = (d: number) => setIndex((i) => (i + d + featuredList.length) % featuredList.length);
   const hour = new Date().getHours();
@@ -282,12 +315,12 @@ function HomePage() {
 
   // Auto-slide effect
   useEffect(() => {
-    if (featuredCount <= 1) return;
+    if (featuredCount <= 1 || featuredTrailerId) return;
     const interval = setInterval(() => {
       setIndex((i) => (i + 1) % featuredCount);
     }, 6000);
     return () => clearInterval(interval);
-  }, [featuredCount]);
+  }, [featuredCount, featuredTrailerId]);
 
   const nav =
     featuredList.length > 1 ? (
