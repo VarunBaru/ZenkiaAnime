@@ -13,7 +13,7 @@ export const LANG_KEY = "animehub:anime-language";
 export const THEME_KEY = "animehub:theme";
 
 /** Runs before hydration (inlined in <head>) so the right theme paints first. */
-export const THEME_BOOT_SCRIPT = `(function(){try{var t=localStorage.getItem("\${THEME_KEY}")||"manga";if(t!=="manga"&&t!=="glass"&&t!=="netflix")t="manga";var r=document.documentElement;r.classList.add("dark");r.classList.remove("theme-manga","theme-glass","theme-netflix");r.classList.add("theme-"+t);r.style.colorScheme="dark";}catch(e){}})();`;
+export const THEME_BOOT_SCRIPT = `(function(){try{var t=localStorage.getItem("${THEME_KEY}")||"manga";if(t!=="manga"&&t!=="glass"&&t!=="netflix")t="manga";var r=document.documentElement;r.classList.add("dark");r.classList.remove("theme-manga","theme-glass","theme-netflix");r.classList.add("theme-"+t);r.style.colorScheme="dark";}catch(e){}})();`;if(t!=="manga"&&t!=="glass"&&t!=="netflix")t="manga";var r=document.documentElement;r.classList.add("dark");r.classList.remove("theme-manga","theme-glass","theme-netflix");r.classList.add("theme-"+t);r.style.colorScheme="dark";}catch(e){}})();`;
 
 type Ctx = {
   language: AnimeLanguage;
@@ -63,11 +63,6 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     applyTheme(theme);
-    if (theme !== "system") return;
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = () => applyTheme("system");
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
   }, [theme]);
 
   const setLanguage = useCallback((l: AnimeLanguage) => {
