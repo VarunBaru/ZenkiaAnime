@@ -397,9 +397,9 @@ function HomePage() {
         {trending.isPending && !featured ? (
           <div className="mx-auto grid max-w-[1500px] gap-8 px-4 py-10 sm:px-6 lg:grid-cols-12">
             <div className="space-y-4 lg:col-span-7">
-              <div className="h-6 w-40 animate-pulse bg-muted" />
-              <div className="h-14 w-3/4 animate-pulse bg-muted" />
-              <div className="h-20 w-full animate-pulse bg-muted" />
+              <div className="h-6 w-40 skeleton-surface bg-muted" />
+              <div className="h-14 w-3/4 skeleton-surface bg-muted" />
+              <div className="h-20 w-full skeleton-surface bg-muted" />
             </div>
             <PanelSkeleton className="mx-auto aspect-3/4 w-full max-w-[320px] lg:col-span-5" />
           </div>
