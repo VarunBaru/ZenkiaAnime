@@ -274,3 +274,21 @@
     animation: none;
   }
 }
+
+/* Touch-friendly controls and readable form fields on phones. */
+@media (max-width: 639px) {
+  :where(button, [role="button"]) {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    touch-action: manipulation;
+  }
+
+  :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+    min-height: 2.75rem;
+    font-size: 16px;
+  }
+
+  main {
+    min-width: 0;
+  }
+}
