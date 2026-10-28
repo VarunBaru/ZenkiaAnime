@@ -79,12 +79,12 @@ function Rail({
       ) : data.length === 0 ? (
         <EmptyState title="Nothing here yet" message="No titles were returned for this section." />
       ) : (
-        <div className="no-scrollbar flex gap-5 overflow-x-auto pb-3">
+        <div className="netflix-home-rail no-scrollbar flex gap-5 overflow-x-auto pb-3">
           {data.map((anime) => (
             <AnimeCard
               key={anime.mal_id}
               anime={anime}
-              className="w-[150px] shrink-0 sm:w-[190px]"
+              className="netflix-rail-card w-[150px] shrink-0 sm:w-[190px]"
             />
           ))}
         </div>
