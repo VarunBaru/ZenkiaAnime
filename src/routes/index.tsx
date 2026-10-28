@@ -1,9 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, ExternalLink, Play, Star, Volume2, VolumeX } from "lucide-react";
+import { ChevronLeft, ChevronRight, ExternalLink, Play, Star } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
-  animeVideoTrailerQuery,
   genresQuery,
   popularQuery,
   posterOf,
@@ -94,14 +93,6 @@ function Rail({
   );
 }
 
-function trailerIdOf(anime: Anime | undefined) {
-  if (!anime?.trailer) return undefined;
-  const id = anime.trailer.youtube_id;
-  if (id && /^[A-Za-z0-9_-]{11}$/.test(id)) return id;
-  const url = anime.trailer.url;
-  return url?.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/)?.[1];
-}
-
 function Hero({
   anime,
   nav,
@@ -114,28 +105,12 @@ function Hero({
   const poster = posterOf(anime, true);
   const title = anime.title_english || anime.title;
   const sources = legalSources(anime);
-  const [trailerMuted, setTrailerMuted] = useState(true);
   const { theme } = usePreferences();
-  const trailerQuery = useQuery({
-    ...animeVideoTrailerQuery(anime.mal_id),
-    enabled: theme === "netflix",
-  });
-  const trailerId = trailerQuery.data ?? trailerIdOf(anime);
 
   if (theme === "netflix") {
     return (
       <section className="netflix-hero relative isolate flex min-h-[68vh] items-end overflow-hidden bg-black text-white">
-        {trailerId ? (
-          <iframe
-            key={trailerId}
-            title={`${title} trailer`}
-            src={`https://www.youtube.com/embed/${trailerId}?autoplay=1&mute=${trailerMuted ? "1" : "0"}&controls=1&loop=1&playlist=${trailerId}&playsinline=1&rel=0&modestbranding=1`}
-            className="netflix-hero-trailer"
-            allow="autoplay; encrypted-media; picture-in-picture"
-            referrerPolicy="origin"
-            allowFullScreen
-          />
-        ) : poster ? (
+        {poster ? (
           <img
             src={poster}
             alt=""
@@ -176,28 +151,6 @@ function Hero({
               More info
             </Link>
             <WatchlistButton anime={anime} />
-            {!trailerId && (
-              <a
-                href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`${title} official trailer`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center gap-2 rounded-md bg-white/10 px-4 py-2.5 font-mono text-xs font-bold tracking-widest text-white uppercase backdrop-blur-sm"
-              >
-                Find trailer on YouTube <ExternalLink className="size-3.5" />
-              </a>
-            )}
-            {trailerId && (
-              <button
-                type="button"
-                onClick={() => setTrailerMuted((muted) => !muted)}
-                aria-label={trailerMuted ? "Unmute featured trailer" : "Mute featured trailer"}
-                title={trailerMuted ? "Unmute trailer" : "Mute trailer"}
-                className="inline-flex min-h-11 items-center gap-2 rounded-md bg-white/10 px-3 py-2.5 font-mono text-xs font-bold tracking-widest text-white uppercase backdrop-blur-sm"
-              >
-                {trailerMuted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
-                {trailerMuted ? "Sound off" : "Sound on"}
-              </button>
-            )}
             {sources[0] && (
               <a
                 href={sources[0].url}
@@ -316,13 +269,7 @@ function HomePage() {
   const featuredList = airing.length > 0 ? airing : fallbackFeatured;
   const usingFallback = airing.length === 0 && featuredList.length > 0;
   const [index, setIndex] = useState(0);
-  const [checkedTrailerIds, setCheckedTrailerIds] = useState<number[]>([]);
   const featured = featuredList.length ? featuredList[index % featuredList.length] : undefined;
-  const featuredTrailerQuery = useQuery({
-    ...animeVideoTrailerQuery(featured?.mal_id ?? 0),
-    enabled: theme === "netflix" && Boolean(featured),
-  });
-  
   const featuredCount = featuredList.length;
   const step = (d: number) => setIndex((i) => (i + d + featuredList.length) % featuredList.length);
   const hour = new Date().getHours();
@@ -342,31 +289,6 @@ function HomePage() {
     return () => clearInterval(interval);
   }, [featuredCount, theme]);
 
-
-  useEffect(() => {
-    if (
-      theme !== "netflix" ||
-      !featured ||
-      !featuredTrailerQuery.isFetched ||
-      featuredTrailerQuery.data ||
-      trailerIdOf(featured) ||
-      checkedTrailerIds.includes(featured.mal_id)
-    ) {
-      return;
-    }
-    const checkedIds = [...checkedTrailerIds, featured.mal_id];
-    setCheckedTrailerIds(checkedIds);
-    if (checkedIds.length < featuredCount) {
-      setIndex((current) => (current + 1) % featuredCount);
-    }
-  }, [
-    theme,
-    featured?.mal_id,
-    featuredTrailerQuery.isFetched,
-    featuredTrailerQuery.data,
-    checkedTrailerIds,
-    featuredCount,
-  ]);
 
   const nav =
     featuredList.length > 1 ? (
