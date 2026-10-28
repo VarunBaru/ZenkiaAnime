@@ -108,12 +108,6 @@ export function MobileSettings() {
         </p>
         <LanguageToggle />
       </div>
-      <div>
-        <p className="mb-1.5 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
-          Site theme
-        </p>
-        <ThemeToggle showText />
-      </div>
     </div>
   );
 }
