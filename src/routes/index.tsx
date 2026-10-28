@@ -105,6 +105,68 @@ function Hero({
   const poster = posterOf(anime, true);
   const title = anime.title_english || anime.title;
   const sources = legalSources(anime);
+  const { theme } = usePreferences();
+
+  if (theme === "netflix") {
+    return (
+      <section className="netflix-hero relative isolate flex min-h-[68vh] items-end overflow-hidden bg-black text-white">
+        {poster && (
+          <img
+            src={poster}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 size-full object-cover object-[center_20%] opacity-60"
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/15 to-black/10" />
+        <div className="relative mx-auto w-full max-w-[1500px] px-4 pb-12 pt-24 sm:px-6 lg:pb-16">
+          <p className="font-mono text-xs font-bold tracking-[0.24em] text-red-500 uppercase">
+            {label}
+          </p>
+          {nav}
+          <h1 className="mt-4 max-w-3xl font-display text-4xl leading-[0.98] break-words sm:text-6xl lg:text-7xl">
+            {title}
+          </h1>
+          <p className="mt-3 font-mono text-xs tracking-widest text-white/75 uppercase">
+            {anime.year ?? "New series"} · {anime.type ?? "Anime"} · {anime.episodes ?? "?"} episodes
+            {typeof anime.score === "number" ? ` · ★ ${anime.score.toFixed(1)}` : ""}
+          </p>
+          <p className="mt-4 line-clamp-3 max-w-2xl text-sm leading-relaxed text-white/85 sm:text-base">
+            {anime.synopsis ?? "No synopsis available for this title yet."}
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              to="/watch/$animeId/$episodeNumber"
+              params={{ animeId: String(anime.mal_id), episodeNumber: "1" }}
+              className="inline-flex min-h-11 items-center gap-2 rounded-md bg-white px-5 py-2.5 font-mono text-xs font-bold tracking-widest text-black uppercase transition-colors hover:bg-white/85"
+            >
+              <Play className="size-4" fill="currentColor" strokeWidth={3} /> Watch now
+            </Link>
+            <Link
+              to="/anime/$animeId"
+              params={{ animeId: String(anime.mal_id) }}
+              className="inline-flex min-h-11 items-center gap-2 rounded-md bg-white/20 px-5 py-2.5 font-mono text-xs font-bold tracking-widest text-white uppercase backdrop-blur-sm transition-colors hover:bg-white/30"
+            >
+              More info
+            </Link>
+            <WatchlistButton anime={anime} />
+            {sources[0] && (
+              <a
+                href={sources[0].url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center gap-2 rounded-md bg-white/10 px-4 py-2.5 font-mono text-xs font-bold tracking-widest text-white uppercase backdrop-blur-sm"
+              >
+                Official source <ExternalLink className="size-3.5" />
+              </a>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
 
   return (
     <div className="mx-auto grid max-w-[1500px] gap-8 px-4 py-8 sm:px-6 lg:grid-cols-12 lg:py-12">
