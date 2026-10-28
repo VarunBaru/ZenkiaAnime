@@ -417,7 +417,7 @@
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1280px) {
   .theme-netflix header {
     position: fixed;
     inset: 0 auto 0 0;
@@ -670,7 +670,7 @@
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1280px) {
   .theme-netflix header {
     position: fixed;
     inset: 0 auto 0 0;
