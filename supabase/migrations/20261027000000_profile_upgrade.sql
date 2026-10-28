@@ -66,6 +66,7 @@ GRANT ALL ON public.follows TO service_role;
 ALTER TABLE public.favorites ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.achievements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.follows ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Users manage own favorites" ON public.favorites;
 CREATE POLICY "Users manage own favorites" ON public.favorites
@@ -181,4 +182,5 @@ END;
 $$;
 REVOKE ALL ON FUNCTION public.sync_my_achievements() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.sync_my_achievements() TO authenticated;
+
 
