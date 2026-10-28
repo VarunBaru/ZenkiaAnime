@@ -168,6 +168,47 @@ function Hero({
   }
 
 
+  if (theme === "glass") {
+    return (
+      <section className="glass-feature relative isolate mx-auto my-4 grid min-h-[min(760px,82vh)] max-w-[1500px] overflow-hidden rounded-[2rem] border border-white/40 sm:my-6 sm:rounded-[2.5rem]">
+        {poster && (
+          <img src={poster} alt="" aria-hidden="true" className="absolute inset-0 size-full scale-110 object-cover object-center opacity-35 blur-2xl" />
+        )}
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(13,42,56,0.78),rgba(13,42,56,0.4)_54%,rgba(22,62,48,0.56))]" />
+        <div className="glass-feature-layout relative z-10 grid min-h-[inherit] gap-8 p-5 sm:p-8 md:p-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-12 lg:p-16">
+          <div className="flex min-w-0 flex-col justify-center">
+            <span className="inline-flex w-fit items-center rounded-full border border-white/40 bg-white/15 px-4 py-2 text-xs font-semibold tracking-[0.18em] text-white/90 uppercase backdrop-blur-xl">{label}</span>
+            {nav}
+            <h1 className="mt-7 max-w-4xl text-5xl leading-[0.96] font-light tracking-[-0.065em] break-words text-white sm:text-6xl lg:text-8xl">{title}</h1>
+            {anime.title_japanese && <p className="mt-3 font-body text-sm tracking-wide text-white/75">{anime.title_japanese}</p>}
+            <div className="mt-5 flex flex-wrap gap-2">
+              {[anime.year, anime.type, anime.status, anime.episodes ? `${anime.episodes} episodes` : null]
+                .filter(Boolean)
+                .map((item) => <span key={String(item)} className="rounded-full border border-white/35 bg-white/10 px-3 py-1.5 text-xs text-white/90 backdrop-blur-lg">{item}</span>)}
+              {typeof anime.score === "number" && <span className="rounded-full border border-white/35 bg-white/10 px-3 py-1.5 text-xs text-white/90 backdrop-blur-lg">★ {anime.score.toFixed(1)}</span>}
+            </div>
+            <p className="mt-6 max-w-[58ch] text-base leading-relaxed text-white/85 sm:text-lg">{anime.synopsis ?? "Discover the story, cast, and details for this featured anime."}</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link to="/watch/$animeId/$episodeNumber" params={{ animeId: String(anime.mal_id), episodeNumber: "1" }} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-white/90"><Play className="size-4" fill="currentColor" /> Watch now</Link>
+              <Link to="/anime/$animeId" params={{ animeId: String(anime.mal_id) }} className="inline-flex min-h-12 items-center gap-2 rounded-full border border-white/40 bg-white/15 px-6 py-3 text-sm font-semibold text-white backdrop-blur-xl transition hover:bg-white/25">Explore details</Link>
+              <WatchlistButton anime={anime} />
+            </div>
+          </div>
+          <aside className="glass-feature-details self-end rounded-[1.75rem] border border-white/40 bg-white/15 p-5 text-white shadow-2xl backdrop-blur-2xl sm:p-7 lg:self-center">
+            <p className="text-xs font-semibold tracking-[0.2em] text-white/75 uppercase">At a glance</p>
+            <h2 className="mt-3 text-2xl font-medium tracking-tight sm:text-3xl">{title}</h2>
+            <p className="mt-3 line-clamp-5 text-sm leading-relaxed text-white/80 sm:text-base">{anime.synopsis ?? "Synopsis unavailable for this title."}</p>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-white/30 bg-white/10 p-4"><p className="text-xs text-white/70">Rating</p><p className="mt-1 text-xl font-semibold">{anime.score?.toFixed(1) ?? "—"}<span className="ml-1 text-xs font-normal text-white/70">/ 10</span></p></div>
+              <div className="rounded-2xl border border-white/30 bg-white/10 p-4"><p className="text-xs text-white/70">Format</p><p className="mt-1 text-xl font-semibold">{anime.type ?? "Anime"}</p></div>
+            </div>
+            {sources[0] && <a href={sources[0].url} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-white underline decoration-white/50 underline-offset-4 hover:decoration-white">Where to watch <ExternalLink className="size-4" /></a>}
+          </aside>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <div className="mx-auto grid max-w-[1500px] gap-8 px-4 py-8 sm:px-6 lg:grid-cols-12 lg:py-12">
       <div className="ink-rise lg:col-span-7">
