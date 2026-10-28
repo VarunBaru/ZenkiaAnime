@@ -1,4 +1,3 @@
-import { Monitor, Moon, Sun } from "lucide-react";
 import { usePreferences, type AnimeLanguage, type ThemePref } from "@/lib/preferences";
 import { cn } from "@/lib/utils";
 
@@ -63,10 +62,10 @@ export function LanguageToggle() {
 
 export function ThemeToggle({ showText }: { showText?: boolean }) {
   const { theme, setTheme } = usePreferences();
-  const opts: { value: ThemePref; text: string; icon: React.ReactNode }[] = [
-    { value: "light", text: "Light", icon: <Sun className="size-3.5" strokeWidth={2.5} /> },
-    { value: "dark", text: "Dark", icon: <Moon className="size-3.5" strokeWidth={2.5} /> },
-    { value: "system", text: "System", icon: <Monitor className="size-3.5" strokeWidth={2.5} /> },
+  const opts: { value: ThemePref; text: string }[] = [
+    { value: "manga", text: "Manga" },
+    { value: "glass", text: "Liquid Glass" },
+    { value: "netflix", text: "Netflix" },
   ];
   return (
     <Segment
@@ -87,6 +86,12 @@ export function MobileSettings() {
           Anime language
         </p>
         <LanguageToggle />
+      </div>
+      <div>
+        <p className="mb-1.5 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+          Site theme
+        </p>
+        <ThemeToggle showText />
       </div>
     </div>
   );
