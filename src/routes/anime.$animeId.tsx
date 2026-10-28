@@ -159,7 +159,7 @@ function AnimeDetailPage() {
   const firstEpisode = episodes.data?.[0]?.mal_id ?? 1;
 
   return (
-    <article className="overflow-x-hidden">
+    <article className="min-w-0">
       <header className="speed-lines border-b-[3px] border-border">
         <div className="mx-auto grid max-w-[1500px] gap-8 px-4 py-8 sm:px-6 lg:grid-cols-12 lg:py-12">
           <div className="lg:col-span-4">
@@ -183,7 +183,7 @@ function AnimeDetailPage() {
               {title}
             </h1>
             {data.title_japanese && (
-              <p className="mt-2 font-mono text-xs tracking-widest text-muted-foreground">
+              <p className="mt-2 break-words font-mono text-xs tracking-widest text-muted-foreground">
                 {data.title_japanese}
               </p>
             )}
@@ -481,7 +481,7 @@ function AnimeDetailPage() {
               />
             )
           ) : (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
+            <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5 xl:grid-cols-6">
               {recommendations.data.map((rec) => (
                 <AnimeCard key={rec.mal_id} anime={rec} />
               ))}

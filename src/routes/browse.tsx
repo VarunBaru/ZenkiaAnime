@@ -155,12 +155,12 @@ function BrowsePage() {
           />
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
+            <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-5 xl:grid-cols-6">
               {results.data.items.map((anime) => (
                 <AnimeCard key={anime.mal_id} anime={anime} />
               ))}
             </div>
-            <div className="mt-10 flex items-center justify-center gap-3">
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
               <button
                 disabled={page <= 1}
                 onClick={() => navigate({ search: (prev) => ({ ...prev, page: page - 1 }) })}
@@ -168,7 +168,7 @@ function BrowsePage() {
               >
                 ← Prev
               </button>
-              <span className="font-mono text-[11px] tracking-widest uppercase">
+              <span className="text-center font-mono text-[10px] tracking-wide uppercase sm:text-[11px] sm:tracking-widest">
                 Page {page} / {results.data.pagination?.last_visible_page ?? page}
               </span>
               <button

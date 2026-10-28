@@ -45,7 +45,7 @@ export function FavoriteButton({ anime }: { anime: Anime }) {
           <div
             role="dialog"
             aria-modal="true"
-            className="ink-panel bg-card p-6"
+            className="ink-panel w-full max-w-md bg-card p-4 sm:p-6"
             onClick={(event) => event.stopPropagation()}
           >
             <p className="font-display text-xl">Sign in to save favorites</p>

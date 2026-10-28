@@ -93,7 +93,7 @@ export function OnboardingGate({ children }: { children: ReactNode }) {
             role="dialog"
             aria-modal="true"
             aria-labelledby="onboarding-title"
-            className="ink-panel halftone w-full max-w-lg p-6 shadow-2xl sm:p-8"
+            className="ink-panel halftone max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto overscroll-contain p-4 shadow-2xl sm:p-8"
           >
             {step === "name" ? (
               <>

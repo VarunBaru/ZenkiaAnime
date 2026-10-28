@@ -84,14 +84,14 @@ export function ProfileHeader({
             )}
           </div>
           <div className="min-w-0 flex-1 pb-1">
-            <h1 className="font-display text-2xl sm:text-3xl">{username}</h1>
+            <h1 className="break-words font-display text-2xl sm:text-3xl [overflow-wrap:anywhere]">{username}</h1>
             <p className="mt-1 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
               ID: {profile?.id.slice(0, 8)}…{joinDate ? ` · Joined ${joinDate}` : ""}
             </p>
           </div>
         </div>
 
-        {bio && <p className="mt-3 max-w-3xl text-sm text-muted-foreground">{bio}</p>}
+        {bio && <p className="mt-3 max-w-3xl break-words text-sm text-muted-foreground">{bio}</p>}
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <span

@@ -147,7 +147,7 @@ function HistoryPage() {
           <div className="space-y-6">
             {groupedHistory.map((group) => (
               <div key={group.mal_id} className="ink-panel overflow-hidden">
-                <div className="flex items-center gap-4 bg-secondary/50 p-4">
+                <div className="flex flex-wrap items-center gap-3 bg-secondary/50 p-3 sm:flex-nowrap sm:gap-4 sm:p-4">
                   {group.image_url ? (
                     <img
                       src={group.image_url}
@@ -158,7 +158,7 @@ function HistoryPage() {
                     <div className="aspect-2/3 w-16 border-2 border-border bg-muted" />
                   )}
                   <div className="min-w-0 flex-1">
-                    <h2 className="truncate font-display text-xl">{group.title}</h2>
+                    <h2 className="line-clamp-2 break-words font-display text-base sm:text-xl">{group.title}</h2>
                     <p className="mt-1 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
                       {group.episodes.length} episode{group.episodes.length === 1 ? "" : "s"} in history
                     </p>
@@ -166,7 +166,7 @@ function HistoryPage() {
                   <Link
                     to="/anime/$animeId"
                     params={{ animeId: String(group.mal_id) }}
-                    className="ink-panel-sm ink-press bg-accent px-4 py-2 font-mono text-[10px] font-bold tracking-widest text-accent-foreground uppercase"
+                    className="ink-panel-sm ink-press ml-auto shrink-0 bg-accent px-3 py-2 font-mono text-[9px] font-bold tracking-wider text-accent-foreground uppercase sm:px-4 sm:text-[10px] sm:tracking-widest"
                   >
                     View Anime
                   </Link>

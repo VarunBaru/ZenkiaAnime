@@ -9,7 +9,7 @@ export function AnimeCard({ anime, className = "" }: { anime: Anime; className?:
   const title = anime.title_english || anime.title;
 
   return (
-    <div className={`group ${className}`}>
+    <div className={`group min-w-0 ${className}`}>
       <Link
         to="/anime/$animeId"
         params={{ animeId: String(anime.mal_id) }}
@@ -40,9 +40,9 @@ export function AnimeCard({ anime, className = "" }: { anime: Anime; className?:
       <div className="mt-2.5 flex items-start gap-2">
         <div className="min-w-0 flex-1">
           <Link to="/anime/$animeId" params={{ animeId: String(anime.mal_id) }}>
-            <p className="line-clamp-2 font-display text-[13px] leading-tight">{title}</p>
+            <p className="line-clamp-2 break-words font-display text-[13px] leading-tight">{title}</p>
           </Link>
-          <p className="mt-1 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+          <p className="mt-1 break-words font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
             {[anime.type, anime.year, anime.genres?.[0]?.name].filter(Boolean).join(" · ")}
           </p>
         </div>

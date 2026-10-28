@@ -86,7 +86,7 @@ function PublicProfilePage() {
               : undefined
           }
         />
-        <div className="relative -mt-12 flex flex-wrap items-end gap-4 px-5 pb-5 sm:-mt-16 sm:px-6">
+        <div className="relative -mt-12 flex flex-wrap items-end gap-4 px-4 pb-5 sm:-mt-16 sm:px-6">
           <div className="size-24 overflow-hidden border-4 border-card bg-muted sm:size-28">
             {p.avatar_url ? (
               <img src={p.avatar_url} alt="" className="size-full object-cover" />

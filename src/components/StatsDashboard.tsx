@@ -16,12 +16,12 @@ function StatCard({
 }) {
   return (
     <div
-      className={`ink-panel-sm halftone flex items-center gap-3 p-4 ${
+      className={`ink-panel-sm halftone flex min-w-0 flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-3 sm:p-4 ${
         accent ? "border-accent/60" : ""
       }`}
     >
       <div
-        className={`grid size-11 shrink-0 place-items-center border-2 ${
+        className={`grid size-9 shrink-0 place-items-center border-2 sm:size-11 ${
           accent ? "border-accent bg-accent text-accent-foreground" : "border-border bg-card"
         }`}
       >
@@ -31,7 +31,7 @@ function StatCard({
         <p className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
           {label}
         </p>
-        <p className="font-display text-xl">{value}</p>
+        <p className="break-words font-display text-lg sm:text-xl">{value}</p>
       </div>
     </div>
   );

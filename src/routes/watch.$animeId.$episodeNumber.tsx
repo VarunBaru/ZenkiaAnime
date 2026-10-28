@@ -389,7 +389,7 @@ function WatchPage() {
         )}
       </div>
 
-      <div className="ink-panel-sm flex flex-wrap items-center gap-4 bg-card p-3">
+      <div className="ink-panel-sm flex min-w-0 flex-wrap items-center gap-3 bg-card p-3 sm:gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <span className="font-mono text-[11px] font-bold tracking-widest uppercase">
             Audio source
@@ -574,7 +574,7 @@ function WatchPage() {
       <div className="ink-panel p-4">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <h3 className="font-mono text-[11px] font-bold tracking-widest text-muted-foreground uppercase">
+            <h3 className="font-mono text-[10px] font-bold tracking-wide text-muted-foreground uppercase sm:text-[11px] sm:tracking-widest">
               Select Episode
             </h3>
             {/* Toggle View Mode */}
@@ -688,7 +688,7 @@ function WatchPage() {
           }
 
           return (
-            <div className="grid max-h-[400px] grid-cols-5 gap-2 overflow-y-auto sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12">
+            <div className="grid max-h-[400px] grid-cols-4 gap-2 overflow-y-auto sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12">
               {filtered.map((opt) => (
                 <button
                   key={opt.n}

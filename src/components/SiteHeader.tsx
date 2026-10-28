@@ -119,6 +119,8 @@ export function SiteHeader() {
           onClick={() => setOpen((v) => !v)}
           className="ink-panel-sm ink-press shrink-0 bg-card p-2 lg:hidden"
           aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
+          aria-controls="mobile-site-menu"
         >
           {open ? (
             <X className="size-4" strokeWidth={3} />
@@ -129,7 +131,7 @@ export function SiteHeader() {
       </div>
 
       {open && (
-        <div className="border-t-[3px] border-border bg-card px-4 py-4 lg:hidden">
+        <div id="mobile-site-menu" className="border-t-[3px] border-border bg-card px-4 py-4 lg:hidden">
           <form onSubmit={submit} className="flex items-center gap-2">
             <input
               value={term}

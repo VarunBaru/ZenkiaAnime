@@ -138,7 +138,7 @@ export function EditProfileModal({
       }}
     >
       <DialogContent className="max-w-lg rounded-none border-2 border-border bg-background p-0 sm:rounded-none">
-        <DialogHeader className="border-b-2 border-border px-6 py-5">
+        <DialogHeader className="border-b-2 border-border py-5 pr-10 pl-4 sm:px-6">
           <DialogTitle className="font-display text-xl">Edit Profile</DialogTitle>
           <DialogDescription className="font-mono text-[10px] tracking-widest uppercase text-muted-foreground">
             Customize your public profile and preferences
@@ -146,12 +146,12 @@ export function EditProfileModal({
         </DialogHeader>
 
         <Tabs defaultValue="info" className="w-full">
-          <TabsList className="w-full justify-start rounded-none border-b-2 border-border bg-transparent p-0 h-auto">
+          <TabsList className="flex h-auto w-full flex-wrap justify-start rounded-none border-b-2 border-border bg-transparent p-0">
             {(["info", "media", "settings"] as const).map((tab) => (
               <TabsTrigger
                 key={tab}
                 value={tab}
-                className="rounded-none border-b-2 border-transparent px-4 py-3 font-mono text-[10px] font-bold tracking-widest uppercase data-[state=active]:border-accent data-[state=active]:bg-transparent data-[state=active]:text-accent data-[state=active]:shadow-none"
+                className="min-w-0 flex-1 rounded-none border-b-2 border-transparent px-2 py-3 font-mono text-[9px] font-bold leading-tight tracking-wider uppercase data-[state=active]:border-accent data-[state=active]:bg-transparent data-[state=active]:text-accent data-[state=active]:shadow-none"
               >
                 {tab === "info"
                   ? "Profile Info"
@@ -163,7 +163,7 @@ export function EditProfileModal({
           </TabsList>
 
           {/* Profile Info */}
-          <TabsContent value="info" className="m-0 p-6 space-y-5">
+          <TabsContent value="info" className="m-0 space-y-5 p-4 sm:p-6">
             <div>
               <label className="block font-mono text-[10px] font-bold tracking-widest uppercase mb-1.5">
                 Display name <span className="text-muted-foreground">({username.length}/40)</span>
@@ -201,7 +201,7 @@ export function EditProfileModal({
           </TabsContent>
 
           {/* Banner & Avatar */}
-          <TabsContent value="media" className="m-0 p-6 space-y-5">
+          <TabsContent value="media" className="m-0 space-y-5 p-4 sm:p-6">
             <div>
               <label className="block font-mono text-[10px] font-bold tracking-widest uppercase mb-1.5">
                 Avatar URL (https only)
@@ -286,7 +286,7 @@ export function EditProfileModal({
           </TabsContent>
 
           {/* Privacy & Settings */}
-          <TabsContent value="settings" className="m-0 p-6 space-y-6">
+          <TabsContent value="settings" className="m-0 space-y-6 p-4 sm:p-6">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="font-mono text-xs font-bold tracking-widest uppercase">
