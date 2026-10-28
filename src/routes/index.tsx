@@ -174,7 +174,7 @@ function Hero({
         {poster && (
           <img src={poster} alt="" aria-hidden="true" className="absolute inset-0 size-full scale-110 object-cover object-center opacity-50 blur-2xl transition-opacity duration-700" />
         )}
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(13,42,56,0.78),rgba(13,42,56,0.4)_54%,rgba(22,62,48,0.56))]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(8,12,18,0.48),rgba(8,12,18,0.2)_54%,rgba(8,12,18,0.34))]" />
         <div className="glass-feature-layout relative z-10 grid min-h-[inherit] gap-8 p-5 sm:p-8 md:p-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-12 lg:p-16">
           <div className="flex min-w-0 flex-col justify-center">
             <span className="inline-flex w-fit items-center rounded-full border border-white/40 bg-white/15 px-4 py-2 text-xs font-semibold tracking-[0.18em] text-white/90 uppercase backdrop-blur-xl">{label}</span>
