@@ -50,7 +50,7 @@ export function ProfileHeader({
   return (
     <div className="ink-panel overflow-hidden">
       <div
-        className="relative h-40 sm:h-56 bg-gradient-to-br from-accent/40 via-purple-500/30 to-blue-500/20"
+        className="relative h-[50svh] min-h-64 max-h-[420px] bg-gradient-to-br from-accent/40 via-purple-500/30 to-blue-500/20 sm:h-56 sm:min-h-0 sm:max-h-none"
         style={
           bannerUrl
             ? {
@@ -62,7 +62,7 @@ export function ProfileHeader({
         }
       >
         <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute top-4 right-4 flex items-center gap-2">
+        <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
           <button
             onClick={onEdit}
             className="ink-panel-sm ink-press bg-card/90 px-3 py-1.5 font-mono text-[10px] font-bold tracking-widest uppercase"
@@ -70,6 +70,9 @@ export function ProfileHeader({
             <Edit2 className="mr-1 inline size-3" /> Edit profile
           </button>
         </div>
+        <h1 className="absolute right-4 bottom-4 left-4 z-10 break-words font-display text-2xl text-white drop-shadow-[0_2px_3px_rgba(0,0,0,0.95)] [overflow-wrap:anywhere] sm:text-3xl">
+          {username}
+        </h1>
       </div>
 
       <div className="relative -mt-12 px-5 pb-5 sm:-mt-16 sm:px-6">
@@ -97,8 +100,7 @@ export function ProfileHeader({
             </span>
           </div>
           <div className="min-w-0 flex-1 pb-1">
-            <h1 className="break-words font-display text-2xl sm:text-3xl [overflow-wrap:anywhere]">{username}</h1>
-            <p className="mt-1 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+            <p className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
               ID: {profile?.id.slice(0, 8)}…{joinDate ? ` · Joined ${joinDate}` : ""}
             </p>
           </div>
