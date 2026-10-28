@@ -7,23 +7,17 @@ function StatCard({
   icon: Icon,
   label,
   value,
-  accent = false,
 }: {
   icon: React.ReactNode;
   label: string;
   value: number | string;
-  accent?: boolean;
 }) {
   return (
     <div
-      className={`ink-panel-sm halftone flex min-w-0 flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-3 sm:p-4 ${
-        accent ? "border-accent/60" : ""
-      }`}
+      className="ink-panel-sm halftone flex min-w-0 flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-3 sm:p-4"
     >
       <div
-        className={`grid size-9 shrink-0 place-items-center border-2 sm:size-11 ${
-          accent ? "border-accent bg-accent text-accent-foreground" : "border-border bg-card"
-        }`}
+        className="grid size-9 shrink-0 place-items-center border-2 border-border bg-card sm:size-11"
       >
         {Icon}
       </div>
@@ -85,7 +79,6 @@ export function StatsDashboard({
           icon={<Heart className="size-4" />}
           label="Favorites"
           value={display.favoritesCount}
-          accent
         />
         <StatCard
           icon={<Clock className="size-4" />}
