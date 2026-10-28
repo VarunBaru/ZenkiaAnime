@@ -782,3 +782,13 @@
 .theme-netflix .netflix-card-copy {
   text-align: left;
 }
+
+.theme-netflix .netflix-library-label {
+  margin-top: 1rem;
+  padding: 0 0.8rem;
+  color: var(--muted-foreground);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
