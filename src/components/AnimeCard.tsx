@@ -22,7 +22,7 @@ export function AnimeCard({ anime, className = "" }: { anime: Anime; className?:
               src={poster}
               alt={`${title} poster art`}
               loading="lazy"
-              className="aspect-2/3 w-full object-cover grayscale-[35%] transition-all duration-200 group-hover:grayscale-0"
+              className="netflix-poster aspect-2/3 w-full object-cover grayscale-[35%] transition-all duration-200 group-hover:grayscale-0"
             />
           ) : (
             <div className="grid aspect-2/3 w-full place-items-center bg-muted">
@@ -35,6 +35,12 @@ export function AnimeCard({ anime, className = "" }: { anime: Anime; className?:
               {anime.score.toFixed(1)}
             </span>
           )}
+          <div className="netflix-card-copy absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/80 to-transparent px-3 pt-12 pb-3 text-white">
+            <p className="line-clamp-2 font-display text-sm font-bold leading-tight">{title}</p>
+            <p className="mt-1 font-mono text-[10px] text-white/75">
+              {[anime.type, anime.year, anime.genres?.[0]?.name].filter(Boolean).join(" · ")}
+            </p>
+          </div>
         </div>
       </Link>
       <div className="mt-2.5 flex items-start gap-2">
