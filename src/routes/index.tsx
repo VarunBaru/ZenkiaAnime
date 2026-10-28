@@ -118,7 +118,7 @@ function Hero({
             loading="eager"
             fetchPriority="high"
             decoding="async"
-            className="absolute inset-0 size-full object-cover object-[center_20%] opacity-60
+            className="absolute inset-0 size-full object-cover object-[center_20%] opacity-60"
           />
         ) : null}
         <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-black/90 via-black/45 to-black/10" />
