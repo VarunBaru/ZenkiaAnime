@@ -152,22 +152,13 @@ export function SiteHeader() {
               </Link>
             ))}
             {user ? (
-              <>
-                <Link
-                  to="/profile"
-                  onClick={() => setOpen(false)}
-                  className="ink-panel-sm flex items-center gap-3 bg-background px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase"
-                >
-                  <span className="grid size-7 shrink-0 place-items-center overflow-hidden border-2 border-border bg-card">
-                    {avatarUrl ? (
-                      <img src={avatarUrl} alt="" className="size-full object-cover" />
-                    ) : (
-                      <UserIcon className="size-4" strokeWidth={2.5} />
-                    )}
-                  </span>
-                  Profile
-                </Link>
-              </>
+              <Link
+                to="/profile"
+                onClick={() => setOpen(false)}
+                className="ink-panel-sm bg-background px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase"
+              >
+                Profile
+              </Link>
             ) : (
               <Link
                 to="/auth"
