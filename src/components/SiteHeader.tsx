@@ -3,7 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Menu, Search, User as UserIcon, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { LanguageToggle, MobileSettings } from "@/components/PreferenceControls";
+import { LanguageToggle, MobileSettings, ThemeSelect } from "@/components/PreferenceControls";
 import { profileQuery } from "@/lib/library";
 
 const NAV = [
@@ -86,6 +86,7 @@ export function SiteHeader() {
 
         <div className="hidden shrink-0 items-center gap-2 lg:flex">
           <LanguageToggle />
+          <ThemeSelect />
           {user ? (
             <>
               <Link
