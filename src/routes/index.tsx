@@ -115,7 +115,10 @@ function Hero({
             src={poster}
             alt=""
             aria-hidden="true"
-            className="absolute inset-0 size-full object-cover object-[center_20%] opacity-60"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+            className="absolute inset-0 size-full object-cover object-[center_20%] opacity-60
           />
         ) : null}
         <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-black/90 via-black/45 to-black/10" />
@@ -172,7 +175,7 @@ function Hero({
     return (
       <section className="glass-feature relative isolate mx-auto my-4 grid min-h-[min(760px,82vh)] max-w-[1500px] overflow-hidden rounded-[2rem] border border-white/40 sm:my-6 sm:rounded-[2.5rem]">
         {poster && (
-          <img src={poster} alt="" aria-hidden="true" className="absolute inset-0 size-full scale-110 object-cover object-center opacity-50 blur-2xl transition-opacity duration-700" />
+          <img src={poster} alt="" aria-hidden="true" loading="eager" fetchPriority="high" decoding="async" className="absolute inset-0 size-full scale-110 object-cover object-center opacity-50 blur-2xl transition-opacity duration-700" />
         )}
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(8,12,18,0.48),rgba(8,12,18,0.2)_54%,rgba(8,12,18,0.34))]" />
         <div className="glass-feature-layout relative z-10 grid min-h-[inherit] gap-8 p-5 sm:p-8 md:p-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-12 lg:p-16">
