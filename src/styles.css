@@ -792,3 +792,70 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+
+/* The reference clone uses a compact top navigation and full-width rows. */
+@media (min-width: 1024px) {
+  .theme-netflix header {
+    position: sticky;
+    inset: 0 0 auto;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+    background: oklch(0.075 0.004 260 / 0.96);
+    backdrop-filter: blur(14px);
+  }
+
+  .theme-netflix header > div:first-child {
+    display: flex;
+    width: 100%;
+    max-width: 1500px;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: clamp(0.75rem, 1.6vw, 1.5rem);
+    margin-inline: auto;
+    padding: 0.8rem clamp(1rem, 3vw, 2.5rem);
+  }
+
+  .theme-netflix header nav {
+    display: flex;
+    flex: 0 1 auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+
+  .theme-netflix header nav a {
+    white-space: nowrap;
+    padding: 0.55rem 0.65rem;
+    font-size: 0.8rem;
+  }
+
+  .theme-netflix header form {
+    display: flex;
+    flex: 1 1 12rem;
+    width: auto;
+    min-width: 8rem;
+    max-width: 17rem;
+    margin-left: auto;
+  }
+
+  .theme-netflix header > div:first-child > div {
+    display: flex !important;
+    flex: 0 0 auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.55rem;
+    margin-top: 0;
+  }
+
+  .theme-netflix main,
+  .theme-netflix footer {
+    width: 100%;
+    margin-left: 0;
+  }
+}
