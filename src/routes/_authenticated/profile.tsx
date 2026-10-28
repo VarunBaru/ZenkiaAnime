@@ -236,6 +236,8 @@ function ProfilePage() {
       </section>
 
       <DangerZone
+        onSignOut={() => leaveProfile({ to: "/auth", replace: true })}
+        onSignUp={() => leaveProfile({ to: "/signup", replace: true })}
         onDelete={async () => {
           try {
             await deleteAccount();
@@ -250,12 +252,30 @@ function ProfilePage() {
       />
     </div>
   );
+
+  async function leaveProfile(destination: { to: "/auth" | "/signup"; replace: true }) {
+    const { error } = await supabase.auth.signOut({ scope: "local" });
+    if (error) {
+      toast.error("Unable to sign out. Please try again.");
+      return;
+    }
+    queryClient.clear();
+    await navigate(destination);
+  }
 }
 
 function SectionTitle({ title }: { title: string }) {
   return <h2 className="mb-4 font-display text-xl sm:text-2xl">{title}</h2>;
 }
-function DangerZone({ onDelete }: { onDelete: () => void }) {
+function DangerZone({
+  onDelete,
+  onSignOut,
+  onSignUp,
+}: {
+  onDelete: () => void;
+  onSignOut: () => void;
+  onSignUp: () => void;
+}) {
   return (
     <details className="ink-panel p-4">
       <summary className="flex cursor-pointer items-center gap-2 font-display">
@@ -264,6 +284,20 @@ function DangerZone({ onDelete }: { onDelete: () => void }) {
       <p className="mt-3 text-sm text-muted-foreground">
         Manage account privacy and profile details using Edit profile above.
       </p>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button
+          onClick={onSignOut}
+          className="ink-panel-sm ink-press bg-card px-4 py-2 font-mono text-[10px] font-bold tracking-widest uppercase"
+        >
+          Sign out
+        </button>
+        <button
+          onClick={onSignUp}
+          className="ink-panel-sm ink-press bg-accent px-4 py-2 font-mono text-[10px] font-bold tracking-widest text-accent-foreground uppercase"
+        >
+          Sign up
+        </button>
+      </div>
       <button
         onClick={() => {
           if (window.confirm("Permanently delete your account and data? This cannot be undone."))
