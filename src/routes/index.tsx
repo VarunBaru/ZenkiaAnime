@@ -306,7 +306,12 @@ function HomePage() {
   const featuredList = airing.length > 0 ? airing : fallbackFeatured;
   const usingFallback = airing.length === 0 && featuredList.length > 0;
   const [index, setIndex] = useState(0);
+  const [checkedTrailerIds, setCheckedTrailerIds] = useState<number[]>([]);
   const featured = featuredList.length ? featuredList[index % featuredList.length] : undefined;
+  const featuredTrailerQuery = useQuery({
+    ...animeVideoTrailerQuery(featured?.mal_id ?? 0),
+    enabled: theme === "netflix" && Boolean(featured),
+  });
   
   const featuredCount = featuredList.length;
   const step = (d: number) => setIndex((i) => (i + d + featuredList.length) % featuredList.length);
@@ -326,6 +331,32 @@ function HomePage() {
     }, 6000);
     return () => clearInterval(interval);
   }, [featuredCount, theme]);
+
+
+  useEffect(() => {
+    if (
+      theme !== "netflix" ||
+      !featured ||
+      !featuredTrailerQuery.isFetched ||
+      featuredTrailerQuery.data ||
+      trailerIdOf(featured) ||
+      checkedTrailerIds.includes(featured.mal_id)
+    ) {
+      return;
+    }
+    const checkedIds = [...checkedTrailerIds, featured.mal_id];
+    setCheckedTrailerIds(checkedIds);
+    if (checkedIds.length < featuredCount) {
+      setIndex((current) => (current + 1) % featuredCount);
+    }
+  }, [
+    theme,
+    featured?.mal_id,
+    featuredTrailerQuery.isFetched,
+    featuredTrailerQuery.data,
+    checkedTrailerIds,
+    featuredCount,
+  ]);
 
   const nav =
     featuredList.length > 1 ? (
