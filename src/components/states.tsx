@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 export function PanelSkeleton({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse bg-muted ink-panel-sm ${className}`} />;
+  return <div className={`skeleton-surface bg-muted ink-panel-sm ${className}`} />;
 }
 
 export function CardSkeletonRow({ count = 6 }: { count?: number }) {
@@ -11,8 +11,8 @@ export function CardSkeletonRow({ count = 6 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="w-[150px] shrink-0 sm:w-[190px]">
           <PanelSkeleton className="aspect-2/3 w-full" />
-          <div className="mt-3 h-4 w-3/4 animate-pulse bg-muted" />
-          <div className="mt-2 h-3 w-1/2 animate-pulse bg-muted" />
+          <div className="mt-3 h-4 w-3/4 skeleton-surface bg-muted" />
+          <div className="mt-2 h-3 w-1/2 skeleton-surface bg-muted" />
         </div>
       ))}
     </div>
@@ -25,7 +25,7 @@ export function CardSkeletonGrid({ count = 12 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div key={i}>
           <PanelSkeleton className="aspect-2/3 w-full" />
-          <div className="mt-3 h-4 w-3/4 animate-pulse bg-muted" />
+          <div className="mt-3 h-4 w-3/4 skeleton-surface bg-muted" />
         </div>
       ))}
     </div>
