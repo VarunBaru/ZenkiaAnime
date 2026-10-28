@@ -389,34 +389,12 @@ function WatchPage() {
         )}
       </div>
 
-      <div className="ink-panel-sm flex min-w-0 flex-wrap items-center gap-3 bg-card p-3 sm:gap-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="font-mono text-[11px] font-bold tracking-widest uppercase">
-            Audio source
-          </span>
-          <div
-            role="radiogroup"
-            aria-label="Audio source"
-            className="inline-flex border-2 border-border"
-          >
-            {(["dub", "sub"] as const).map((l) => (
-              <button
-                key={l}
-                type="button"
-                role="radio"
-                aria-checked={activeLang === l}
-                onClick={() => setSourceLang(l)}
-                className={`px-3 py-1.5 font-mono text-[11px] font-bold tracking-widest uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  activeLang === l
-                    ? "bg-accent text-accent-foreground underline underline-offset-4"
-                    : "hover:bg-muted"
-                }`}
-              >
-                {l === "dub" ? "English dub" : "Japanese (sub)"}
-              </button>
-            ))}
-          </div>
-          <div className="ml-auto flex items-center gap-2">
+      <div className="ink-panel-sm grid min-w-0 gap-4 bg-card p-3 sm:p-4">
+        <div className="grid min-w-0 gap-2 sm:max-w-2xl">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-mono text-[11px] font-bold tracking-widest uppercase">
+              Audio source
+            </span>
             <button
               type="button"
               aria-pressed={autoPlay}
@@ -430,16 +408,38 @@ function WatchPage() {
                 }
               }}
               title="Auto-play next episode when this one ends"
-              className="inline-flex items-center gap-1.5 border-2 border-border bg-background px-3 py-1.5 font-mono text-[11px] font-bold tracking-widest uppercase hover:bg-muted"
+              className="inline-flex min-h-10 shrink-0 items-center gap-1.5 border-2 border-border bg-background px-2.5 font-mono text-[9px] font-bold tracking-wider uppercase hover:bg-muted sm:px-3 sm:text-[11px] sm:tracking-widest"
             >
               {autoPlay ? <Check className="size-3.5" /> : <Play className="size-3.5" />}
               Auto next
             </button>
           </div>
+          <div
+            role="radiogroup"
+            aria-label="Audio source"
+            className="grid w-full grid-cols-2 border-2 border-border sm:max-w-xl"
+          >
+            {(["dub", "sub"] as const).map((l) => (
+              <button
+                key={l}
+                type="button"
+                role="radio"
+                aria-checked={activeLang === l}
+                onClick={() => setSourceLang(l)}
+                className={`min-w-0 px-2 py-2 font-mono text-[9px] font-bold tracking-wide uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-3 sm:text-[11px] sm:tracking-widest ${
+                  activeLang === l
+                    ? "bg-accent text-accent-foreground underline underline-offset-4"
+                    : "hover:bg-muted"
+                }`}
+              >
+                {l === "dub" ? "English dub" : "Japanese (sub)"}
+              </button>
+            ))}
+          </div>
         </div>
 
         {nextCountdown != null && (
-          <div className="basis-full animate-in fade-in zoom-in-95 border-t border-border/50 pt-3 mt-1 text-center">
+          <div className="w-full animate-in fade-in zoom-in-95 border-t border-border/50 pt-3 text-center">
             <p className="font-display text-sm">
               Next episode in <span className="text-accent">{nextCountdown}s</span>
             </p>
@@ -456,14 +456,14 @@ function WatchPage() {
           </div>
         )}
 
-        <div className="flex items-center gap-3">
+        <div className="grid min-w-0 gap-2 sm:max-w-2xl">
           <span className="font-mono text-[11px] font-bold tracking-widest uppercase">Server</span>
-          <div className="flex flex-wrap gap-1">
+          <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
             {(["nero", "yuki", "zuna", "loli", "sora"] as const).map((s) => (
               <button
                 key={s}
                 onClick={() => setStreamServer(s)}
-                className={`ink-panel-sm px-2.5 py-1.5 font-mono text-[10px] font-bold tracking-widest uppercase ${
+                className={`ink-panel-sm min-h-10 min-w-0 px-2 py-1.5 font-mono text-[9px] font-bold tracking-wider uppercase sm:px-2.5 sm:text-[10px] sm:tracking-widest ${
                   streamServer === s
                     ? "bg-accent text-accent-foreground border-2 border-accent"
                     : "bg-background border-2 border-border hover:border-accent/50"
@@ -475,7 +475,7 @@ function WatchPage() {
           </div>
         </div>
 
-        <p className="basis-full text-xs text-muted-foreground border-t border-border/50 pt-3 mt-1">
+        <p className="min-w-0 border-t border-border/50 pt-3 text-xs leading-relaxed text-muted-foreground">
           {activeLang === "dub"
             ? "English dub requested. Try different servers if video is black or won't load."
             : "Japanese original audio with subtitles requested."}
@@ -483,7 +483,7 @@ function WatchPage() {
           Some streams may show ads. A browser ad-blocking extension may help reduce them.
           <button
             onClick={() => window.open(src, "_blank")}
-            className="ml-2 text-accent underline underline-offset-4 hover:text-accent/80 inline-flex items-center gap-1"
+            className="ml-2 inline-flex items-center gap-1 text-accent underline underline-offset-4 hover:text-accent/80"
           >
             Open player in new tab <ExternalLink className="size-3" />
           </button>
