@@ -280,14 +280,14 @@ function HomePage() {
     user?.user_metadata?.["full_name"] ||
     "there";
 
-  // Auto-slide effect
+  // Rotate the featured anime carousel every six seconds in every theme.
   useEffect(() => {
-    if (featuredCount <= 1 || theme === "netflix") return;
+    if (featuredCount <= 1) return;
     const interval = setInterval(() => {
       setIndex((i) => (i + 1) % featuredCount);
     }, 6000);
     return () => clearInterval(interval);
-  }, [featuredCount, theme]);
+  }, [featuredCount]);
 
 
   const nav =
