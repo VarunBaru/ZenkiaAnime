@@ -784,13 +784,19 @@
 }
 
 .theme-netflix .netflix-library-label {
-  margin-top: 1rem;
-  padding: 0 0.8rem;
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  margin: 0;
+  padding: 0.55rem 0.65rem;
   color: var(--muted-foreground);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-family: Arial, Helvetica, ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
 }
 
 /* The reference clone uses a compact top navigation and full-width rows. */
