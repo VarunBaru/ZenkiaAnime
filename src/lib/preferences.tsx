@@ -4,16 +4,16 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
  * Two independent global preferences, persisted in localStorage:
  * - Anime language (EN = prefer English dub, JP = prefer Japanese original audio).
  *   This never translates the site UI or titles.
- * - Theme (light / dark / system) — visual appearance only.
+ * - Site style (manga / glass / Netflix) — visual appearance only.
  */
 export type AnimeLanguage = "en" | "jp";
-export type ThemePref = "light" | "dark" | "system";
+export type ThemePref = "manga" | "glass" | "netflix";
 
 export const LANG_KEY = "animehub:anime-language";
 export const THEME_KEY = "animehub:theme";
 
 /** Runs before hydration (inlined in <head>) so the right theme paints first. */
-export const THEME_BOOT_SCRIPT = `(function(){try{var t=localStorage.getItem("${THEME_KEY}")||"system";var d=t==="dark"||(t==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",d);document.documentElement.style.colorScheme=d?"dark":"light";}catch(e){}})();`;
+export const THEME_BOOT_SCRIPT = `(function(){try{var t=localStorage.getItem("\${THEME_KEY}")||"manga";if(t!=="manga"&&t!=="glass"&&t!=="netflix")t="manga";var r=document.documentElement;r.classList.add("dark");r.classList.remove("theme-manga","theme-glass","theme-netflix");r.classList.add("theme-"+t);r.style.colorScheme="dark";}catch(e){}})();`;
 
 type Ctx = {
   language: AnimeLanguage;
@@ -29,16 +29,16 @@ type Ctx = {
 const PreferencesContext = createContext<Ctx | null>(null);
 
 function applyTheme(theme: ThemePref) {
-  const dark =
-    theme === "dark" ||
-    (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-  document.documentElement.classList.toggle("dark", dark);
-  document.documentElement.style.colorScheme = dark ? "dark" : "light";
+  const root = document.documentElement;
+  root.classList.add("dark");
+  root.classList.remove("theme-manga", "theme-glass", "theme-netflix");
+  root.classList.add(`theme-${theme}`);
+  root.style.colorScheme = "dark";
 }
 
 export function PreferencesProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<AnimeLanguage>("en");
-  const [theme, setThemeState] = useState<ThemePref>("system");
+  const [theme, setThemeState] = useState<ThemePref>("manga");
   const [showHomeHistory, setShowHomeHistoryState] = useState(true);
   const [showHomeWatchlist, setShowHomeWatchlistState] = useState(true);
 
@@ -48,7 +48,12 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
       const l = localStorage.getItem(LANG_KEY);
       if (l === "en" || l === "jp") setLanguageState(l);
       const t = localStorage.getItem(THEME_KEY);
-      if (t === "light" || t === "dark" || t === "system") setThemeState(t);
+      if (t === "manga" || t === "glass" || t === "netflix") {
+        setThemeState(t);
+      } else {
+        // Migrate the old light/dark/system setting to the manga default.
+        localStorage.setItem(THEME_KEY, "manga");
+      }
       setShowHomeHistoryState(localStorage.getItem("animehub:home-history") !== "hidden");
       setShowHomeWatchlistState(localStorage.getItem("animehub:home-watchlist") !== "hidden");
     } catch {
