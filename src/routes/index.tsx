@@ -326,7 +326,7 @@ function HomePage() {
       )}
       {user && (
         <section
-          className="relative isolate overflow-hidden border-b-[3px] border-border"
+          className="netflix-welcome relative isolate overflow-hidden border-b-[3px] border-border"
           style={{
             background:
               "radial-gradient(ellipse at 86% 42%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 52%)",
