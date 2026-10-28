@@ -126,7 +126,7 @@ function ProfilePage() {
       <section>
         <SectionTitle title="My anime library" />
         <Tabs value={section} onValueChange={(value) => setSection(value as LibrarySection)}>
-          <TabsList className="mb-4 flex h-auto flex-wrap justify-start gap-2 bg-transparent p-0 sm:gap-3">
+          <TabsList className="mb-4 grid h-auto w-full grid-cols-3 divide-x-2 divide-y-2 divide-border overflow-hidden rounded-none border-2 border-border bg-card p-0 sm:flex sm:flex-nowrap sm:divide-y-0">
             {(
               [
                 "watching",
@@ -140,7 +140,7 @@ function ProfilePage() {
               <TabsTrigger
                 key={item}
                 value={item}
-                className="ink-panel-sm rounded-none border border-border bg-card px-3 py-2 font-mono text-[10px] uppercase data-[state=active]:bg-accent data-[state=active]:text-accent-foreground data-[state=active]:shadow-none"
+                className="min-w-0 whitespace-normal rounded-none px-2 py-2.5 text-center font-mono text-[9px] leading-tight tracking-wide uppercase data-[state=active]:bg-accent data-[state=active]:text-accent-foreground data-[state=active]:underline data-[state=active]:underline-offset-4 data-[state=active]:shadow-none sm:flex-1 sm:px-3 sm:text-[10px] sm:tracking-widest"
               >
                 {item === "on_hold"
                   ? "On hold"
