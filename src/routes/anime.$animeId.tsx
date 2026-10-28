@@ -13,6 +13,7 @@ import {
 } from "@/lib/jikan";
 import { AnimeCard } from "@/components/AnimeCard";
 import { WatchlistButton } from "@/components/WatchlistButton";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import { CardSkeletonRow, EmptyState, ErrorState, PanelSkeleton } from "@/components/states";
 import { useAuth } from "@/hooks/useAuth";
 import { recordProgress } from "@/lib/library";
@@ -214,6 +215,7 @@ function AnimeDetailPage() {
                 <Play className="size-4" strokeWidth={3} /> Watch now
               </Link>
               <WatchlistButton anime={data} />
+              <FavoriteButton anime={data} />
               <button
                 onClick={() => markWatched.mutate()}
                 disabled={markWatched.isPending}

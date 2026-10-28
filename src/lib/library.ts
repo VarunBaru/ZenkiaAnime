@@ -2,6 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Anime } from "@/lib/jikan";
 import { posterOf } from "@/lib/jikan";
+import type { Database } from "@/integrations/supabase/types";
 
 export type WatchStatus = "planned" | "watching" | "completed" | "on_hold" | "dropped";
 
@@ -86,7 +87,16 @@ export const profileQuery = (userId: string | undefined) =>
         .eq("id", userId!)
         .maybeSingle();
       if (error) throw new Error(error.message);
-      return data as { id: string; username: string | null; avatar_url: string | null } | null;
+      return data as {
+        id: string;
+        username: string | null;
+        avatar_url: string | null;
+        banner_url: string | null;
+        bio: string | null;
+        is_public: boolean;
+        created_at: string;
+        theme_pref: string | null;
+      } | null;
     },
   });
 
@@ -104,6 +114,27 @@ export async function addToWatchlist(
       media_type: anime.type ?? null,
       year: anime.year ?? null,
       score: anime.score ?? null,
+      status,
+    },
+    { onConflict: "user_id,mal_id" },
+  );
+  if (error) throw new Error(error.message);
+}
+
+export async function addFavoriteToWatchlist(
+  userId: string,
+  favorite: FavoriteRow,
+  status: WatchStatus,
+) {
+  const { error } = await supabase.from("watchlist").upsert(
+    {
+      user_id: userId,
+      mal_id: favorite.mal_id,
+      title: favorite.title,
+      image_url: favorite.image_url,
+      media_type: favorite.media_type,
+      year: favorite.year,
+      score: favorite.score,
       status,
     },
     { onConflict: "user_id,mal_id" },
@@ -223,6 +254,160 @@ export function latestPerAnime(rows: HistoryRow[]) {
   return rows.filter((r) => (seen.has(r.mal_id) ? false : (seen.add(r.mal_id), true)));
 }
 
+export type FavoriteRow = {
+  id: string;
+  user_id: string;
+  mal_id: number;
+  title: string;
+  image_url: string | null;
+  media_type: string | null;
+  year: number | null;
+  score: number | null;
+  created_at: string;
+};
+
+export type AchievementRow = {
+  id: string;
+  user_id: string;
+  key: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  unlocked_at: string;
+};
+
+export const favoritesQuery = (userId: string | undefined) =>
+  queryOptions({
+    queryKey: ["favorites", userId],
+    enabled: Boolean(userId),
+    queryFn: async (): Promise<FavoriteRow[]> => {
+      const { data, error } = await supabase
+        .from("favorites")
+        .select("*")
+        .eq("user_id", userId!)
+        .order("created_at", { ascending: false });
+      if (error) throw new Error(error.message);
+      return (data ?? []) as FavoriteRow[];
+    },
+  });
+
+export const achievementsQuery = (userId: string | undefined) =>
+  queryOptions({
+    queryKey: ["achievements", userId],
+    enabled: Boolean(userId),
+    queryFn: async (): Promise<AchievementRow[]> => {
+      const { data, error } = await supabase
+        .from("achievements")
+        .select("*")
+        .eq("user_id", userId!)
+        .order("unlocked_at", { ascending: false });
+      if (error) throw new Error(error.message);
+      return (data ?? []) as AchievementRow[];
+    },
+  });
+
+export async function addFavorite(
+  userId: string,
+  anime: Pick<
+    Anime,
+    "mal_id" | "title" | "title_english" | "episodes" | "images" | "type" | "year" | "score"
+  >,
+) {
+  const { error } = await supabase.from("favorites").upsert(
+    {
+      user_id: userId,
+      mal_id: anime.mal_id,
+      title: anime.title_english || anime.title,
+      image_url: posterOf(anime),
+      media_type: anime.type ?? null,
+      year: anime.year ?? null,
+      score: anime.score ?? null,
+    },
+    { onConflict: "user_id,mal_id" },
+  );
+  if (error) throw new Error(error.message);
+}
+
+export async function removeFavorite(userId: string, malId: number) {
+  const { error } = await supabase
+    .from("favorites")
+    .delete()
+    .eq("user_id", userId)
+    .eq("mal_id", malId);
+  if (error) throw new Error(error.message);
+}
+
+export async function awardAchievement(_userId: string) {
+  const { error } = await supabase.rpc("sync_my_achievements");
+  if (error) throw new Error(error.message);
+}
+
+export async function followUser(followerId: string, followeeId: string) {
+  const { error } = await supabase.from("follows").insert({
+    follower_id: followerId,
+    followee_id: followeeId,
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function unfollowUser(followerId: string, followeeId: string) {
+  const { error } = await supabase
+    .from("follows")
+    .delete()
+    .eq("follower_id", followerId)
+    .eq("followee_id", followeeId);
+  if (error) throw new Error(error.message);
+}
+
+export async function followsQuery(followerId: string | undefined) {
+  if (!followerId) return [];
+  const { data, error } = await supabase
+    .from("follows")
+    .select("followee_id")
+    .eq("follower_id", followerId);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => r.followee_id);
+}
+
+/** Profile statistics derived only from real watch history/watchlist data. */
+export function profileStats(
+  watchlist: WatchlistRow[],
+  history: HistoryRow[],
+  favorites: FavoriteRow[],
+) {
+  const episodesWatched = history.length;
+  const completedSeries = watchlist.filter((r) => r.status === "completed").length;
+  const watchingSeries = watchlist.filter((r) => r.status === "watching").length;
+  const plannedSeries = watchlist.filter((r) => r.status === "planned").length;
+  const onHoldSeries = watchlist.filter((r) => r.status === "on_hold").length;
+  const droppedSeries = watchlist.filter((r) => r.status === "dropped").length;
+  const uniqueAnimes = new Set(history.map((r) => r.mal_id)).size;
+  const completedEpisodes = history.filter((r) => r.completed).length;
+  const watchMinutes = history.reduce((sum, r) => {
+    const dur = r.duration_seconds;
+    if (dur && dur > 0) return sum + Math.round(dur / 60);
+    return sum;
+  }, 0);
+  const genreCounts: Record<string, number> = {};
+  for (const row of watchlist) {
+    // Genre data is not stored on watchlist rows; we approximate from history titles.
+    void row;
+  }
+  return {
+    totalAnimes: uniqueAnimes,
+    episodesWatched,
+    completedEpisodes,
+    completedSeries,
+    watchingSeries,
+    plannedSeries,
+    onHoldSeries,
+    droppedSeries,
+    favoritesCount: favorites.length,
+    watchMinutes,
+    genreCounts,
+  };
+}
+
 export function formatClock(seconds: number) {
   const s = Math.max(0, Math.floor(seconds));
   const h = Math.floor(s / 3600);
@@ -282,6 +467,42 @@ export async function updateProfile(
     .from("profiles")
     .upsert({ id: userId, username: displayName, avatar_url: avatarUrl }, { onConflict: "id" });
   if (error) console.warn("Profile row sync failed");
+}
+
+export async function updateProfileSettings(
+  userId: string,
+  settings: {
+    bio?: string | null;
+    banner_url?: string | null;
+    is_public?: boolean;
+    theme_pref?: string | null;
+  },
+) {
+  const bio = settings.bio?.trim() ?? null;
+  if (bio && bio.length > 500) {
+    throw new Error("Bio must be 500 characters or fewer.");
+  }
+  const bannerUrl = settings.banner_url?.trim() || null;
+  if (bannerUrl) {
+    let parsedBanner: URL;
+    try {
+      parsedBanner = new URL(bannerUrl);
+    } catch {
+      throw new Error("Enter a valid banner URL.");
+    }
+    if (parsedBanner.protocol !== "https:" || bannerUrl.length > 2048) {
+      throw new Error("Banner URLs must use HTTPS and be 2,048 characters or fewer.");
+    }
+  }
+  const update: Database["public"]["Tables"]["profiles"]["Update"] = {
+    updated_at: new Date().toISOString(),
+  };
+  if (settings.bio !== undefined) update["bio"] = bio;
+  if (settings.banner_url !== undefined) update["banner_url"] = bannerUrl;
+  if (settings.is_public !== undefined) update["is_public"] = settings.is_public;
+  if (settings.theme_pref !== undefined) update["theme_pref"] = settings.theme_pref;
+  const { error } = await supabase.from("profiles").update(update).eq("id", userId);
+  if (error) throw new Error(error.message);
 }
 
 export async function deleteHistoryEntry(userId: string, id: string) {

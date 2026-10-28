@@ -1,28 +1,36 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { deleteAccount } from "@/lib/account.functions";
-import { historyQuery, profileQuery, updateProfile, watchlistQuery } from "@/lib/library";
-import { ThemeToggle } from "@/components/PreferenceControls";
-import { BookMarked, History } from "lucide-react";
+import {
+  achievementsQuery,
+  addFavorite,
+  addFavoriteToWatchlist,
+  awardAchievement,
+  favoritesQuery,
+  historyQuery,
+  latestPerAnime,
+  profileQuery,
+  removeFavorite,
+  removeFromWatchlist,
+  setWatchlistStatus,
+  updateProfileSettings,
+  watchlistQuery,
+} from "@/lib/library";
 import { supabase } from "@/integrations/supabase/client";
-import { usePreferences } from "@/lib/preferences";
+import { ProfileHeader } from "@/components/ProfileHeader";
+import { EditProfileModal } from "@/components/EditProfileModal";
+import { StatsDashboard } from "@/components/StatsDashboard";
+import { AchievementsBadges } from "@/components/AchievementsBadges";
+import { AnimeLibraryGrid, type LibrarySection } from "@/components/AnimeLibraryGrid";
 import { EmptyState, ErrorState, PanelSkeleton } from "@/components/states";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Play, Settings, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/profile")({
-  head: () => ({
-    meta: [
-      { title: "My profile — Zenkia Anime" },
-      {
-        name: "description",
-        content: "Your Zenkia Anime profile, watch statistics and recent episode progress.",
-      },
-      { property: "og:title", content: "My profile — Zenkia Anime" },
-      { property: "og:description", content: "Your display name, stats and viewing history." },
-    ],
-  }),
+  head: () => ({ meta: [{ title: "My profile — Zenkia Anime" }] }),
   component: ProfilePage,
 });
 
@@ -33,337 +41,238 @@ function ProfilePage() {
   const profile = useQuery(profileQuery(user?.id));
   const list = useQuery(watchlistQuery(user?.id));
   const history = useQuery(historyQuery(user?.id));
-  const {
-    showHomeHistory,
-    setShowHomeHistory,
-    showHomeWatchlist,
-    setShowHomeWatchlist,
-  } = usePreferences();
-  const metadataDisplayName = user?.user_metadata?.["display_name"] ?? null;
-  const metadataAvatarUrl = user?.user_metadata?.["avatar_url"] ?? null;
-  const [name, setName] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState("");
+  const favorites = useQuery(favoritesQuery(user?.id));
+  const achievements = useQuery(achievementsQuery(user?.id));
+  const [editOpen, setEditOpen] = useState(false);
+  const [section, setSection] = useState<LibrarySection>("watching");
+  const rows = list.data ?? [];
+  const favoriteRows = favorites.data ?? [];
+  const latest = useMemo(() => latestPerAnime(history.data ?? []), [history.data]);
+
+  const refresh = () => {
+    void queryClient.invalidateQueries({ queryKey: ["watchlist", user?.id] });
+    void queryClient.invalidateQueries({ queryKey: ["favorites", user?.id] });
+    void queryClient.invalidateQueries({ queryKey: ["history", user?.id] });
+    void queryClient.invalidateQueries({ queryKey: ["achievements", user?.id] });
+  };
+  const remove = useMutation({
+    mutationFn: (malId: number) => removeFromWatchlist(user!.id, malId),
+    onSuccess: refresh,
+    onError: () => toast.error("Couldn't update your library."),
+  });
+  const status = useMutation({
+    mutationFn: ({ malId, next }: { malId: number; next: import("@/lib/library").WatchStatus }) =>
+      setWatchlistStatus(user!.id, malId, next),
+    onSuccess: refresh,
+    onError: () => toast.error("Could not update status."),
+  });
+  const favorite = useMutation({
+    mutationFn: async (malId: number) => {
+      const existing = favoriteRows.find((row) => row.mal_id === malId);
+      if (existing) return removeFavorite(user!.id, malId);
+      const item = rows.find((row) => row.mal_id === malId);
+      if (!item) throw new Error("Anime details are unavailable");
+      return addFavorite(user!.id, {
+        mal_id: item.mal_id,
+        title: item.title,
+        title_english: item.title,
+        episodes: null,
+        images: { jpg: { image_url: item.image_url ?? "" } },
+        type: item.media_type,
+        year: item.year,
+        score: item.score,
+      } as Parameters<typeof addFavorite>[1]);
+    },
+    onSuccess: refresh,
+    onError: () => toast.error("Couldn't update favorites."),
+  });
 
   useEffect(() => {
-    setName(metadataDisplayName ?? profile.data?.username ?? "");
-    setAvatarUrl(metadataAvatarUrl ?? profile.data?.avatar_url ?? "");
-  }, [metadataDisplayName, metadataAvatarUrl, profile.data]);
+    if (!user || !list.data || !history.data) return;
+    void awardAchievement(user.id)
+      .then(() => queryClient.invalidateQueries({ queryKey: ["achievements", user.id] }))
+      .catch(() => undefined);
+  }, [user, list.data, history.data, queryClient]);
 
-  const save = useMutation({
-    mutationFn: () =>
-      updateProfile(user!.id, { username: name.trim(), avatar_url: avatarUrl.trim() || null }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
-      toast.success("Profile updated");
-    },
-    onError: () => toast.error("Couldn't save your profile. Please try again."),
-  });
-
-  const deleteProfile = useMutation({
-    mutationFn: () => deleteAccount(),
-    onSuccess: async () => {
-      await supabase.auth.signOut({ scope: "local" });
-      queryClient.clear();
-      toast.success("Your account and its data were permanently deleted");
-      await navigate({ to: "/", replace: true });
-    },
-    onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Couldn't delete your account."),
-  });
-
-  const counts = {
-    saved: list.data?.length ?? 0,
-    watching: list.data?.filter((r) => r.status === "watching").length ?? 0,
-    completed: list.data?.filter((r) => r.status === "completed").length ?? 0,
-    episodes: history.data?.reduce((sum, r) => sum + r.episodes_watched, 0) ?? 0,
-  };
+  const isLoading = list.isPending || history.isPending || favorites.isPending;
+  const hasError = list.isError || history.isError || favorites.isError;
 
   return (
-    <div className="mx-auto max-w-[1000px] px-4 py-8 sm:px-6">
-      <h1 className="font-display text-3xl tracking-tight sm:text-4xl">Profile</h1>
+    <div className="mx-auto max-w-[1100px] space-y-8 px-4 py-8 sm:px-6">
+      <ProfileHeader profile={profile.data ?? null} onEdit={() => setEditOpen(true)} />
+      <EditProfileModal
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        profile={profile.data ?? null}
+      />
 
-      <section className="ink-panel mt-6 p-5">
-        <p className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
-          Signed in as
-        </p>
-        <p className="mt-1 font-display text-base break-all">{user?.email}</p>
-
-        <div className="mt-5 flex items-center gap-4">
-          <div className="grid size-16 shrink-0 place-items-center overflow-hidden border-2 border-border bg-muted font-display text-xl">
-            {avatarUrl.trim() ? (
-              <img
-                src={avatarUrl}
-                alt="Profile avatar preview"
-                className="size-full object-cover"
-              />
-            ) : (
-              (name.trim()[0] ?? user?.email?.[0] ?? "?").toUpperCase()
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <label
-              htmlFor="displayName"
-              className="block font-mono text-[10px] font-bold tracking-widest uppercase"
-            >
-              Display name
-            </label>
-            <input
-              id="displayName"
-              maxLength={40}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
-              className="ink-panel-sm mt-1.5 w-full bg-card px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
-        </div>
-
-        <label
-          htmlFor="avatarUrl"
-          className="mt-5 block font-mono text-[10px] font-bold tracking-widest uppercase"
-        >
-          Avatar image URL
-        </label>
-        <div className="mt-1.5 flex flex-col gap-2 sm:flex-row">
-          <input
-            id="avatarUrl"
-            type="url"
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            placeholder="https://example.com/avatar.jpg"
-            className="ink-panel-sm w-full bg-card px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+      <section>
+        <SectionTitle title="Your anime stats" />
+        {hasError ? (
+          <ErrorState message="Some profile data couldn't be loaded." onRetry={refresh} />
+        ) : (
+          <StatsDashboard
+            watchlist={rows}
+            history={history.data ?? []}
+            favorites={favoriteRows}
+            isPending={isLoading}
           />
-          <button
-            onClick={() => save.mutate()}
-            disabled={save.isPending || !name.trim()}
-            className="ink-panel-sm ink-press shrink-0 bg-accent px-5 py-2.5 font-mono text-xs font-bold tracking-widest text-accent-foreground uppercase"
-          >
-            {save.isPending ? "Saving…" : "Save profile"}
-          </button>
-        </div>
-        <p className="mt-2 text-xs text-muted-foreground">
-          Use an image URL to customize your avatar. Leave it blank to use your initial.
-        </p>
+        )}
       </section>
 
-      <section className="ink-panel mt-6 p-5">
-        <div>
-          <h2 className="font-display text-lg">Website theme</h2>
-          <p className="mb-3 mt-1 text-xs text-muted-foreground">
-            Choose light, dark, or match your device setting.
-          </p>
-          <ThemeToggle showText />
-        </div>
+      <section>
+        <SectionTitle title="My anime library" />
+        <Tabs value={section} onValueChange={(value) => setSection(value as LibrarySection)}>
+          <TabsList className="mb-4 flex h-auto flex-wrap justify-start gap-1 bg-transparent p-0">
+            {(
+              [
+                "watching",
+                "completed",
+                "planned",
+                "on_hold",
+                "dropped",
+                "favorites",
+              ] as LibrarySection[]
+            ).map((item) => (
+              <TabsTrigger
+                key={item}
+                value={item}
+                className="ink-panel-sm rounded-none border border-border bg-card px-3 py-2 font-mono text-[10px] uppercase data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
+              >
+                {item === "on_hold"
+                  ? "On hold"
+                  : item === "planned"
+                    ? "Plan to watch"
+                    : item === "watching"
+                      ? "Watching"
+                      : item}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          <TabsContent value={section}>
+            {hasError ? (
+              <ErrorState message="Your library couldn't be loaded." onRetry={refresh} />
+            ) : (
+              <AnimeLibraryGrid
+                section={section}
+                rows={rows}
+                favorites={new Set(favoriteRows.map((row) => row.mal_id))}
+                history={history.data ?? []}
+                isPending={isLoading}
+                onRemove={(id) =>
+                  section === "favorites" ? favorite.mutate(id) : remove.mutate(id)
+                }
+                onToggleFavorite={(id) => favorite.mutate(id)}
+                onStatus={(id, next) => {
+                  if (rows.some((row) => row.mal_id === id)) status.mutate({ malId: id, next });
+                  else {
+                    const item = favoriteRows.find((row) => row.mal_id === id);
+                    if (item && user)
+                      void addFavoriteToWatchlist(user.id, item, next)
+                        .then(refresh)
+                        .catch(() => toast.error("Could not add anime to your library."));
+                  }
+                }}
+              />
+            )}
+          </TabsContent>
+        </Tabs>
       </section>
 
-      <section className="ink-panel mt-6 p-5">
-        <h2 className="font-display text-lg">Home screen</h2>
-        <p className="mb-4 mt-1 text-xs text-muted-foreground">
-          Choose which personal library sections appear on your home screen.
-        </p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="flex cursor-pointer items-center gap-3 font-mono text-xs tracking-wide">
-            <input
-              type="checkbox"
-              checked={showHomeWatchlist}
-              onChange={(event) => setShowHomeWatchlist(event.target.checked)}
-              className="size-4 accent-[var(--accent)]"
-            />
-            Show watchlist on home
-          </label>
-          <label className="flex cursor-pointer items-center gap-3 font-mono text-xs tracking-wide">
-            <input
-              type="checkbox"
-              checked={showHomeHistory}
-              onChange={(event) => setShowHomeHistory(event.target.checked)}
-              className="size-4 accent-[var(--accent)]"
-            />
-            Show watch history on home
-          </label>
-        </div>
-      </section>
-
-      <section className="mt-6 grid gap-3 sm:grid-cols-2" aria-label="Your library">
-        <Link
-          to="/watchlist"
-          className="ink-panel-sm ink-press flex items-center gap-4 bg-card p-4"
-        >
-          <BookMarked className="size-6 shrink-0 text-accent" strokeWidth={2.5} />
-          <span className="min-w-0 flex-1">
-            <span className="block font-display text-lg">My watchlist</span>
-            <span className="mt-1 block font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
-              {list.data?.length ?? 0} saved titles · Manage list
-            </span>
-          </span>
-          <span aria-hidden="true" className="font-display text-xl">
-            →
-          </span>
-        </Link>
-        <Link to="/history" className="ink-panel-sm ink-press flex items-center gap-4 bg-card p-4">
-          <History className="size-6 shrink-0 text-accent" strokeWidth={2.5} />
-          <span className="min-w-0 flex-1">
-            <span className="block font-display text-lg">Watch history</span>
-            <span className="mt-1 block font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
-              {history.data?.length ?? 0} episode records · View history
-            </span>
-          </span>
-          <span aria-hidden="true" className="font-display text-xl">
-            →
-          </span>
-        </Link>
-      </section>
-
-      <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          { label: "Saved", value: counts.saved },
-          { label: "Watching", value: counts.watching },
-          { label: "Completed", value: counts.completed },
-          { label: "Episodes", value: counts.episodes },
-        ].map((stat) => (
-          <div key={stat.label} className="ink-panel-sm halftone p-4 text-center">
-            <p className="font-display text-2xl">{stat.value}</p>
-            <p className="mt-1 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
-              {stat.label}
-            </p>
-          </div>
-        ))}
-      </section>
-
-      <section className="mt-10">
-        <h2 className="mb-4 font-display text-xl">Recently watched</h2>
+      <section>
+        <SectionTitle title="Continue watching" />
         {history.isPending ? (
-          <PanelSkeleton className="h-32 w-full" />
+          <PanelSkeleton className="h-28" />
         ) : history.isError ? (
           <ErrorState
-            message="Your history couldn't be loaded."
-            onRetry={() => history.refetch()}
+            message="Viewing activity couldn't be loaded."
+            onRetry={() => void history.refetch()}
           />
-        ) : history.data.length === 0 ? (
+        ) : latest.length === 0 ? (
           <EmptyState
-            title="No history yet"
-            message="Mark an anime as watched from its details page and it will appear here."
-            action={
-              <Link
-                to="/browse"
-                search={{ genre: "", type: "", order: "popularity", page: 1 }}
-                className="ink-panel-sm ink-press bg-accent px-5 py-2.5 font-mono text-xs font-bold tracking-widest text-accent-foreground uppercase"
-              >
-                Find something to watch
-              </Link>
-            }
+            title="No viewing activity yet"
+            message="Your real episode progress will appear here when you watch through the Zenkia player."
           />
         ) : (
-          <div className="space-y-6">
-            {Object.values(
-              history.data.reduce(
-                (acc, row) => {
-                  const id = row.mal_id;
-                  if (!acc[id]) {
-                    acc[id] = {
-                      mal_id: id,
-                      title: row.title,
-                      image_url: row.image_url,
-                      episodes: [],
-                      last_watched: row.last_watched_at,
-                    };
-                  }
-                  acc[id].episodes.push(row);
-                  if (new Date(row.last_watched_at) > new Date(acc[id].last_watched)) {
-                    acc[id].last_watched = row.last_watched_at;
-                  }
-                  return acc;
-                },
-                {} as Record<
-                  number,
-                  {
-                    mal_id: number;
-                    title: string;
-                    image_url: string | null;
-                    episodes: typeof history.data;
-                    last_watched: string;
-                  }
-                >,
-              ),
-            )
-              .sort(
-                (a, b) =>
-                  new Date(b.last_watched).getTime() - new Date(a.last_watched).getTime(),
-              )
-              .map((group) => (
-                <div key={group.mal_id} className="ink-panel overflow-hidden">
-                  <div className="flex items-center gap-4 bg-secondary/50 p-4">
-                    {group.image_url ? (
-                      <img
-                        src={group.image_url}
-                        alt={group.title}
-                        className="aspect-2/3 w-14 border-2 border-border object-cover"
-                      />
-                    ) : (
-                      <div className="aspect-2/3 w-14 border-2 border-border bg-muted" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate font-display text-lg">{group.title}</h3>
-                      <p className="mt-1 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
-                        {group.episodes.length} episode{group.episodes.length === 1 ? "" : "s"} watched
-                      </p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {latest.map((row) => {
+              const episode = row.episode_number ?? 1;
+              const percent = Math.max(0, Math.min(100, row.progress_percent ?? 0));
+              return (
+                <article key={row.mal_id} className="ink-panel-sm flex gap-3 bg-card p-3">
+                  {row.image_url && (
+                    <img src={row.image_url} alt="" className="aspect-2/3 w-14 object-cover" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="line-clamp-2 font-display">{row.title}</p>
+                    <p className="mt-1 font-mono text-[10px] text-muted-foreground">
+                      Episode {episode}
+                      {row.total_episodes ? ` / ${row.total_episodes}` : ""}
+                    </p>
+                    <div className="mt-2 h-1.5 bg-muted">
+                      <div className="h-full bg-accent" style={{ width: `${percent}%` }} />
                     </div>
                     <Link
-                      to="/anime/$animeId"
-                      params={{ animeId: String(group.mal_id) }}
-                      className="ink-panel-sm ink-press bg-accent px-4 py-2 font-mono text-[10px] font-bold tracking-widest text-accent-foreground uppercase"
+                      to="/watch/$animeId/$episodeNumber"
+                      params={{ animeId: String(row.mal_id), episodeNumber: String(episode) }}
+                      className="mt-3 inline-flex items-center gap-1 font-mono text-[10px] uppercase text-accent"
                     >
-                      View
+                      <Play className="size-3" /> Resume
                     </Link>
                   </div>
-                  <div className="grid gap-2 p-3 sm:grid-cols-2">
-                    {group.episodes.map((row) => (
-                      <Link
-                        key={row.id}
-                        to="/watch/$animeId/$episodeNumber"
-                        params={{
-                          animeId: String(row.mal_id),
-                          episodeNumber: String(row.episode_number ?? row.episodes_watched ?? 1),
-                        }}
-                        className="ink-panel-sm flex items-center justify-between gap-3 bg-card p-2.5 hover:bg-secondary"
-                      >
-                        <span className="font-mono text-xs font-bold">
-                          Episode {row.episode_number ?? row.episodes_watched}
-                        </span>
-                        <span className="font-mono text-[10px] text-muted-foreground">
-                          {row.completed ? "Completed" : "In progress"}
-                        </span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
 
-      <section className="ink-panel mt-10 border-destructive p-5">
-        <h2 className="font-display text-lg text-destructive">Delete account</h2>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          This permanently deletes your sign-in account, profile, watchlist, and watch history. You
-          must have signed in within the last 15 minutes. You cannot undo this.
-        </p>
-        <button
-          type="button"
-          onClick={() => {
-            if (
-              window.confirm(
-                "Permanently delete your account and all profile, watchlist, and history data? This cannot be undone.",
-              )
-            ) {
-              deleteProfile.mutate();
-            }
-          }}
-          disabled={deleteProfile.isPending}
-          className="ink-panel-sm ink-press mt-4 bg-destructive px-4 py-2.5 font-mono text-xs font-bold tracking-widest text-destructive-foreground uppercase disabled:opacity-50"
-        >
-          {deleteProfile.isPending ? "Deleting…" : "Delete my account"}
-        </button>
+      <section>
+        <SectionTitle title="Achievements" />
+        <AchievementsBadges
+          achievements={achievements.data ?? []}
+          isPending={achievements.isPending}
+        />
       </section>
+
+      <DangerZone
+        onDelete={async () => {
+          try {
+            await deleteAccount();
+            await supabase.auth.signOut({ scope: "local" });
+            queryClient.clear();
+            toast.success("Your account and its data were permanently deleted");
+            await navigate({ to: "/", replace: true });
+          } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Couldn't delete your account.");
+          }
+        }}
+      />
     </div>
+  );
+}
+
+function SectionTitle({ title }: { title: string }) {
+  return <h2 className="mb-4 font-display text-xl sm:text-2xl">{title}</h2>;
+}
+function DangerZone({ onDelete }: { onDelete: () => void }) {
+  return (
+    <details className="ink-panel p-4">
+      <summary className="flex cursor-pointer items-center gap-2 font-display">
+        <Settings className="size-4" /> Account settings
+      </summary>
+      <p className="mt-3 text-sm text-muted-foreground">
+        Manage account privacy and profile details using Edit profile above.
+      </p>
+      <button
+        onClick={() => {
+          if (window.confirm("Permanently delete your account and data? This cannot be undone."))
+            onDelete();
+        }}
+        className="mt-4 inline-flex items-center gap-2 text-sm text-destructive"
+      >
+        <Trash2 className="size-4" /> Delete account
+      </button>
+    </details>
   );
 }

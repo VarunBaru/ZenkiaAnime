@@ -22,6 +22,7 @@ import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedWatchlistRouteImport } from './routes/_authenticated/watchlist'
 import { Route as AnimeAnimeIdRouteImport } from './routes/anime.$animeId'
+import { Route as ProfileUserIdRouteImport } from './routes/profile.$userId'
 import { Route as WatchAnimeIdEpisodeNumberRouteImport } from './routes/watch.$animeId.$episodeNumber'
 import { Route as ApiPublicJikanSplatRouteImport } from './routes/api/public/jikan.$'
 import { Route as ApiPublicKitsuSplatRouteImport } from './routes/api/public/kitsu.$'
@@ -90,6 +91,11 @@ const AnimeAnimeIdRoute = AnimeAnimeIdRouteImport.update({
   path: '/anime/$animeId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileUserIdRoute = ProfileUserIdRouteImport.update({
+  id: '/profile/$userId',
+  path: '/profile/$userId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WatchAnimeIdEpisodeNumberRoute =
   WatchAnimeIdEpisodeNumberRouteImport.update({
     id: '/watch/$animeId/$episodeNumber',
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/watchlist': typeof AuthenticatedWatchlistRoute
   '/anime/$animeId': typeof AnimeAnimeIdRoute
+  '/profile/$userId': typeof ProfileUserIdRoute
   '/watch/$animeId/$episodeNumber': typeof WatchAnimeIdEpisodeNumberRoute
   '/api/public/jikan/$': typeof ApiPublicJikanSplatRoute
   '/api/public/kitsu/$': typeof ApiPublicKitsuSplatRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/watchlist': typeof AuthenticatedWatchlistRoute
   '/anime/$animeId': typeof AnimeAnimeIdRoute
+  '/profile/$userId': typeof ProfileUserIdRoute
   '/watch/$animeId/$episodeNumber': typeof WatchAnimeIdEpisodeNumberRoute
   '/api/public/jikan/$': typeof ApiPublicJikanSplatRoute
   '/api/public/kitsu/$': typeof ApiPublicKitsuSplatRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/watchlist': typeof AuthenticatedWatchlistRoute
   '/anime/$animeId': typeof AnimeAnimeIdRoute
+  '/profile/$userId': typeof ProfileUserIdRoute
   '/watch/$animeId/$episodeNumber': typeof WatchAnimeIdEpisodeNumberRoute
   '/api/public/jikan/$': typeof ApiPublicJikanSplatRoute
   '/api/public/kitsu/$': typeof ApiPublicKitsuSplatRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/watchlist'
     | '/anime/$animeId'
+    | '/profile/$userId'
     | '/watch/$animeId/$episodeNumber'
     | '/api/public/jikan/$'
     | '/api/public/kitsu/$'
@@ -192,6 +202,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/watchlist'
     | '/anime/$animeId'
+    | '/profile/$userId'
     | '/watch/$animeId/$episodeNumber'
     | '/api/public/jikan/$'
     | '/api/public/kitsu/$'
@@ -210,6 +221,7 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/watchlist'
     | '/anime/$animeId'
+    | '/profile/$userId'
     | '/watch/$animeId/$episodeNumber'
     | '/api/public/jikan/$'
     | '/api/public/kitsu/$'
@@ -226,6 +238,7 @@ export interface RootRouteChildren {
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
   AnimeAnimeIdRoute: typeof AnimeAnimeIdRoute
+  ProfileUserIdRoute: typeof ProfileUserIdRoute
   WatchAnimeIdEpisodeNumberRoute: typeof WatchAnimeIdEpisodeNumberRoute
   ApiPublicJikanSplatRoute: typeof ApiPublicJikanSplatRoute
   ApiPublicKitsuSplatRoute: typeof ApiPublicKitsuSplatRoute
@@ -324,6 +337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnimeAnimeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile/$userId': {
+      id: '/profile/$userId'
+      path: '/profile/$userId'
+      fullPath: '/profile/$userId'
+      preLoaderRoute: typeof ProfileUserIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/watch/$animeId/$episodeNumber': {
       id: '/watch/$animeId/$episodeNumber'
       path: '/watch/$animeId/$episodeNumber'
@@ -374,6 +394,7 @@ const rootRouteChildren: RootRouteChildren = {
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
   AnimeAnimeIdRoute: AnimeAnimeIdRoute,
+  ProfileUserIdRoute: ProfileUserIdRoute,
   WatchAnimeIdEpisodeNumberRoute: WatchAnimeIdEpisodeNumberRoute,
   ApiPublicJikanSplatRoute: ApiPublicJikanSplatRoute,
   ApiPublicKitsuSplatRoute: ApiPublicKitsuSplatRoute,

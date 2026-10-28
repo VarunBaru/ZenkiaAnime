@@ -374,7 +374,10 @@ function WatchPage() {
               referrerPolicy="origin"
               onError={() => setFrameFailed(true)}
             />
-            <div aria-hidden="true" className="pointer-events-none absolute top-4 left-4 z-[5] select-none">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute top-4 left-4 z-[5] select-none"
+            >
               <img
                 src="/brand-wordmark.webp"
                 alt=""
@@ -444,7 +447,7 @@ function WatchPage() {
               onClick={() => {
                 if (nextCountdownRef.current) clearInterval(nextCountdownRef.current);
                 setNextCountdown(null);
-                void navigateEpisode(ep + 1);
+                void navigateEpisode(episode + 1);
               }}
               className="mt-2 ink-panel-sm ink-press bg-accent px-4 py-1.5 font-mono text-[10px] font-bold tracking-widest text-accent-foreground uppercase"
             >
@@ -712,4 +715,3 @@ function WatchPage() {
     </div>
   );
 }
-

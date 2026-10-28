@@ -11,24 +11,123 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null;
+          banner_url: string | null;
+          bio: string | null;
           created_at: string;
           id: string;
+          is_public: boolean;
+          theme_pref: string | null;
           updated_at: string;
           username: string | null;
         };
         Insert: {
           avatar_url?: string | null;
+          banner_url?: string | null;
+          bio?: string | null;
           created_at?: string;
           id: string;
+          is_public?: boolean;
+          theme_pref?: string | null;
           updated_at?: string;
           username?: string | null;
         };
         Update: {
           avatar_url?: string | null;
+          banner_url?: string | null;
+          bio?: string | null;
           created_at?: string;
           id?: string;
+          is_public?: boolean;
+          theme_pref?: string | null;
           updated_at?: string;
           username?: string | null;
+        };
+        Relationships: [];
+      };
+      favorites: {
+        Row: {
+          created_at: string;
+          id: string;
+          image_url: string | null;
+          mal_id: number;
+          media_type: string | null;
+          score: number | null;
+          title: string;
+          user_id: string;
+          year: number | null;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          image_url?: string | null;
+          mal_id: number;
+          media_type?: string | null;
+          score?: number | null;
+          title: string;
+          user_id: string;
+          year?: number | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          image_url?: string | null;
+          mal_id?: number;
+          media_type?: string | null;
+          score?: number | null;
+          title?: string;
+          user_id?: string;
+          year?: number | null;
+        };
+        Relationships: [];
+      };
+      achievements: {
+        Row: {
+          description: string | null;
+          icon: string | null;
+          id: string;
+          key: string;
+          name: string;
+          unlocked_at: string;
+          user_id: string;
+        };
+        Insert: {
+          description?: string | null;
+          icon?: string | null;
+          id?: string;
+          key: string;
+          name: string;
+          unlocked_at?: string;
+          user_id: string;
+        };
+        Update: {
+          description?: string | null;
+          icon?: string | null;
+          id?: string;
+          key?: string;
+          name?: string;
+          unlocked_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      follows: {
+        Row: {
+          created_at: string;
+          followee_id: string;
+          follower_id: string;
+          id: string;
+        };
+        Insert: {
+          created_at?: string;
+          followee_id: string;
+          follower_id: string;
+          id?: string;
+        };
+        Update: {
+          created_at?: string;
+          followee_id?: string;
+          follower_id?: string;
+          id?: string;
         };
         Relationships: [];
       };
@@ -130,7 +229,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      sync_my_achievements: { Args: Record<PropertyKey, never>; Returns: undefined };
     };
     Enums: {
       watch_status: "planned" | "watching" | "completed" | "on_hold" | "dropped";
