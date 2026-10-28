@@ -70,7 +70,7 @@ export function ProfileHeader({
             <Edit2 className="mr-1 inline size-3" /> Edit profile
           </button>
         </div>
-        <h1 className="absolute right-4 -bottom-4 left-[7.5rem] z-10 line-clamp-2 break-words font-display text-2xl text-white drop-shadow-[0_2px_3px_rgba(0,0,0,0.95)] [overflow-wrap:anywhere] sm:left-40 sm:text-3xl">
+        <h1 className="absolute right-4 -bottom-4 left-[8.5rem] z-10 line-clamp-2 break-words font-display text-3xl text-white drop-shadow-[0_2px_3px_rgba(0,0,0,0.95)] [overflow-wrap:anywhere] sm:left-40 sm:text-4xl">
           {username}
         </h1>
       </div>
