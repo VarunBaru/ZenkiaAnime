@@ -5,7 +5,6 @@ import { Menu, Search, User as UserIcon, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { LanguageToggle, MobileSettings } from "@/components/PreferenceControls";
 import { profileQuery } from "@/lib/library";
-import { usePreferences } from "@/lib/preferences";
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -16,7 +15,6 @@ const NAV = [
 export function SiteHeader() {
   const isHome = useRouterState({ select: (state) => state.location.pathname === "/" });
   const { user } = useAuth();
-  const { theme } = usePreferences();
   const profile = useQuery(profileQuery(user?.id));
   const avatarUrl =
     profile.data?.avatar_url ||
@@ -163,22 +161,32 @@ export function SiteHeader() {
                 {item.label}
               </Link>
             ))}
-            {theme === "netflix" && user && (
+            {user && (
               <>
-                <Link to="/profile" onClick={() => setOpen(false)}>My Library</Link>
-                <Link to="/watchlist" onClick={() => setOpen(false)}>My List</Link>
-                <Link to="/history" onClick={() => setOpen(false)}>Continue watching</Link>
+                <Link
+                  to="/profile"
+                  onClick={() => setOpen(false)}
+                  className="ink-panel-sm flex min-h-11 items-center bg-background px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase"
+                >
+                  My Library
+                </Link>
+                <Link
+                  to="/watchlist"
+                  onClick={() => setOpen(false)}
+                  className="ink-panel-sm flex min-h-11 items-center bg-background px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase"
+                >
+                  My List
+                </Link>
+                <Link
+                  to="/history"
+                  onClick={() => setOpen(false)}
+                  className="ink-panel-sm flex min-h-11 items-center bg-background px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase"
+                >
+                  Continue watching
+                </Link>
               </>
             )}
-            {user ? (
-              <Link
-                to="/profile"
-                onClick={() => setOpen(false)}
-                className="ink-panel-sm bg-background px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase"
-              >
-                Profile
-              </Link>
-            ) : (
+            {!user && (
               <Link
                 to="/auth"
                 onClick={() => setOpen(false)}
