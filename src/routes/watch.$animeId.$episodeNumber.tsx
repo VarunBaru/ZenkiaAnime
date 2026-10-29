@@ -390,8 +390,8 @@ function WatchPage() {
       </div>
 
       <div className="ink-panel-sm grid min-w-0 gap-4 bg-card p-3 sm:p-4">
-        <div className="grid min-w-0 gap-2 sm:max-w-2xl">
-          <div className="flex items-center justify-between gap-2">
+        <div className="grid min-w-0 gap-2">
+          <div className="flex w-full items-center justify-between gap-3">
             <span className="font-mono text-[11px] font-bold tracking-widest uppercase">
               Audio source
             </span>
@@ -408,7 +408,7 @@ function WatchPage() {
                 }
               }}
               title="Auto-play next episode when this one ends"
-              className="inline-flex min-h-10 shrink-0 items-center gap-1.5 border-2 border-border bg-background px-2.5 font-mono text-[9px] font-bold tracking-wider uppercase hover:bg-muted sm:px-3 sm:text-[11px] sm:tracking-widest"
+              className="inline-flex min-h-11 shrink-0 items-center gap-1.5 border-2 border-border bg-background px-2.5 font-mono text-[9px] font-bold tracking-wider uppercase hover:bg-muted sm:px-3 sm:text-[11px] sm:tracking-widest"
             >
               {autoPlay ? <Check className="size-3.5" /> : <Play className="size-3.5" />}
               Auto next
