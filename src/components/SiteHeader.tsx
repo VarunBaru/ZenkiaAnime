@@ -53,30 +53,46 @@ export function SiteHeader() {
           />
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex">
+        <nav className="hidden shrink-0 items-center gap-1 lg:flex">
           {NAV.map((item) => (
             <Link
               key={item.to}
               to={item.to}
               activeOptions={{ exact: item.to === "/" }}
               activeProps={{ className: "bg-accent text-accent-foreground" }}
-              className="border-2 border-transparent px-3 py-1.5 font-mono text-xs font-bold tracking-widest uppercase hover:border-border"
+              className="site-header__nav-link whitespace-nowrap border-2 border-transparent px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase hover:border-border"
             >
               {item.label}
             </Link>
           ))}
           {user && (
-            <>
-              <Link to="/profile" onClick={() => setOpen(false)}>My Library</Link>
-              <Link to="/watchlist">My List</Link>
-              <Link to="/history">Continue Watching</Link>
-            </>
+            <span className="hidden items-center gap-1 2xl:contents">
+              <Link
+                to="/profile"
+                onClick={() => setOpen(false)}
+                className="site-header__nav-link whitespace-nowrap border-2 border-transparent px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase hover:border-border"
+              >
+                My Library
+              </Link>
+              <Link
+                to="/watchlist"
+                className="site-header__nav-link whitespace-nowrap border-2 border-transparent px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase hover:border-border"
+              >
+                My List
+              </Link>
+              <Link
+                to="/history"
+                className="site-header__nav-link whitespace-nowrap border-2 border-transparent px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase hover:border-border"
+              >
+                Continue Watching
+              </Link>
+            </span>
           )}
         </nav>
 
         <form
           onSubmit={submit}
-          className="ml-auto hidden w-full max-w-[420px] items-center gap-2 lg:flex"
+          className="ml-auto hidden min-w-0 w-full max-w-[420px] items-center gap-2 lg:flex"
         >
           <input
             value={term}
