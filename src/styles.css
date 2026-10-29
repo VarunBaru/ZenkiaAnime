@@ -1232,6 +1232,23 @@
   backdrop-filter: blur(16px);
 }
 
+@media (max-width: 1279px) {
+  .theme-netflix .site-header--home {
+    background: linear-gradient(180deg, rgb(0 0 0 / 0.48), rgb(0 0 0 / 0.08));
+    border-bottom-color: transparent;
+    backdrop-filter: none;
+  }
+
+  .theme-netflix .site-header--home:hover {
+    background: linear-gradient(180deg, rgb(0 0 0 / 0.55), rgb(0 0 0 / 0.12));
+    backdrop-filter: none;
+  }
+
+  .theme-netflix .site-header--home + main .home-featured-shell {
+    margin-top: -68px;
+  }
+}
+
 .theme-netflix .netflix-hero {
   animation: netflix-hero-enter 800ms cubic-bezier(0.2, 0.7, 0.25, 1) both;
 }

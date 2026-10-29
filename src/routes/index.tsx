@@ -396,7 +396,7 @@ function HomePage() {
           </div>
         </section>
       )}
-      <section className="speed-lines border-b-[3px] border-border">
+      <section className="home-featured-shell speed-lines border-b-[3px] border-border">
         {trending.isPending && !featured ? (
           <div className="mx-auto grid max-w-[1500px] gap-8 px-4 py-10 sm:px-6 lg:grid-cols-12">
             <div className="space-y-4 lg:col-span-7">
