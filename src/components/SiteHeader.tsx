@@ -65,7 +65,7 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
-          {theme === "netflix" && user && (
+          {user && (
             <>
               <Link to="/profile" onClick={() => setOpen(false)}>My Library</Link>
               <Link to="/watchlist">My List</Link>
