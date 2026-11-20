@@ -104,6 +104,12 @@ export function MobileSettings() {
     <div className="mt-4 space-y-3 border-t-2 border-border pt-4">
       <div>
         <p className="mb-1.5 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+          Theme
+        </p>
+        <ThemeToggle showText />
+      </div>
+      <div>
+        <p className="mb-1.5 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
           Anime language
         </p>
         <LanguageToggle />

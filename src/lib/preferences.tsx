@@ -11,9 +11,10 @@ export type ThemePref = "manga" | "glass" | "netflix";
 
 export const LANG_KEY = "animehub:anime-language";
 export const THEME_KEY = "animehub:theme";
+export const THEME_VERSION_KEY = "animehub:theme-v2";
 
 /** Runs before hydration (inlined in <head>) so the right theme paints first. */
-export const THEME_BOOT_SCRIPT = `(function(){try{var t=localStorage.getItem("${THEME_KEY}")||"manga";if(t!=="manga"&&t!=="glass"&&t!=="netflix")t="manga";var r=document.documentElement;r.classList.add("dark");r.classList.remove("theme-manga","theme-glass","theme-netflix");r.classList.add("theme-"+t);r.style.colorScheme="dark";}catch(e){}})();`;
+export const THEME_BOOT_SCRIPT = `(function(){try{var v=localStorage.getItem("${THEME_VERSION_KEY}");if(!v){localStorage.setItem("${THEME_KEY}","netflix");localStorage.setItem("${THEME_VERSION_KEY}","true");}var t=localStorage.getItem("${THEME_KEY}")||"netflix";if(t!=="manga"&&t!=="glass"&&t!=="netflix")t="netflix";var r=document.documentElement;r.classList.add("dark");r.classList.remove("theme-manga","theme-glass","theme-netflix");r.classList.add("theme-"+t);r.style.colorScheme="dark";}catch(e){}})();`;
 
 type Ctx = {
   language: AnimeLanguage;
@@ -38,7 +39,7 @@ function applyTheme(theme: ThemePref) {
 
 export function PreferencesProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<AnimeLanguage>("en");
-  const [theme, setThemeState] = useState<ThemePref>("manga");
+  const [theme, setThemeState] = useState<ThemePref>("netflix");
   const [showHomeHistory, setShowHomeHistoryState] = useState(true);
   const [showHomeWatchlist, setShowHomeWatchlistState] = useState(true);
 
@@ -47,13 +48,22 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     try {
       const l = localStorage.getItem(LANG_KEY);
       if (l === "en" || l === "jp") setLanguageState(l);
-      const t = localStorage.getItem(THEME_KEY);
-      if (t === "manga" || t === "glass" || t === "netflix") {
-        setThemeState(t);
+
+      const v = localStorage.getItem(THEME_VERSION_KEY);
+      if (!v) {
+        localStorage.setItem(THEME_KEY, "netflix");
+        localStorage.setItem(THEME_VERSION_KEY, "true");
+        setThemeState("netflix");
       } else {
-        // Migrate the old light/dark/system setting to the manga default.
-        localStorage.setItem(THEME_KEY, "manga");
+        const t = localStorage.getItem(THEME_KEY);
+        if (t === "manga" || t === "glass" || t === "netflix") {
+          setThemeState(t);
+        } else {
+          localStorage.setItem(THEME_KEY, "netflix");
+          setThemeState("netflix");
+        }
       }
+
       setShowHomeHistoryState(localStorage.getItem("animehub:home-history") !== "hidden");
       setShowHomeWatchlistState(localStorage.getItem("animehub:home-watchlist") !== "hidden");
     } catch {
@@ -102,7 +112,18 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <PreferencesContext.Provider value={{ language, setLanguage, theme, setTheme, showHomeHistory, setShowHomeHistory, showHomeWatchlist, setShowHomeWatchlist }}>
+    <PreferencesContext.Provider
+      value={{
+        language,
+        setLanguage,
+        theme,
+        setTheme,
+        showHomeHistory,
+        setShowHomeHistory,
+        showHomeWatchlist,
+        setShowHomeWatchlist,
+      }}
+    >
       {children}
     </PreferencesContext.Provider>
   );

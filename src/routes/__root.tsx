@@ -19,7 +19,10 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { PreferencesProvider, THEME_BOOT_SCRIPT } from "@/lib/preferences";
+import { PreferencesProvider, THEME_BOOT_SCRIPT, usePreferences } from "@/lib/preferences";
+import { NetflixSidebar } from "@/components/netflix/NetflixSidebar";
+import { NetflixHeaderBar } from "@/components/netflix/NetflixHeaderBar";
+import { NetflixMiniPlayer } from "@/components/netflix/NetflixMiniPlayer";
 
 function NotFoundComponent() {
   return (
@@ -110,7 +113,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "apple-touch-icon", href: "/brand-favicon.png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "canonical", href: "https://zenkiaanime.pages.dev" },
-      { name: "theme-color", content: "#101113" },
+      { name: "theme-color", content: "#E50914" },
     ],
     scripts: [
       {
@@ -162,6 +165,53 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function AppLayout() {
+  const { theme } = usePreferences();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const isAuthPage = PUBLIC_AUTH_PATHS.has(pathname);
+
+  if (isAuthPage) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <main className="flex-1">
+          <Outlet />
+        </main>
+      </div>
+    );
+  }
+
+  if (theme === "netflix") {
+    return (
+      <div className="netflix-root-ambient min-h-screen p-0 lg:p-6 xl:p-8 flex flex-col justify-center">
+        <div className="netflix-glass-shell mx-auto w-full max-w-[1520px] rounded-none lg:rounded-[32px] border-0 lg:border border-white/10 bg-[#0c0d12]/85 backdrop-blur-2xl shadow-[0_30px_90px_rgba(0,0,0,0.85)] overflow-hidden flex flex-col lg:flex-row min-h-screen lg:min-h-[92vh] relative">
+          <div className="hidden lg:block shrink-0">
+            <NetflixSidebar />
+          </div>
+          <div className="flex-1 min-w-0 flex flex-col overflow-y-auto">
+            <NetflixHeaderBar />
+            <main className="flex-1 px-4 py-4 sm:px-6 lg:px-8 pb-28">
+              <Outlet />
+            </main>
+            <SiteFooter />
+          </div>
+          <NetflixMiniPlayer />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col">
+      <SiteHeader />
+      <main className="flex-1">
+        {/* Required: nested routes render here. */}
+        <Outlet />
+      </main>
+      <SiteFooter />
+    </div>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -171,14 +221,7 @@ function RootComponent() {
         <AuthSync />
         <ServiceWorkerRegistration />
         <AuthGate>
-          <div className="flex min-h-screen flex-col">
-            <SiteHeader />
-            <main className="flex-1">
-              {/* Required: nested routes render here. */}
-              <Outlet />
-            </main>
-            <SiteFooter />
-          </div>
+          <AppLayout />
         </AuthGate>
         <Toaster />
       </PreferencesProvider>

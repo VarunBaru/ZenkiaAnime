@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { Menu, Search, User as UserIcon, X } from "lucide-react";
+import { Link, useNavigate, useRouter } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { LogOut, Menu, Search, User as UserIcon, X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { LanguageToggle, MobileSettings } from "@/components/PreferenceControls";
-import { profileQuery } from "@/lib/library";
+import { LanguageToggle, ThemeToggle, MobileSettings } from "@/components/PreferenceControls";
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -13,15 +13,10 @@ const NAV = [
 ] as const;
 
 export function SiteHeader() {
-  const isHome = useRouterState({ select: (state) => state.location.pathname === "/" });
   const { user } = useAuth();
-  const profile = useQuery(profileQuery(user?.id));
-  const avatarUrl =
-    profile.data?.avatar_url ||
-    user?.user_metadata?.["avatar_url"] ||
-    user?.user_metadata?.["picture"] ||
-    null;
   const navigate = useNavigate();
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const [term, setTerm] = useState("");
   const [open, setOpen] = useState(false);
 
@@ -33,10 +28,18 @@ export function SiteHeader() {
     navigate({ to: "/search", search: { q, page: 1 } });
   };
 
+  const signOut = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    router.navigate({ to: "/auth", replace: true });
+  };
 
   return (
     <header
-      className={`site-header sticky top-0 z-50 border-b-[3px] border-border bg-background/95 backdrop-blur-sm${isHome ? " site-header--home" : ""}`}
+      className={`site-header sticky top-0 z-50 border-b-[3px] border-border bg-background/95 backdrop-blur-sm ${
+        typeof window !== "undefined" && window.location.pathname === "/" ? "site-header--home" : ""
+      }`}
     >
       <div className="mx-auto grid max-w-[1500px] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-6 lg:flex lg:gap-5">
         <Link to="/" className="flex min-w-0 items-center gap-2">
@@ -53,46 +56,23 @@ export function SiteHeader() {
           />
         </Link>
 
-        <nav className="hidden shrink-0 items-center gap-1 lg:flex">
+        <nav className="hidden items-center gap-1 lg:flex">
           {NAV.map((item) => (
             <Link
               key={item.to}
               to={item.to}
               activeOptions={{ exact: item.to === "/" }}
               activeProps={{ className: "bg-accent text-accent-foreground" }}
-              className="site-header__nav-link whitespace-nowrap border-2 border-transparent px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase hover:border-border"
+              className="border-2 border-transparent px-3 py-1.5 font-mono text-xs font-bold tracking-widest uppercase hover:border-border"
             >
               {item.label}
             </Link>
           ))}
-          {user && (
-            <span className="hidden items-center gap-1 2xl:contents">
-              <Link
-                to="/profile"
-                onClick={() => setOpen(false)}
-                className="site-header__nav-link whitespace-nowrap border-2 border-transparent px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase hover:border-border"
-              >
-                My Library
-              </Link>
-              <Link
-                to="/watchlist"
-                className="site-header__nav-link whitespace-nowrap border-2 border-transparent px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase hover:border-border"
-              >
-                My List
-              </Link>
-              <Link
-                to="/history"
-                className="site-header__nav-link whitespace-nowrap border-2 border-transparent px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase hover:border-border"
-              >
-                Continue Watching
-              </Link>
-            </span>
-          )}
         </nav>
 
         <form
           onSubmit={submit}
-          className="ml-auto hidden min-w-0 w-full max-w-[420px] items-center gap-2 lg:flex"
+          className="ml-auto hidden w-full max-w-[420px] items-center gap-2 lg:flex"
         >
           <input
             value={term}
@@ -111,21 +91,24 @@ export function SiteHeader() {
         </form>
 
         <div className="hidden shrink-0 items-center gap-2 lg:flex">
+          <ThemeToggle />
           <LanguageToggle />
           {user ? (
             <>
               <Link
                 to="/profile"
-                className="ink-panel-sm ink-press grid size-10 shrink-0 place-items-center overflow-hidden bg-card p-0"
+                className="ink-panel-sm ink-press bg-card p-2"
                 aria-label="Profile"
               >
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="" className="size-full object-cover" />
-                ) : (
-                  <UserIcon className="size-4" strokeWidth={2.5} />
-                )}
+                <UserIcon className="size-4" strokeWidth={2.5} />
               </Link>
-              
+              <button
+                onClick={signOut}
+                className="ink-panel-sm ink-press bg-card p-2"
+                aria-label="Sign out"
+              >
+                <LogOut className="size-4" strokeWidth={2.5} />
+              </button>
             </>
           ) : (
             <Link
@@ -141,8 +124,6 @@ export function SiteHeader() {
           onClick={() => setOpen((v) => !v)}
           className="ink-panel-sm ink-press shrink-0 bg-card p-2 lg:hidden"
           aria-label={open ? "Close menu" : "Open menu"}
-          aria-expanded={open}
-          aria-controls="mobile-site-menu"
         >
           {open ? (
             <X className="size-4" strokeWidth={3} />
@@ -153,7 +134,7 @@ export function SiteHeader() {
       </div>
 
       {open && (
-        <div id="mobile-site-menu" className="border-t-[3px] border-border bg-card px-4 py-4 lg:hidden">
+        <div className="border-t-[3px] border-border bg-card px-4 py-4 lg:hidden">
           <form onSubmit={submit} className="flex items-center gap-2">
             <input
               value={term}
@@ -177,32 +158,26 @@ export function SiteHeader() {
                 {item.label}
               </Link>
             ))}
-            {user && (
+            {user ? (
               <>
                 <Link
                   to="/profile"
                   onClick={() => setOpen(false)}
-                  className="ink-panel-sm flex min-h-11 items-center bg-background px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase"
+                  className="ink-panel-sm bg-background px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase"
                 >
-                  My Library
+                  Profile
                 </Link>
-                <Link
-                  to="/watchlist"
-                  onClick={() => setOpen(false)}
-                  className="ink-panel-sm flex min-h-11 items-center bg-background px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase"
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    void signOut();
+                  }}
+                  className="ink-panel-sm bg-background px-3 py-2 text-left font-mono text-xs font-bold tracking-widest uppercase"
                 >
-                  My List
-                </Link>
-                <Link
-                  to="/history"
-                  onClick={() => setOpen(false)}
-                  className="ink-panel-sm flex min-h-11 items-center bg-background px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase"
-                >
-                  Continue watching
-                </Link>
+                  Sign out
+                </button>
               </>
-            )}
-            {!user && (
+            ) : (
               <Link
                 to="/auth"
                 onClick={() => setOpen(false)}
