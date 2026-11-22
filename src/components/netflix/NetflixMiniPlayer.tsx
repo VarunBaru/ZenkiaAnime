@@ -61,8 +61,8 @@ export function NetflixMiniPlayer() {
   };
 
   return (
-    <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-[620px] animate-in fade-in slide-in-from-bottom-5 duration-300">
-      <div className="flex items-center justify-between gap-3 sm:gap-4 rounded-full border border-white/15 bg-[#14151a]/95 px-4 py-2.5 sm:px-5 sm:py-3 text-white shadow-[0_20px_50px_rgba(0,0,0,0.9)] backdrop-blur-2xl">
+    <div className="fixed bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-[640px] pointer-events-auto animate-in fade-in slide-in-from-bottom-6 duration-300">
+      <div className="flex items-center justify-between gap-3 sm:gap-4 rounded-full border border-white/20 bg-[#12141a]/95 px-4 py-2.5 sm:px-5 sm:py-3 text-white shadow-[0_25px_60px_rgba(0,0,0,0.95)] backdrop-blur-2xl">
         {/* Left: Thumbnail & Title Info */}
         <div
           onClick={handleOpenWatch}

@@ -182,20 +182,18 @@ function AppLayout() {
 
   if (theme === "netflix") {
     return (
-      <div className="netflix-root-ambient min-h-screen p-0 lg:p-6 xl:p-8 flex flex-col justify-center">
-        <div className="netflix-glass-shell mx-auto w-full max-w-[1520px] rounded-none lg:rounded-[32px] border-0 lg:border border-white/10 bg-[#0c0d12]/85 backdrop-blur-2xl shadow-[0_30px_90px_rgba(0,0,0,0.85)] overflow-hidden flex flex-col lg:flex-row min-h-screen lg:min-h-[92vh] relative">
-          <div className="hidden lg:block shrink-0">
-            <NetflixSidebar />
-          </div>
-          <div className="flex-1 min-w-0 flex flex-col overflow-y-auto">
-            <NetflixHeaderBar />
-            <main className="flex-1 px-4 py-4 sm:px-6 lg:px-8 pb-28">
-              <Outlet />
-            </main>
-            <SiteFooter />
-          </div>
-          <NetflixMiniPlayer />
+      <div className="min-h-screen w-full bg-[#08090d] text-white flex flex-col lg:flex-row relative">
+        <aside className="hidden lg:flex flex-col w-64 shrink-0 h-screen sticky top-0 border-r border-white/10 bg-[#0a0a0e]/95 backdrop-blur-xl z-30">
+          <NetflixSidebar />
+        </aside>
+        <div className="flex-1 min-w-0 flex flex-col min-h-screen">
+          <NetflixHeaderBar />
+          <main className="flex-1 px-4 py-6 sm:px-8 lg:px-10 pb-36 max-w-[1800px] w-full mx-auto">
+            <Outlet />
+          </main>
+          <SiteFooter />
         </div>
+        <NetflixMiniPlayer />
       </div>
     );
   }

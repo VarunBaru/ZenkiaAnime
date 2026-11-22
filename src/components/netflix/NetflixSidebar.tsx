@@ -12,9 +12,8 @@ import {
   Download,
   User as UserIcon,
   Search,
-  Layers,
 } from "lucide-react";
-import { usePreferences, type ThemePref } from "@/lib/preferences";
+import { usePreferences } from "@/lib/preferences";
 import { useAuth } from "@/hooks/useAuth";
 import { DownloadsModal } from "./DownloadsModal";
 
@@ -22,7 +21,7 @@ export function NetflixSidebar() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const searchStr = useRouterState({ select: (s) => s.location.searchStr });
-  const { theme, setTheme, language, setLanguage } = usePreferences();
+  const { language, setLanguage } = usePreferences();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [downloadsOpen, setDownloadsOpen] = useState(false);
@@ -42,13 +41,9 @@ export function NetflixSidebar() {
   const isRecentlyAdded = pathname === "/browse" && searchStr.includes("order=latest");
   const isProfile = pathname === "/profile" || pathname.startsWith("/profile/");
 
-  const toggleLanguage = () => {
-    setLanguage(language === "en" ? "jp" : "en");
-  };
-
   return (
     <>
-      <aside className="w-full shrink-0 border-r border-white/10 bg-[#0a0a0e]/60 p-5 backdrop-blur-xl lg:w-60 lg:min-h-full flex flex-col justify-between">
+      <aside className="w-full h-full p-5 flex flex-col justify-between overflow-y-auto no-scrollbar">
         <div className="space-y-6">
           {/* Brand Logo */}
           <div className="flex items-center justify-between">
@@ -139,22 +134,51 @@ export function NetflixSidebar() {
                 <Plus className="size-4 shrink-0" />
                 <span>My List</span>
               </Link>
+            </nav>
+          </div>
 
+          {/* Audio Language Preference Section - Visually Appealing */}
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur-md">
+            <div className="flex items-center justify-between mb-2.5">
+              <div className="flex items-center gap-2">
+                <div className="grid size-6 place-items-center rounded-lg bg-[#E50914]/20 text-[#E50914]">
+                  <Globe className="size-3.5" />
+                </div>
+                <span className="text-[11px] font-bold tracking-wider text-white uppercase">
+                  Audio
+                </span>
+              </div>
+              <span className="rounded-full bg-[#E50914]/15 px-2 py-0.5 text-[9px] font-extrabold text-[#E50914] tracking-widest uppercase">
+                {language === "en" ? "EN DUB" : "JP SUB"}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-1.5 rounded-xl bg-black/50 p-1 border border-white/5">
               <button
                 type="button"
-                onClick={toggleLanguage}
-                title="Toggle preferred audio language (EN dub or JP sub)"
-                className="flex w-full items-center justify-between rounded-xl px-3.5 py-2 text-left text-xs font-medium text-white/65 transition-all hover:bg-white/5 hover:text-white"
+                onClick={() => setLanguage("en")}
+                className={`flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-bold transition-all ${
+                  language === "en"
+                    ? "bg-white text-black shadow-md scale-[1.02]"
+                    : "text-white/60 hover:text-white hover:bg-white/5"
+                }`}
               >
-                <div className="flex items-center gap-3">
-                  <Globe className="size-4 shrink-0" />
-                  <span>Browse by Languages</span>
-                </div>
-                <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-bold text-white uppercase">
-                  {language}
-                </span>
+                <span>🇬🇧</span>
+                <span>English</span>
               </button>
-            </nav>
+              <button
+                type="button"
+                onClick={() => setLanguage("jp")}
+                className={`flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-bold transition-all ${
+                  language === "jp"
+                    ? "bg-white text-black shadow-md scale-[1.02]"
+                    : "text-white/60 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <span>🇯🇵</span>
+                <span>Japanese</span>
+              </button>
+            </div>
           </div>
 
           {/* Library Section */}
@@ -209,31 +233,6 @@ export function NetflixSidebar() {
                 <span>My Account</span>
               </Link>
             </nav>
-          </div>
-        </div>
-
-        {/* Bottom Theme & Language Switcher */}
-        <div className="mt-8 border-t border-white/10 pt-4">
-          <div className="flex items-center justify-between text-xs text-white/50">
-            <div className="flex items-center gap-1.5">
-              <Layers className="size-3.5" />
-              <span>Theme</span>
-            </div>
-            <select
-              value={theme}
-              onChange={(e) => setTheme(e.target.value as ThemePref)}
-              className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-semibold text-white outline-none focus:border-white/30"
-            >
-              <option value="netflix" className="bg-[#12141a] text-white">
-                Netflix
-              </option>
-              <option value="glass" className="bg-[#12141a] text-white">
-                Liquid Glass
-              </option>
-              <option value="manga" className="bg-[#12141a] text-white">
-                Manga
-              </option>
-            </select>
           </div>
         </div>
       </aside>
