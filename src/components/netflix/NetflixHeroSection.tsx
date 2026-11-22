@@ -114,9 +114,9 @@ export function NetflixHeroSection({
 
           {/* Content Overlay */}
           <div className="relative z-10 space-y-2.5 max-w-xl">
-            {/* Red N Series Badge */}
+            {/* Red Z Series Badge */}
             <div className="flex items-center gap-1.5">
-              <span className="font-black text-sm text-[#E50914] tracking-tighter">N</span>
+              <span className="font-black text-sm text-[#E50914] tracking-tighter">Z</span>
               <span className="text-[10px] font-bold tracking-[0.2em] text-white/90 uppercase">
                 {current.type === "Movie" ? "FILM" : "SERIES"}
               </span>
@@ -207,7 +207,7 @@ export function NetflixHeroSection({
               {/* Card Content */}
               <div className="relative z-10 space-y-1">
                 <div className="flex items-center gap-1">
-                  <span className="font-black text-xs text-[#E50914] tracking-tighter">N</span>
+                  <span className="font-black text-xs text-[#E50914] tracking-tighter">Z</span>
                   <span className="text-[9px] font-bold tracking-widest text-white/80 uppercase">
                     {item.type}
                   </span>

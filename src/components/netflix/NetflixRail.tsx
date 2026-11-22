@@ -66,7 +66,7 @@ export function NetflixRail({
               {/* Card Footer Information */}
               <div className="absolute inset-x-0 bottom-0 p-3 space-y-0.5">
                 <div className="flex items-center gap-1">
-                  <span className="font-black text-xs text-[#E50914] tracking-tighter">N</span>
+                  <span className="font-black text-xs text-[#E50914] tracking-tighter">Z</span>
                   <span className="text-[8px] font-bold tracking-widest text-white/80 uppercase">
                     {isMovie ? "FILM" : "SERIES"}
                   </span>

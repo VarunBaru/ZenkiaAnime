@@ -54,7 +54,7 @@ export function NetflixHeaderBar() {
           </SheetContent>
         </Sheet>
         <Link to="/" className="font-black text-xl tracking-tighter text-[#E50914]">
-          NETFLIX
+          ZENKAI
         </Link>
       </div>
 

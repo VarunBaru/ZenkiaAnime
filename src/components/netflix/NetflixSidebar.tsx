@@ -54,7 +54,7 @@ export function NetflixSidebar() {
           <div className="flex items-center justify-between">
             <Link to="/" className="inline-block transition-transform hover:scale-105">
               <span className="font-black text-2xl tracking-tighter text-[#E50914] select-none">
-                NETFLIX
+                ZENKAI
               </span>
             </Link>
           </div>
