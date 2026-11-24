@@ -62,14 +62,14 @@ export function LiquidGlassHome({
       {/* 5. Minimalist Glass Genre Pills */}
       <section className="space-y-4">
         <div className="flex items-center gap-2">
-          <div className="flex size-7 items-center justify-center rounded-full bg-slate-900 text-white shadow-sm">
+          <div className="flex size-7 items-center justify-center rounded-full bg-white text-slate-950 shadow-sm">
             <Compass className="size-3.5" />
           </div>
           <div>
-            <h2 className="font-display text-lg sm:text-2xl font-bold tracking-tight text-slate-900">
+            <h2 className="font-display text-lg sm:text-2xl font-bold tracking-tight text-white">
               Browse by Atmosphere
             </h2>
-            <p className="text-xs text-slate-500 font-medium">Explore curated genres in frosted glass</p>
+            <p className="text-xs text-white/60 font-medium">Explore curated genres in frosted glass</p>
           </div>
         </div>
 
@@ -79,18 +79,18 @@ export function LiquidGlassHome({
               key={g.name}
               to="/browse"
               search={{ genre: String(g.mal_id), page: 1, type: "", order: "popularity" }}
-              className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/90 bg-white/70 p-4 shadow-[0_12px_30px_-8px_rgba(100,116,139,0.1),inset_0_1px_1.5px_#ffffff] backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1 hover:bg-white/90 hover:shadow-lg"
+              className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/15 bg-white/[0.05] p-4 shadow-[0_12px_30px_rgba(0,0,0,0.5),inset_0_1px_1.5px_rgba(255,255,255,0.2)] backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.1] hover:shadow-xl"
             >
               <div className="flex items-center justify-between">
-                <span className="font-display text-sm font-bold text-slate-900 group-hover:text-slate-950">
+                <span className="font-display text-sm font-bold text-white group-hover:text-cyan-200">
                   {g.name}
                 </span>
-                <Sparkles className="size-3.5 text-slate-400 group-hover:text-amber-500 transition-colors" />
+                <Sparkles className="size-3.5 text-white/40 group-hover:text-cyan-400 transition-colors" />
               </div>
-              <p className="mt-2 text-[11px] text-slate-500 line-clamp-1 leading-snug">
+              <p className="mt-2 text-[11px] text-white/50 line-clamp-1 leading-snug">
                 {g.desc}
               </p>
-              <span className="mt-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-slate-900 transition-colors">
+              <span className="mt-3 text-[10px] font-bold text-white/40 uppercase tracking-wider group-hover:text-white transition-colors">
                 Explore →
               </span>
             </Link>

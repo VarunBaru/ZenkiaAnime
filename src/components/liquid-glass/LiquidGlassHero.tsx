@@ -41,16 +41,16 @@ export function LiquidGlassHero({ featuredList }: LiquidGlassHeroProps) {
     .slice(0, 2);
 
   return (
-    <section className="relative overflow-hidden rounded-[2.5rem] border border-white/90 bg-white/70 p-6 sm:p-10 shadow-[0_24px_60px_-15px_rgba(100,116,139,0.14),inset_0_1.5px_2px_#ffffff] backdrop-blur-3xl">
+    <section className="relative overflow-hidden rounded-[2.5rem] border border-white/15 bg-white/[0.05] p-6 sm:p-10 shadow-[0_30px_70px_rgba(0,0,0,0.6),inset_0_1px_1.5px_rgba(255,255,255,0.25)] backdrop-blur-3xl">
       {/* Background artwork with soft frosted glass diffusion */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <img
           src={backgroundUrl || ""}
           alt={title}
-          className="size-full object-cover object-top opacity-20 filter blur-xl scale-110 transition-all duration-1000 ease-out"
+          className="size-full object-cover object-top opacity-30 filter blur-xl scale-110 transition-all duration-1000 ease-out"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-white/60" />
-        <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-transparent to-white/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#08090e]/95 via-[#08090e]/75 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#08090e] via-transparent to-transparent" />
       </div>
 
       <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
@@ -58,25 +58,25 @@ export function LiquidGlassHero({ featuredList }: LiquidGlassHeroProps) {
         <div className="lg:col-span-8 flex flex-col justify-center space-y-5 max-w-2xl">
           {/* Glass Badges */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="flex items-center gap-1.5 rounded-full border border-white/90 bg-white/90 px-3.5 py-1 text-xs font-bold text-slate-800 shadow-[0_4px_12px_-2px_rgba(100,116,139,0.1),inset_0_1px_1px_#ffffff]">
-              <Sparkles className="size-3.5 text-amber-500" />
+            <span className="flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 text-xs font-bold text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)] backdrop-blur-md">
+              <Sparkles className="size-3.5 text-cyan-400" />
               <span>SPOTLIGHT FEATURE</span>
             </span>
 
-            <div className="flex items-center gap-1 rounded-full border border-white/80 bg-white/80 px-3 py-1 text-xs font-bold text-slate-700 shadow-sm">
+            <div className="flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.08] px-3 py-1 text-xs font-bold text-white shadow-sm backdrop-blur-md">
               <Star className="size-3.5 fill-amber-400 text-amber-500" />
               <span>{score} RATING</span>
             </div>
 
             {current.episodes && (
-              <span className="rounded-full border border-white/80 bg-white/70 px-3 py-1 text-xs font-semibold text-slate-600 shadow-sm">
+              <span className="rounded-full border border-white/15 bg-white/[0.08] px-3 py-1 text-xs font-semibold text-white/70 shadow-sm backdrop-blur-md">
                 {current.episodes} EPISODES
               </span>
             )}
           </div>
 
           {/* Title */}
-          <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-[1.02]">
+          <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.02] drop-shadow-md">
             {title}
           </h1>
 
@@ -85,18 +85,18 @@ export function LiquidGlassHero({ featuredList }: LiquidGlassHeroProps) {
             {genres.map((g: string) => (
               <span
                 key={g}
-                className="rounded-full border border-slate-200/80 bg-white/70 px-3 py-0.5 text-xs font-semibold text-slate-600 shadow-sm backdrop-blur-md"
+                className="rounded-full border border-white/15 bg-white/[0.08] px-3 py-0.5 text-xs font-semibold text-white/80 shadow-sm backdrop-blur-md"
               >
                 {g}
               </span>
             ))}
             {current.year && (
-              <span className="text-xs font-medium text-slate-500">• {current.year}</span>
+              <span className="text-xs font-medium text-white/50">• {current.year}</span>
             )}
           </div>
 
           {/* Synopsis */}
-          <p className="line-clamp-3 text-xs sm:text-sm leading-relaxed text-slate-600 font-normal">
+          <p className="line-clamp-3 text-xs sm:text-sm leading-relaxed text-white/70 font-normal">
             {current.synopsis ??
               "Immerse yourself in this visually stunning animated masterpiece with crisp high-definition streaming and liquid clarity."}
           </p>
@@ -106,18 +106,18 @@ export function LiquidGlassHero({ featuredList }: LiquidGlassHeroProps) {
             <Link
               to="/watch/$animeId/$episodeNumber"
               params={{ animeId: String(current.mal_id), episodeNumber: "1" }}
-              className="flex items-center gap-2 rounded-full bg-slate-950 px-7 py-3 font-display text-xs sm:text-sm font-bold tracking-wide text-white shadow-[0_8px_24px_rgba(15,23,42,0.25)] transition-all hover:bg-slate-800 hover:scale-105 active:scale-95"
+              className="flex items-center gap-2 rounded-full bg-white px-7 py-3 font-display text-xs sm:text-sm font-bold tracking-wide text-slate-950 shadow-[0_0_25px_rgba(255,255,255,0.35),0_8px_20px_rgba(0,0,0,0.5)] transition-all hover:bg-white/90 hover:scale-105 active:scale-95"
             >
-              <Play className="size-4 fill-white" />
+              <Play className="size-4 fill-slate-950" />
               <span>STREAM NOW</span>
             </Link>
 
             <Link
               to="/anime/$animeId"
               params={{ animeId: String(current.mal_id) }}
-              className="flex items-center gap-2 rounded-full border border-white/95 bg-white/85 px-6 py-3 text-xs sm:text-sm font-semibold text-slate-800 shadow-[0_4px_16px_-2px_rgba(100,116,139,0.1),inset_0_1px_1.5px_#ffffff] backdrop-blur-md transition-all hover:bg-white hover:shadow-md"
+              className="flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.08] px-6 py-3 text-xs sm:text-sm font-semibold text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)] backdrop-blur-md transition-all hover:bg-white/[0.16] hover:border-white/35"
             >
-              <Info className="size-4 text-slate-500" />
+              <Info className="size-4 text-white/70" />
               <span>DETAILS & EPISODES</span>
             </Link>
 
@@ -126,18 +126,18 @@ export function LiquidGlassHero({ featuredList }: LiquidGlassHeroProps) {
               <button
                 type="button"
                 onClick={prevSlide}
-                className="flex size-9 items-center justify-center rounded-full border border-white/90 bg-white/80 text-slate-600 shadow-sm transition-all hover:bg-white hover:text-slate-950 hover:shadow-md"
+                className="flex size-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white shadow-sm transition-all hover:bg-white/20"
                 aria-label="Previous Spotlight"
               >
                 <ChevronLeft className="size-4" />
               </button>
-              <span className="font-mono text-xs font-bold text-slate-500 px-1.5">
+              <span className="font-mono text-xs font-bold text-white/60 px-1.5">
                 {index + 1} / {featuredList.length}
               </span>
               <button
                 type="button"
                 onClick={nextSlide}
-                className="flex size-9 items-center justify-center rounded-full border border-white/90 bg-white/80 text-slate-600 shadow-sm transition-all hover:bg-white hover:text-slate-950 hover:shadow-md"
+                className="flex size-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white shadow-sm transition-all hover:bg-white/20"
                 aria-label="Next Spotlight"
               >
                 <ChevronRight className="size-4" />
@@ -149,8 +149,8 @@ export function LiquidGlassHero({ featuredList }: LiquidGlassHeroProps) {
         {/* Right Column: Fluid Glass Capsule Preview Cards */}
         <div className="lg:col-span-4 hidden lg:flex flex-col gap-3.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-              <Sparkles className="size-3 text-slate-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-white/60 flex items-center gap-1.5">
+              <Sparkles className="size-3 text-cyan-400" />
               UP NEXT IN LIQUID GLASS
             </span>
           </div>
@@ -163,7 +163,7 @@ export function LiquidGlassHero({ featuredList }: LiquidGlassHeroProps) {
                   key={item.mal_id}
                   to="/anime/$animeId"
                   params={{ animeId: String(item.mal_id) }}
-                  className="group relative overflow-hidden rounded-3xl border border-white/90 bg-white/70 p-1.5 shadow-[0_12px_30px_-8px_rgba(100,116,139,0.12),inset_0_1px_1.5px_#ffffff] backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl aspect-[3/4] flex flex-col"
+                  className="group relative overflow-hidden rounded-3xl border border-white/15 bg-white/[0.06] p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.5),inset_0_1px_1.5px_rgba(255,255,255,0.2)] backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.12] aspect-[3/4] flex flex-col"
                 >
                   <div className="relative size-full overflow-hidden rounded-[1.25rem]">
                     <img
@@ -171,9 +171,9 @@ export function LiquidGlassHero({ featuredList }: LiquidGlassHeroProps) {
                       alt={item.title}
                       className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#08090e]/90 via-transparent to-transparent" />
                     <div className="absolute bottom-2.5 left-2.5 right-2.5">
-                      <p className="line-clamp-2 text-xs font-bold text-white group-hover:text-amber-200 transition-colors leading-snug">
+                      <p className="line-clamp-2 text-xs font-bold text-white group-hover:text-cyan-200 transition-colors leading-snug">
                         {item.title}
                       </p>
                       <p className="text-[10px] font-semibold text-white/80 mt-0.5">

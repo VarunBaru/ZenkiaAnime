@@ -215,19 +215,19 @@ function AppLayout() {
 
   if (theme === "glass") {
     return (
-      <div className="min-h-screen w-full bg-[#f6f8fb] text-slate-800 flex flex-col relative selection:bg-slate-900 selection:text-white overflow-x-hidden">
-        {/* Soft Ambient Floating Liquid Orbs */}
+      <div className="min-h-screen w-full bg-[#08090e] text-white flex flex-col relative selection:bg-white selection:text-black overflow-x-hidden">
+        {/* Soft Ambient Floating Liquid Orbs for Optical Refraction */}
         <div
           aria-hidden="true"
-          className="pointer-events-none fixed -top-40 -left-40 size-[500px] rounded-full bg-gradient-to-br from-indigo-200/40 via-purple-200/30 to-transparent blur-3xl"
+          className="pointer-events-none fixed -top-40 -left-40 size-[600px] rounded-full bg-gradient-to-br from-indigo-500/25 via-purple-500/15 to-transparent blur-[140px]"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none fixed top-1/3 -right-40 size-[600px] rounded-full bg-gradient-to-bl from-amber-100/50 via-rose-100/30 to-transparent blur-3xl"
+          className="pointer-events-none fixed top-1/4 -right-40 size-[650px] rounded-full bg-gradient-to-bl from-cyan-500/20 via-blue-500/15 to-transparent blur-[140px]"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none fixed -bottom-40 left-1/3 size-[550px] rounded-full bg-gradient-to-tr from-sky-100/50 via-teal-100/30 to-transparent blur-3xl"
+          className="pointer-events-none fixed bottom-10 left-1/4 size-[600px] rounded-full bg-gradient-to-tr from-emerald-500/15 via-teal-500/10 to-transparent blur-[130px]"
         />
 
         <LiquidGlassHeader />

@@ -67,14 +67,14 @@ export function LiquidGlassHeader() {
 
   return (
     <header className="sticky top-3 z-50 px-3 sm:px-6">
-      <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3 rounded-full border border-white/80 bg-white/75 px-4 py-2.5 shadow-[0_16px_40px_-10px_rgba(100,116,139,0.12),inset_0_1px_1.5px_#ffffff] backdrop-blur-2xl transition-all duration-300">
+      <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3 rounded-full border border-white/15 bg-[#0e111a]/70 px-4 py-2.5 shadow-[0_16px_40px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.25)] backdrop-blur-2xl transition-all duration-300">
         {/* Left: Brand Logo & Mobile Trigger */}
         <div className="flex items-center gap-2.5">
           <Sheet open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
             <SheetTrigger asChild>
               <button
                 type="button"
-                className="flex size-9 items-center justify-center rounded-full border border-white/80 bg-white/80 text-slate-700 shadow-sm lg:hidden"
+                className="flex size-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white shadow-sm lg:hidden hover:bg-white/20 transition-colors"
                 aria-label="Open Navigation"
               >
                 <Menu className="size-4" />
@@ -82,11 +82,11 @@ export function LiquidGlassHeader() {
             </SheetTrigger>
             <SheetContent
               side="left"
-              className="w-72 border-r border-white/80 bg-white/95 p-6 backdrop-blur-3xl text-slate-800"
+              className="w-72 border-r border-white/15 bg-[#0e111a]/95 p-6 backdrop-blur-3xl text-white"
             >
-              <div className="flex items-center justify-between border-b border-slate-200/80 pb-4">
-                <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-slate-900">
-                  <div className="flex size-7 items-center justify-center rounded-full bg-slate-900 text-white">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-white">
+                  <div className="flex size-7 items-center justify-center rounded-full bg-white text-slate-950 shadow-sm">
                     <Droplets className="size-3.5" />
                   </div>
                   <span>ZENKAI</span>
@@ -94,7 +94,7 @@ export function LiquidGlassHeader() {
                 <button
                   type="button"
                   onClick={() => setMobileDrawerOpen(false)}
-                  className="rounded-full p-1.5 text-slate-500 hover:bg-slate-100"
+                  className="rounded-full p-1.5 text-white/60 hover:bg-white/10 hover:text-white"
                 >
                   <X className="size-5" />
                 </button>
@@ -103,17 +103,17 @@ export function LiquidGlassHeader() {
               <div className="mt-6 space-y-5">
                 {/* Audio Dub/Sub */}
                 <div>
-                  <p className="mb-2 text-[11px] font-bold tracking-wider uppercase text-slate-500">
+                  <p className="mb-2 text-[11px] font-bold tracking-wider uppercase text-white/50">
                     Audio Language
                   </p>
-                  <div className="grid grid-cols-2 gap-1.5 rounded-full border border-white/80 bg-slate-100/80 p-1">
+                  <div className="grid grid-cols-2 gap-1.5 rounded-full border border-white/15 bg-white/[0.06] p-1">
                     <button
                       type="button"
                       onClick={() => setLanguage("en")}
                       className={`rounded-full py-1.5 text-xs font-bold transition-all ${
                         language === "en"
-                          ? "bg-white text-slate-900 shadow-sm"
-                          : "text-slate-600 hover:text-slate-900"
+                          ? "bg-white text-slate-950 shadow-sm"
+                          : "text-white/70 hover:text-white"
                       }`}
                     >
                       🇬🇧 English
@@ -123,8 +123,8 @@ export function LiquidGlassHeader() {
                       onClick={() => setLanguage("jp")}
                       className={`rounded-full py-1.5 text-xs font-bold transition-all ${
                         language === "jp"
-                          ? "bg-white text-slate-900 shadow-sm"
-                          : "text-slate-600 hover:text-slate-900"
+                          ? "bg-white text-slate-950 shadow-sm"
+                          : "text-white/70 hover:text-white"
                       }`}
                     >
                       🇯🇵 Japanese
@@ -134,13 +134,13 @@ export function LiquidGlassHeader() {
 
                 {/* Mobile Links */}
                 <div className="space-y-1">
-                  <p className="mb-2 text-[11px] font-bold tracking-wider uppercase text-slate-500">
+                  <p className="mb-2 text-[11px] font-bold tracking-wider uppercase text-white/50">
                     Navigation
                   </p>
                   <Link
                     to="/"
                     onClick={() => setMobileDrawerOpen(false)}
-                    className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                    className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
                   >
                     <span>Home</span>
                   </Link>
@@ -148,7 +148,7 @@ export function LiquidGlassHeader() {
                     to="/browse"
                     search={{ order: "popularity", page: 1, type: "", genre: "" }}
                     onClick={() => setMobileDrawerOpen(false)}
-                    className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                    className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
                   >
                     <span>Browse</span>
                   </Link>
@@ -156,7 +156,7 @@ export function LiquidGlassHeader() {
                     to="/browse"
                     search={{ order: "airing", page: 1, type: "", genre: "" }}
                     onClick={() => setMobileDrawerOpen(false)}
-                    className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                    className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
                   >
                     <span>Trending</span>
                   </Link>
@@ -164,14 +164,14 @@ export function LiquidGlassHeader() {
                     to="/browse"
                     search={{ order: "score", page: 1, type: "", genre: "" }}
                     onClick={() => setMobileDrawerOpen(false)}
-                    className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                    className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
                   >
                     <span>Top Rated</span>
                   </Link>
                   <Link
                     to="/watchlist"
                     onClick={() => setMobileDrawerOpen(false)}
-                    className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                    className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
                   >
                     <span>Watchlist</span>
                   </Link>
@@ -181,14 +181,14 @@ export function LiquidGlassHeader() {
           </Sheet>
 
           <Link to="/" className="group flex items-center gap-2">
-            <div className="flex size-8 items-center justify-center rounded-full bg-slate-900 text-white shadow-md transition-transform group-hover:scale-105">
+            <div className="flex size-8 items-center justify-center rounded-full bg-white text-slate-950 shadow-[0_0_15px_rgba(255,255,255,0.4)] transition-transform group-hover:scale-105">
               <Droplets className="size-4" />
             </div>
             <div className="flex flex-col">
-              <span className="font-display text-base sm:text-lg font-black tracking-tight text-slate-900 leading-none">
+              <span className="font-display text-base sm:text-lg font-black tracking-tight text-white leading-none">
                 ZENKAI
               </span>
-              <span className="text-[9px] font-semibold tracking-widest text-slate-500 uppercase">
+              <span className="text-[9px] font-semibold tracking-widest text-white/60 uppercase">
                 LIQUID GLASS
               </span>
             </div>
@@ -200,10 +200,10 @@ export function LiquidGlassHeader() {
           <Link
             to="/"
             activeOptions={{ exact: true }}
-            className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition-all hover:bg-white hover:text-slate-900 hover:shadow-[0_4px_14px_-2px_rgba(100,116,139,0.1),inset_0_1px_1px_#ffffff]"
+            className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-white/70 transition-all hover:bg-white/10 hover:text-white"
             activeProps={{
               className:
-                "bg-white font-bold text-slate-950 shadow-[0_4px_14px_-2px_rgba(100,116,139,0.14),inset_0_1px_1.5px_#ffffff] border border-white/90",
+                "bg-white/20 font-bold text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.35)] border border-white/25 backdrop-blur-md",
             }}
           >
             Home
@@ -211,10 +211,10 @@ export function LiquidGlassHeader() {
           <Link
             to="/browse"
             search={{ order: "popularity", page: 1, type: "", genre: "" }}
-            className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition-all hover:bg-white hover:text-slate-900 hover:shadow-[0_4px_14px_-2px_rgba(100,116,139,0.1),inset_0_1px_1px_#ffffff]"
+            className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-white/70 transition-all hover:bg-white/10 hover:text-white"
             activeProps={{
               className:
-                "bg-white font-bold text-slate-950 shadow-[0_4px_14px_-2px_rgba(100,116,139,0.14),inset_0_1px_1.5px_#ffffff] border border-white/90",
+                "bg-white/20 font-bold text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.35)] border border-white/25 backdrop-blur-md",
             }}
           >
             Browse
@@ -222,10 +222,10 @@ export function LiquidGlassHeader() {
           <Link
             to="/browse"
             search={{ order: "airing", page: 1, type: "", genre: "" }}
-            className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition-all hover:bg-white hover:text-slate-900 hover:shadow-[0_4px_14px_-2px_rgba(100,116,139,0.1),inset_0_1px_1px_#ffffff]"
+            className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-white/70 transition-all hover:bg-white/10 hover:text-white"
             activeProps={{
               className:
-                "bg-white font-bold text-slate-950 shadow-[0_4px_14px_-2px_rgba(100,116,139,0.14),inset_0_1px_1.5px_#ffffff] border border-white/90",
+                "bg-white/20 font-bold text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.35)] border border-white/25 backdrop-blur-md",
             }}
           >
             Trending
@@ -233,20 +233,20 @@ export function LiquidGlassHeader() {
           <Link
             to="/browse"
             search={{ order: "score", page: 1, type: "", genre: "" }}
-            className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition-all hover:bg-white hover:text-slate-900 hover:shadow-[0_4px_14px_-2px_rgba(100,116,139,0.1),inset_0_1px_1px_#ffffff]"
+            className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-white/70 transition-all hover:bg-white/10 hover:text-white"
             activeProps={{
               className:
-                "bg-white font-bold text-slate-950 shadow-[0_4px_14px_-2px_rgba(100,116,139,0.14),inset_0_1px_1.5px_#ffffff] border border-white/90",
+                "bg-white/20 font-bold text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.35)] border border-white/25 backdrop-blur-md",
             }}
           >
             Top Rated
           </Link>
           <Link
             to="/watchlist"
-            className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition-all hover:bg-white hover:text-slate-900 hover:shadow-[0_4px_14px_-2px_rgba(100,116,139,0.1),inset_0_1px_1px_#ffffff]"
+            className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-white/70 transition-all hover:bg-white/10 hover:text-white"
             activeProps={{
               className:
-                "bg-white font-bold text-slate-950 shadow-[0_4px_14px_-2px_rgba(100,116,139,0.14),inset_0_1px_1.5px_#ffffff] border border-white/90",
+                "bg-white/20 font-bold text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.35)] border border-white/25 backdrop-blur-md",
             }}
           >
             Watchlist
@@ -262,20 +262,20 @@ export function LiquidGlassHeader() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search anime…"
-              className="w-full rounded-full border border-white/80 bg-white/70 py-1.5 pl-8 pr-3 text-xs text-slate-800 placeholder-slate-400 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-slate-300 shadow-inner"
+              className="w-full rounded-full border border-white/15 bg-white/[0.07] py-1.5 pl-8 pr-3 text-xs text-white placeholder-white/40 outline-none transition-all focus:bg-white/[0.14] focus:border-white/30 shadow-inner backdrop-blur-md"
             />
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-white/50" />
           </form>
 
           {/* Quick Audio Sub/Dub Toggle */}
-          <div className="hidden sm:flex items-center rounded-full border border-white/80 bg-white/60 p-0.5 text-[11px] font-bold shadow-sm">
+          <div className="hidden sm:flex items-center rounded-full border border-white/15 bg-white/[0.07] p-0.5 text-[11px] font-bold shadow-sm backdrop-blur-md">
             <button
               type="button"
               onClick={() => setLanguage("en")}
               className={`rounded-full px-2.5 py-1 transition-all ${
                 language === "en"
                   ? "bg-white text-slate-950 shadow-sm"
-                  : "text-slate-500 hover:text-slate-900"
+                  : "text-white/60 hover:text-white"
               }`}
             >
               EN
@@ -286,7 +286,7 @@ export function LiquidGlassHeader() {
               className={`rounded-full px-2.5 py-1 transition-all ${
                 language === "jp"
                   ? "bg-white text-slate-950 shadow-sm"
-                  : "text-slate-500 hover:text-slate-900"
+                  : "text-white/60 hover:text-white"
               }`}
             >
               JP
@@ -298,7 +298,7 @@ export function LiquidGlassHeader() {
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
-              className="flex items-center gap-2 rounded-full border border-white/90 bg-white/85 p-1 pr-2.5 shadow-[0_4px_12px_-2px_rgba(100,116,139,0.1),inset_0_1px_1.5px_#ffffff] transition-all hover:bg-white hover:shadow-md"
+              className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 p-1 pr-2.5 shadow-[0_4px_16px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.25)] transition-all hover:bg-white/20 hover:border-white/30 backdrop-blur-md"
               aria-expanded={menuOpen}
               aria-label="Profile and theme settings"
             >
@@ -306,17 +306,17 @@ export function LiquidGlassHeader() {
                 <img
                   src={avatarUrl}
                   alt={displayName}
-                  className="size-7 rounded-full object-cover ring-1 ring-slate-200"
+                  className="size-7 rounded-full object-cover ring-1 ring-white/30"
                 />
               ) : (
-                <div className="flex size-7 items-center justify-center rounded-full bg-slate-900 text-white shadow-sm">
+                <div className="flex size-7 items-center justify-center rounded-full bg-white text-slate-950 shadow-sm">
                   <UserIcon className="size-3.5" />
                 </div>
               )}
-              <span className="hidden text-xs font-bold text-slate-800 md:inline-block max-w-[100px] truncate">
+              <span className="hidden text-xs font-bold text-white md:inline-block max-w-[100px] truncate">
                 {user ? displayName : "Profile"}
               </span>
-              <ChevronDown className="size-3 text-slate-400" />
+              <ChevronDown className="size-3 text-white/50" />
             </button>
 
             {menuOpen && (
@@ -326,13 +326,13 @@ export function LiquidGlassHeader() {
                   onClick={() => setMenuOpen(false)}
                   aria-hidden="true"
                 />
-                <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-3xl border border-white/90 bg-white/90 p-3 shadow-[0_24px_50px_-12px_rgba(100,116,139,0.2),inset_0_1px_2px_#ffffff] backdrop-blur-3xl">
+                <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-3xl border border-white/20 bg-[#10131f]/90 p-3 shadow-[0_24px_60px_rgba(0,0,0,0.8),inset_0_1px_1.5px_rgba(255,255,255,0.25)] backdrop-blur-3xl text-white">
                   {/* Profile Header */}
-                  <div className="border-b border-slate-200/80 pb-2.5 mb-2">
-                    <p className="text-xs font-bold text-slate-900 truncate">
+                  <div className="border-b border-white/10 pb-2.5 mb-2">
+                    <p className="text-xs font-bold text-white truncate">
                       {user ? displayName : "Guest Fan"}
                     </p>
-                    <p className="text-[10px] text-slate-500 truncate">
+                    <p className="text-[10px] text-white/50 truncate">
                       {user ? user.email : "Sign in to sync your library"}
                     </p>
                   </div>
@@ -342,17 +342,17 @@ export function LiquidGlassHeader() {
                       <Link
                         to="/profile"
                         onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2.5 rounded-2xl px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-950"
+                        className="flex items-center gap-2.5 rounded-2xl px-3 py-2 text-xs font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
                       >
-                        <UserIcon className="size-3.5 text-slate-500" />
+                        <UserIcon className="size-3.5 text-white/50" />
                         <span>Profile & Settings</span>
                       </Link>
                       <Link
                         to="/watchlist"
                         onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2.5 rounded-2xl px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-950"
+                        className="flex items-center gap-2.5 rounded-2xl px-3 py-2 text-xs font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
                       >
-                        <Bookmark className="size-3.5 text-slate-500" />
+                        <Bookmark className="size-3.5 text-white/50" />
                         <span>My Watchlist</span>
                       </Link>
                     </div>
@@ -361,7 +361,7 @@ export function LiquidGlassHeader() {
                       <Link
                         to="/auth"
                         onClick={() => setMenuOpen(false)}
-                        className="flex items-center justify-center gap-2 rounded-2xl bg-slate-900 py-2 text-xs font-bold text-white shadow-md transition-all hover:bg-slate-800 active:scale-95"
+                        className="flex items-center justify-center gap-2 rounded-2xl bg-white py-2 text-xs font-bold text-slate-950 shadow-md transition-all hover:bg-white/90 active:scale-95"
                       >
                         Sign In / Register
                       </Link>
@@ -369,13 +369,13 @@ export function LiquidGlassHeader() {
                   )}
 
                   {/* Theme Section Under Profile */}
-                  <div className="border-t border-slate-200/80 pt-2.5">
+                  <div className="border-t border-white/10 pt-2.5">
                     <div className="flex items-center justify-between px-2 mb-1.5">
-                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 uppercase">
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-white/70 uppercase">
                         <Layers className="size-3.5" />
                         <span>Theme Style</span>
                       </div>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase">
+                      <span className="text-[10px] font-bold text-white/40 uppercase">
                         {theme === "glass" ? "Liquid Glass" : theme}
                       </span>
                     </div>
@@ -391,8 +391,8 @@ export function LiquidGlassHeader() {
                           }}
                           className={`flex w-full items-center justify-between rounded-2xl px-3 py-2 text-left transition-all ${
                             theme === t.id
-                              ? "bg-slate-900 text-white font-bold shadow-md scale-[1.01]"
-                              : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"
+                              ? "bg-white text-slate-950 font-bold shadow-md scale-[1.01]"
+                              : "text-white/80 hover:bg-white/10 hover:text-white"
                           }`}
                         >
                           <div>
@@ -400,7 +400,7 @@ export function LiquidGlassHeader() {
                             <p className="text-[10px] opacity-70 font-normal">{t.desc}</p>
                           </div>
                           {theme === t.id && (
-                            <span className="size-1.5 rounded-full bg-white shadow-sm" />
+                            <span className="size-1.5 rounded-full bg-slate-950 shadow-sm" />
                           )}
                         </button>
                       ))}
@@ -408,11 +408,11 @@ export function LiquidGlassHeader() {
                   </div>
 
                   {user && (
-                    <div className="border-t border-slate-200/80 pt-2 mt-2">
+                    <div className="border-t border-white/10 pt-2 mt-2">
                       <button
                         type="button"
                         onClick={handleSignOut}
-                        className="flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-left text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50"
+                        className="flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-left text-xs font-semibold text-rose-400 transition-colors hover:bg-rose-500/10"
                       >
                         <LogOut className="size-3.5" />
                         <span>Sign Out</span>
