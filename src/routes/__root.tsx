@@ -23,6 +23,7 @@ import { PreferencesProvider, THEME_BOOT_SCRIPT, usePreferences } from "@/lib/pr
 import { NetflixSidebar } from "@/components/netflix/NetflixSidebar";
 import { NetflixHeaderBar } from "@/components/netflix/NetflixHeaderBar";
 import { NetflixMiniPlayer } from "@/components/netflix/NetflixMiniPlayer";
+import { ShonenJumpHeader } from "@/components/shonen-jump/ShonenJumpHeader";
 
 function NotFoundComponent() {
   return (
@@ -193,6 +194,19 @@ function AppLayout() {
           </main>
           <SiteFooter />
         </div>
+        <NetflixMiniPlayer />
+      </div>
+    );
+  }
+
+  if (theme === "shonen-jump") {
+    return (
+      <div className="min-h-screen w-full bg-[#0c0d12] text-white flex flex-col relative selection:bg-[#E60012] selection:text-white">
+        <ShonenJumpHeader />
+        <main className="flex-1 px-4 py-6 sm:px-8 lg:px-12 pb-36 max-w-[1700px] w-full mx-auto">
+          <Outlet />
+        </main>
+        <SiteFooter />
         <NetflixMiniPlayer />
       </div>
     );

@@ -63,9 +63,10 @@ export function LanguageToggle() {
 export function ThemeToggle({ showText }: { showText?: boolean }) {
   const { theme, setTheme } = usePreferences();
   const opts: { value: ThemePref; text: string }[] = [
-    { value: "manga", text: "Manga" },
+    { value: "shonen-jump", text: "Shonen Jump" },
+    { value: "netflix", text: "Zenkai" },
     { value: "glass", text: "Liquid Glass" },
-    { value: "netflix", text: "Netflix" },
+    { value: "manga", text: "Manga" },
   ];
   return (
     <Segment
@@ -91,9 +92,10 @@ export function ThemeSelect() {
         onChange={(event) => setTheme(event.target.value as ThemePref)}
         className="ink-panel-sm max-w-28 bg-card px-2 py-2 font-mono text-[10px] font-bold uppercase"
       >
-        <option value="manga">Manga</option>
+        <option value="shonen-jump">Shonen Jump</option>
+        <option value="netflix">Zenkai (Netflix)</option>
         <option value="glass">Liquid Glass</option>
-        <option value="netflix">Netflix</option>
+        <option value="manga">Manga</option>
       </select>
     </label>
   );

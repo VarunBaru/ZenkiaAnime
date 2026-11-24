@@ -139,6 +139,60 @@
   --font-body: Arial, Helvetica, ui-sans-serif, system-ui, sans-serif;
 }
 
+.theme-shonen-jump {
+  --background: oklch(0.1 0.01 260);
+  --foreground: oklch(0.98 0.005 95);
+  --card: oklch(0.16 0.015 260);
+  --card-foreground: oklch(0.98 0.005 95);
+  --popover: oklch(0.14 0.015 260);
+  --popover-foreground: oklch(0.98 0.005 95);
+  --primary: oklch(0.58 0.25 28);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.22 0.015 260);
+  --secondary-foreground: oklch(0.98 0.005 95);
+  --muted: oklch(0.2 0.015 260);
+  --muted-foreground: oklch(0.75 0.01 95);
+  --accent: oklch(0.84 0.18 85);
+  --accent-foreground: oklch(0.1 0.01 260);
+  --destructive: oklch(0.58 0.25 28);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.3 0.015 260);
+  --input: oklch(0.32 0.015 260);
+  --ring: oklch(0.58 0.25 28);
+  --ink: oklch(0.98 0.005 95);
+  --font-display: "Bungee", Impact, "Arial Black", sans-serif;
+  --font-body: "Zen Kaku Gothic New", "Inter", sans-serif;
+}
+
+.theme-shonen-jump body {
+  margin: 0;
+  padding: 0;
+  background-color: #0c0d12;
+  background-image:
+    radial-gradient(ellipse at 15% 15%, rgba(230, 0, 18, 0.14) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 15%, rgba(255, 204, 0, 0.10) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 85%, rgba(230, 0, 18, 0.06) 0%, transparent 60%),
+    linear-gradient(180deg, #130d0f 0%, #0c0d12 40%, #06070a 100%);
+  background-attachment: fixed;
+  color: #ffffff;
+  overflow-x: hidden;
+}
+
+.theme-shonen-jump .ink-panel,
+.theme-shonen-jump .ink-panel-sm {
+  border-width: 1px;
+  border-color: rgba(255, 255, 255, 0.12);
+  border-radius: 1rem;
+  background-color: #12131a;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.theme-shonen-jump .ink-press:hover {
+  transform: translateY(-2px);
+  border-color: #E60012;
+  box-shadow: 0 12px 35px rgba(230, 0, 18, 0.25);
+}
+
 .theme-glass body {
   background-image:
     radial-gradient(color-mix(in oklab, var(--accent) 10%, transparent) 1px, transparent 1px),

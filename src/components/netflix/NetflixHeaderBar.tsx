@@ -138,8 +138,8 @@ export function NetflixHeaderBar() {
                         {theme === "netflix" ? "Zenkai" : theme}
                       </span>
                     </div>
-                    <div className="grid grid-cols-3 gap-1 rounded-xl bg-black/50 p-1 border border-white/5">
-                      {(["netflix", "glass", "manga"] as const).map((t) => (
+                    <div className="grid grid-cols-2 gap-1 rounded-xl bg-black/50 p-1 border border-white/5">
+                      {(["netflix", "shonen-jump", "glass", "manga"] as const).map((t) => (
                         <button
                           key={t}
                           type="button"
@@ -150,7 +150,13 @@ export function NetflixHeaderBar() {
                               : "text-white/60 hover:text-white hover:bg-white/5"
                           }`}
                         >
-                          {t === "netflix" ? "Zenkai" : t === "glass" ? "Glass" : "Manga"}
+                          {t === "netflix"
+                            ? "Zenkai"
+                            : t === "shonen-jump"
+                              ? "Jump"
+                              : t === "glass"
+                                ? "Glass"
+                                : "Manga"}
                         </button>
                       ))}
                     </div>
@@ -202,8 +208,8 @@ export function NetflixHeaderBar() {
                         {theme === "netflix" ? "Zenkai" : theme}
                       </span>
                     </div>
-                    <div className="grid grid-cols-3 gap-1 rounded-xl bg-black/50 p-1 border border-white/5">
-                      {(["netflix", "glass", "manga"] as const).map((t) => (
+                    <div className="grid grid-cols-2 gap-1 rounded-xl bg-black/50 p-1 border border-white/5">
+                      {(["netflix", "shonen-jump", "glass", "manga"] as const).map((t) => (
                         <button
                           key={t}
                           type="button"
@@ -214,7 +220,13 @@ export function NetflixHeaderBar() {
                               : "text-white/60 hover:text-white hover:bg-white/5"
                           }`}
                         >
-                          {t === "netflix" ? "Zenkai" : t === "glass" ? "Glass" : "Manga"}
+                          {t === "netflix"
+                            ? "Zenkai"
+                            : t === "shonen-jump"
+                              ? "Jump"
+                              : t === "glass"
+                                ? "Glass"
+                                : "Manga"}
                         </button>
                       ))}
                     </div>

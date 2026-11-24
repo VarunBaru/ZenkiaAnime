@@ -22,6 +22,7 @@ import { profileQuery, historyQuery } from "@/lib/library";
 import { usePreferences } from "@/lib/preferences";
 import { NetflixHeroSection } from "@/components/netflix/NetflixHeroSection";
 import { NetflixRail } from "@/components/netflix/NetflixRail";
+import { ShonenJumpHome } from "@/components/shonen-jump/ShonenJumpHome";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -253,6 +254,18 @@ function HomePage() {
         </button>
       </div>
     ) : null;
+
+  if (theme === "shonen-jump") {
+    return (
+      <ShonenJumpHome
+        featuredList={featuredList}
+        popular={popular}
+        trending={trending}
+        season={season}
+        genres={genres}
+      />
+    );
+  }
 
   if (theme === "netflix") {
     return (
