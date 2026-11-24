@@ -24,6 +24,7 @@ import { NetflixSidebar } from "@/components/netflix/NetflixSidebar";
 import { NetflixHeaderBar } from "@/components/netflix/NetflixHeaderBar";
 import { NetflixMiniPlayer } from "@/components/netflix/NetflixMiniPlayer";
 import { ShonenJumpHeader } from "@/components/shonen-jump/ShonenJumpHeader";
+import { LiquidGlassHeader } from "@/components/liquid-glass/LiquidGlassHeader";
 
 function NotFoundComponent() {
   return (
@@ -204,6 +205,33 @@ function AppLayout() {
       <div className="min-h-screen w-full bg-[#0c0d12] text-white flex flex-col relative selection:bg-[#E60012] selection:text-white">
         <ShonenJumpHeader />
         <main className="flex-1 px-4 py-6 sm:px-8 lg:px-12 pb-36 max-w-[1700px] w-full mx-auto">
+          <Outlet />
+        </main>
+        <SiteFooter />
+        <NetflixMiniPlayer />
+      </div>
+    );
+  }
+
+  if (theme === "glass") {
+    return (
+      <div className="min-h-screen w-full bg-[#f6f8fb] text-slate-800 flex flex-col relative selection:bg-slate-900 selection:text-white overflow-x-hidden">
+        {/* Soft Ambient Floating Liquid Orbs */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed -top-40 -left-40 size-[500px] rounded-full bg-gradient-to-br from-indigo-200/40 via-purple-200/30 to-transparent blur-3xl"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed top-1/3 -right-40 size-[600px] rounded-full bg-gradient-to-bl from-amber-100/50 via-rose-100/30 to-transparent blur-3xl"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed -bottom-40 left-1/3 size-[550px] rounded-full bg-gradient-to-tr from-sky-100/50 via-teal-100/30 to-transparent blur-3xl"
+        />
+
+        <LiquidGlassHeader />
+        <main className="flex-1 px-4 py-6 sm:px-8 lg:px-12 pb-36 max-w-[1600px] w-full mx-auto relative z-10">
           <Outlet />
         </main>
         <SiteFooter />
