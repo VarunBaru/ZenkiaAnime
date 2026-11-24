@@ -178,27 +178,44 @@ export function NetflixHeaderBar() {
             )}
           </div>
         ) : (
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 p-1.5 px-3 text-xs text-white/80 transition-all hover:bg-white/10"
-                aria-label="Theme settings"
-              >
-                <Layers className="size-3.5 text-white/60" />
-                <span className="text-[11px] font-semibold text-white/80">Theme</span>
-                <ChevronDown className="size-3 text-white/60" />
-              </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 p-1 pr-2.5 transition-all hover:bg-white/10 hover:border-white/30"
+              aria-expanded={menuOpen}
+              aria-label="Guest Profile and Theme"
+            >
+              <div className="flex size-7 items-center justify-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/20">
+                <UserIcon className="size-3.5" />
+              </div>
+              <span className="text-xs font-medium text-white">Profile</span>
+              <ChevronDown className="size-3 text-white/60" />
+            </button>
 
-              {menuOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
+            {menuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setMenuOpen(false)}
+                  aria-hidden="true"
+                />
+                <div className="absolute right-0 top-full z-50 mt-2 w-60 rounded-2xl border border-white/10 bg-[#12141a]/95 p-3 shadow-2xl backdrop-blur-2xl">
+                  <div className="border-b border-white/10 pb-2 mb-2">
+                    <p className="text-xs font-semibold text-white">Guest User</p>
+                    <p className="text-[10px] text-white/50">Sign in to sync your anime library</p>
+                  </div>
+
+                  <Link
+                    to="/auth"
                     onClick={() => setMenuOpen(false)}
-                    aria-hidden="true"
-                  />
-                  <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-2xl border border-white/10 bg-[#12141a]/95 p-3 shadow-2xl backdrop-blur-2xl">
+                    className="flex items-center justify-center gap-2 rounded-xl bg-[#E50914] px-3 py-2 text-xs font-bold text-white shadow-md hover:bg-red-600 transition-colors mb-2.5"
+                  >
+                    Sign In / Register
+                  </Link>
+
+                  {/* Theme Section under Profile */}
+                  <div className="border-t border-white/10 pt-2.5">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-white/70 uppercase">
                         <Layers className="size-3.5 text-[#E50914]" />
@@ -213,7 +230,10 @@ export function NetflixHeaderBar() {
                         <button
                           key={t}
                           type="button"
-                          onClick={() => setTheme(t)}
+                          onClick={() => {
+                            setTheme(t);
+                            setMenuOpen(false);
+                          }}
                           className={`rounded-lg py-1.5 text-center text-[10px] font-bold capitalize transition-all ${
                             theme === t
                               ? "bg-white text-black shadow-md scale-[1.02]"
@@ -231,16 +251,9 @@ export function NetflixHeaderBar() {
                       ))}
                     </div>
                   </div>
-                </>
-              )}
-            </div>
-
-            <Link
-              to="/auth"
-              className="rounded-full bg-[#E50914] px-4 py-1.5 text-xs font-bold text-white transition-transform hover:scale-105"
-            >
-              Sign In
-            </Link>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

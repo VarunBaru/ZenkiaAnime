@@ -387,30 +387,54 @@ export function ShonenJumpHeader() {
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-2">
-              {/* Theme Picker for Guests */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setMenuOpen(!menuOpen)}
-                  className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-white/80 hover:bg-white/10 hover:text-white"
-                >
-                  <Layers className="size-3.5 text-[#FFCC00]" />
-                  <span className="capitalize">{theme === "shonen-jump" ? "Jump" : theme}</span>
-                  <ChevronDown className="size-3 text-white/50" />
-                </button>
-                {menuOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 p-1 pr-2.5 transition-all hover:bg-white/10 hover:border-[#FFCC00]"
+                aria-expanded={menuOpen}
+                aria-label="Guest Profile and Theme"
+              >
+                <div className="flex size-7 items-center justify-center rounded-full bg-white/10 text-white/80 ring-1 ring-[#E60012]">
+                  <UserIcon className="size-3.5 text-[#FFCC00]" />
+                </div>
+                <span className="text-xs font-bold text-white">Profile</span>
+                <ChevronDown className="size-3 text-white/60" />
+              </button>
+
+              {menuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setMenuOpen(false)}
+                    aria-hidden="true"
+                  />
+                  <div className="absolute right-0 top-full z-50 mt-2 w-60 rounded-2xl border border-white/10 bg-[#12141a]/95 p-3 shadow-2xl backdrop-blur-2xl">
+                    <div className="border-b border-white/10 pb-2 mb-2">
+                      <p className="text-xs font-bold text-white">Guest Fan</p>
+                      <p className="text-[10px] text-white/50">Sign in to track Jump manga & anime</p>
+                    </div>
+
+                    <Link
+                      to="/login"
                       onClick={() => setMenuOpen(false)}
-                      aria-hidden="true"
-                    />
-                    <div className="absolute right-0 top-full z-50 mt-2 w-52 rounded-2xl border border-white/10 bg-[#12141a]/95 p-2 shadow-2xl backdrop-blur-2xl">
-                      <div className="px-2.5 py-1 text-[11px] font-bold text-[#FFCC00]">
-                        Select Theme
+                      className="flex items-center justify-center gap-2 rounded-xl bg-[#E60012] px-3 py-2 text-xs font-black uppercase text-white shadow-md hover:bg-red-600 transition-colors mb-2.5"
+                    >
+                      Sign In / Register
+                    </Link>
+
+                    {/* Theme Selector Under Profile */}
+                    <div className="border-t border-white/10 pt-2">
+                      <div className="px-1 flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#FFCC00]">
+                          <Layers className="size-3.5" />
+                          <span>Website Theme</span>
+                        </div>
+                        <span className="text-[10px] font-mono text-white/40 uppercase">
+                          {theme === "shonen-jump" ? "Shonen Jump" : theme}
+                        </span>
                       </div>
-                      <div className="mt-1 space-y-0.5">
+                      <div className="space-y-0.5">
                         {THEMES.map((t) => (
                           <button
                             key={t.id}
@@ -425,7 +449,10 @@ export function ShonenJumpHeader() {
                                 : "text-white/70 hover:bg-white/10 hover:text-white"
                             }`}
                           >
-                            <span>{t.label}</span>
+                            <div>
+                              <p className="leading-tight">{t.label}</p>
+                              <p className="text-[10px] opacity-60 font-normal">{t.desc}</p>
+                            </div>
                             {theme === t.id && (
                               <span className="size-1.5 rounded-full bg-[#FFCC00]" />
                             )}
@@ -433,16 +460,9 @@ export function ShonenJumpHeader() {
                         ))}
                       </div>
                     </div>
-                  </>
-                )}
-              </div>
-
-              <Link
-                to="/login"
-                className="rounded-full bg-[#E60012] px-4 py-1.5 text-xs font-black uppercase tracking-wide text-white transition-all hover:bg-red-600 hover:shadow-[0_0_15px_rgba(230,0,18,0.5)] active:scale-95"
-              >
-                Sign In
-              </Link>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

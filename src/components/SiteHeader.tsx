@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
-import { LogOut, Menu, Search, User as UserIcon, X } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Bookmark, ChevronDown, Layers, LogOut, Menu, Search, User as UserIcon, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { LanguageToggle, ThemeToggle, MobileSettings } from "@/components/PreferenceControls";
+import { LanguageToggle } from "@/components/PreferenceControls";
+import { usePreferences, type ThemePref } from "@/lib/preferences";
+import { profileQuery } from "@/lib/library";
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -12,13 +14,24 @@ const NAV = [
   { to: "/search", label: "Search" },
 ] as const;
 
+const THEMES: { id: ThemePref; label: string; desc: string }[] = [
+  { id: "manga", label: "Manga", desc: "Ink black & screentones" },
+  { id: "glass", label: "Liquid Glass", desc: "Translucent frosted glow" },
+  { id: "netflix", label: "Zenkai", desc: "Dark streaming layout" },
+  { id: "shonen-jump", label: "Shonen Jump", desc: "Weekly manga magazine style" },
+];
+
 export function SiteHeader() {
   const { user } = useAuth();
+  const { theme, setTheme } = usePreferences();
   const navigate = useNavigate();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const profile = useQuery(profileQuery(user?.id));
+
   const [term, setTerm] = useState("");
   const [open, setOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,11 +42,23 @@ export function SiteHeader() {
   };
 
   const signOut = async () => {
+    setProfileMenuOpen(false);
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
     router.navigate({ to: "/auth", replace: true });
   };
+
+  const displayName =
+    profile.data?.username ??
+    user?.user_metadata?.["display_name"] ??
+    user?.email?.split("@")[0] ??
+    "Anime Fan";
+
+  const avatarUrl =
+    profile.data?.avatar_url ??
+    user?.user_metadata?.["avatar_url"] ??
+    "https://api.dicebear.com/7.x/bottts/svg?seed=zenkai";
 
   return (
     <header
@@ -91,33 +116,136 @@ export function SiteHeader() {
         </form>
 
         <div className="hidden shrink-0 items-center gap-2 lg:flex">
-          <ThemeToggle />
           <LanguageToggle />
-          {user ? (
-            <>
-              <Link
-                to="/profile"
-                className="ink-panel-sm ink-press bg-card p-2"
-                aria-label="Profile"
-              >
-                <UserIcon className="size-4" strokeWidth={2.5} />
-              </Link>
-              <button
-                onClick={signOut}
-                className="ink-panel-sm ink-press bg-card p-2"
-                aria-label="Sign out"
-              >
-                <LogOut className="size-4" strokeWidth={2.5} />
-              </button>
-            </>
-          ) : (
-            <Link
-              to="/auth"
-              className="ink-panel-sm ink-press bg-accent px-4 py-2 font-mono text-xs font-bold tracking-widest text-accent-foreground uppercase"
+
+          {/* Profile & Theme Dropdown Menu */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+              className="ink-panel-sm ink-press flex items-center gap-2 bg-card px-2.5 py-1.5"
+              aria-label="Profile and settings"
+              aria-expanded={profileMenuOpen}
             >
-              Sign in
-            </Link>
-          )}
+              {user ? (
+                <img
+                  src={avatarUrl}
+                  alt={displayName}
+                  className="size-5 rounded-full object-cover"
+                />
+              ) : (
+                <UserIcon className="size-4" strokeWidth={2.5} />
+              )}
+              <span className="font-mono text-xs font-bold tracking-wider uppercase max-w-[100px] truncate">
+                {user ? displayName : "Profile"}
+              </span>
+              <ChevronDown className="size-3 opacity-60" />
+            </button>
+
+            {profileMenuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setProfileMenuOpen(false)}
+                  aria-hidden="true"
+                />
+                <div className="ink-panel absolute right-0 top-full z-50 mt-2 w-64 bg-card p-2 shadow-2xl">
+                  {/* Profile Header */}
+                  <div className="border-b-2 border-border px-3 py-2">
+                    <p className="font-mono text-xs font-bold uppercase truncate">
+                      {user ? displayName : "Guest Fan"}
+                    </p>
+                    <p className="font-mono text-[10px] text-muted-foreground truncate">
+                      {user ? user.email : "Sign in to track anime & manga"}
+                    </p>
+                  </div>
+
+                  {user ? (
+                    <div className="py-1">
+                      <Link
+                        to="/profile"
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center gap-2.5 rounded px-2.5 py-1.5 font-mono text-xs font-bold uppercase hover:bg-secondary"
+                      >
+                        <UserIcon className="size-3.5" />
+                        <span>Profile & Settings</span>
+                      </Link>
+                      <Link
+                        to="/watchlist"
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center gap-2.5 rounded px-2.5 py-1.5 font-mono text-xs font-bold uppercase hover:bg-secondary"
+                      >
+                        <Bookmark className="size-3.5" />
+                        <span>My Watchlist</span>
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="py-2">
+                      <Link
+                        to="/auth"
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="ink-panel-sm ink-press block w-full bg-accent py-1.5 text-center font-mono text-xs font-bold text-accent-foreground uppercase"
+                      >
+                        Sign in / Sign up
+                      </Link>
+                    </div>
+                  )}
+
+                  {/* Theme Section Under Profile */}
+                  <div className="border-t-2 border-border pt-2 pb-1">
+                    <div className="flex items-center justify-between px-2.5 py-1">
+                      <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase">
+                        <Layers className="size-3.5" />
+                        <span>Theme Style</span>
+                      </div>
+                      <span className="font-mono text-[10px] text-muted-foreground uppercase font-bold">
+                        {theme}
+                      </span>
+                    </div>
+
+                    <div className="mt-1 space-y-1">
+                      {THEMES.map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => {
+                            setTheme(t.id);
+                            setProfileMenuOpen(false);
+                          }}
+                          className={`flex w-full items-center justify-between rounded px-2.5 py-1.5 text-left transition-all ${
+                            theme === t.id
+                              ? "bg-accent font-bold text-accent-foreground shadow-sm"
+                              : "hover:bg-secondary"
+                          }`}
+                        >
+                          <div>
+                            <p className="font-mono text-xs font-bold uppercase">{t.label}</p>
+                            <p className="text-[10px] opacity-70">{t.desc}</p>
+                          </div>
+                          {theme === t.id && (
+                            <span className="size-1.5 rounded-full bg-current" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {user && (
+                    <div className="border-t-2 border-border pt-1">
+                      <button
+                        type="button"
+                        onClick={signOut}
+                        className="flex w-full items-center gap-2 rounded px-2.5 py-1.5 text-left font-mono text-xs font-bold text-destructive uppercase hover:bg-destructive/10"
+                      >
+                        <LogOut className="size-3.5" />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         <button
@@ -165,7 +293,7 @@ export function SiteHeader() {
                   onClick={() => setOpen(false)}
                   className="ink-panel-sm bg-background px-3 py-2 font-mono text-xs font-bold tracking-widest uppercase"
                 >
-                  Profile
+                  Profile & Settings
                 </Link>
                 <button
                   onClick={() => {
@@ -187,7 +315,33 @@ export function SiteHeader() {
               </Link>
             )}
           </nav>
-          <MobileSettings />
+
+          {/* Theme Section Under Profile on Mobile */}
+          <div className="mt-4 border-t-2 border-border pt-4">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="font-mono text-xs font-bold uppercase">Theme Style</span>
+              <span className="font-mono text-[10px] text-muted-foreground uppercase">{theme}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              {THEMES.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => {
+                    setTheme(t.id);
+                    setOpen(false);
+                  }}
+                  className={`ink-panel-sm px-2.5 py-1.5 text-center font-mono text-[11px] font-bold uppercase transition-all ${
+                    theme === t.id
+                      ? "bg-accent text-accent-foreground shadow-sm"
+                      : "bg-background"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </header>
